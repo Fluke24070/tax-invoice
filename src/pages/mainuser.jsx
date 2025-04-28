@@ -1,12 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  FaBars,
-  FaUser,
-  FaHome,
-  FaUserCircle,
-  FaSignOutAlt,
-} from "react-icons/fa";
+import { FaBars, FaUser, FaHome, FaUserCircle, FaSignOutAlt } from "react-icons/fa";
 import { FiFileText, FiPrinter } from "react-icons/fi";
 import { QRCodeSVG } from "qrcode.react";
 
@@ -35,12 +29,12 @@ const MainUser = () => {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement("canvas");
-      canvas.width = 500;
-      canvas.height = 500;
+      canvas.width = 400;
+      canvas.height = 400;
       const ctx = canvas.getContext("2d");
       ctx.fillStyle = "#fff";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0, 500, 500);
+      ctx.drawImage(img, 0, 0, 400, 400);
 
       const pngUrl = canvas.toDataURL("image/png");
       const link = document.createElement("a");
@@ -54,16 +48,29 @@ const MainUser = () => {
     img.src = url;
   };
 
-  // 🆕 สร้าง QR Content แบบย่อ
+  // เอาเฉพาะเบอร์มือถือ และ เลขประจำตัวผู้เสียภาษี
   const qrContent = userData
     ? JSON.stringify({
-        firstName: userData.firstName,
-        lastName: userData.lastName,
         phone: userData.phone,
-        email: userData.email,
         taxId: userData.taxId,
       })
     : "";
+
+  const MenuItem = ({ icon, text, onClick }) => (
+    <div
+      onClick={onClick}
+      style={{
+        padding: "0.8rem 1rem",
+        display: "flex",
+        alignItems: "center",
+        gap: "0.5rem",
+        color: "#000",
+        cursor: "pointer",
+      }}
+    >
+      {icon} {text}
+    </div>
+  );
 
   return (
     <div style={{ height: "100vh", backgroundColor: "#e6f0ff" }}>
@@ -134,7 +141,7 @@ const MainUser = () => {
           style={{
             backgroundColor: "#9999ff",
             borderRadius: "25px",
-            width: "400px",
+            width: "360px",
             margin: "60px auto",
             padding: "2rem",
             textAlign: "center",
@@ -170,8 +177,8 @@ const MainUser = () => {
               backgroundColor: "white",
               padding: "15px",
               borderRadius: "14px",
-              height: "300px",
-              width: "300px",
+              height: "260px",
+              width: "260px",
               margin: "0 auto",
               display: "flex",
               alignItems: "center",
@@ -181,7 +188,7 @@ const MainUser = () => {
             {qrContent ? (
               <QRCodeSVG
                 value={qrContent}
-                size={300}
+                size={230}
                 level="H"
                 includeMargin={true}
                 bgColor="#ffffff"
@@ -196,21 +203,5 @@ const MainUser = () => {
     </div>
   );
 };
-
-const MenuItem = ({ icon, text, onClick }) => (
-  <div
-    onClick={onClick}
-    style={{
-      padding: "0.8rem 1rem",
-      display: "flex",
-      alignItems: "center",
-      gap: "0.5rem",
-      color: "#000",
-      cursor: "pointer",
-    }}
-  >
-    {icon} {text}
-  </div>
-);
 
 export default MainUser;

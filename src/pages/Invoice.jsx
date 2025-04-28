@@ -12,7 +12,16 @@ const Invoice = () => {
 
   useEffect(() => {
     const storedReceipts = JSON.parse(localStorage.getItem("receiptHistory")) || [];
-    setReceiptHistory(storedReceipts);
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
+    if (currentUser && currentUser.companyName) {
+      const filteredReceipts = storedReceipts.filter(
+        (receipt) => receipt.companyName === currentUser.companyName
+      );
+      setReceiptHistory(filteredReceipts);
+    } else {
+      setReceiptHistory([]);
+    }
   }, []);
 
   const formatDate = (isoDate) => {

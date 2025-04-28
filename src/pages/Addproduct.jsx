@@ -1,13 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  FaShoppingCart,
-  FaBars,
-  FaUserCircle,
-  FaSignOutAlt,
-  FaClipboardList,
-  FaHome,
-} from "react-icons/fa";
+import { FaShoppingCart, FaBars, FaUserCircle, FaSignOutAlt, FaClipboardList, FaHome } from "react-icons/fa";
 import { FiFileText } from "react-icons/fi";
 
 const Addproduct = () => {
@@ -41,13 +34,16 @@ const Addproduct = () => {
   const unformatNumber = (value) => value.replace(/,/g, "").replace(/[^\d]/g, "");
 
   const handleSave = () => {
+    const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
+
     const product = {
-      id: Date.now(), // ✅ สำคัญสำหรับแก้ไขโดยใช้ productId
+      id: Date.now(),
       name: productName,
       detail: productDetail,
       price: unformatNumber(productPrice),
       unit: productUnit,
       image: imagePreview,
+      companyName: currentUser.companyName, // ✅ ผูกบริษัทกับสินค้า
     };
 
     const oldProducts = JSON.parse(localStorage.getItem("products")) || [];
@@ -67,18 +63,7 @@ const Addproduct = () => {
 
   return (
     <div style={{ height: "100vh", backgroundColor: "#e6f0ff", fontFamily: "sans-serif" }}>
-      {/* Header */}
-      <div
-        style={{
-          backgroundColor: "#1a1aa6",
-          height: `${headerHeight}px`,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "0 1rem",
-          color: "white",
-        }}
-      >
+      <div style={{ backgroundColor: "#1a1aa6", height: `${headerHeight}px`, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 1rem", color: "white" }}>
         <div onClick={toggleMenu} style={{ cursor: "pointer" }}>
           <FaBars size={20} />
         </div>
@@ -86,23 +71,8 @@ const Addproduct = () => {
         <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiCompany")} />
       </div>
 
-      {/* Sidebar */}
       {menuOpen && (
-        <div
-          style={{
-            position: "fixed",
-            top: `${headerHeight}px`,
-            left: 0,
-            bottom: 0,
-            width: "200px",
-            backgroundColor: "#9999ff",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            padding: "1rem 0",
-            zIndex: 2,
-          }}
-        >
+        <div style={{ position: "fixed", top: `${headerHeight}px`, left: 0, bottom: 0, width: "200px", backgroundColor: "#9999ff", display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "1rem 0", zIndex: 2 }}>
           <div>
             <MenuItem icon={<FaHome />} text="หน้าแรก" onClick={() => navigate("/MainCompany")} />
             <MenuItem icon={<FiFileText />} text="ประวัติการทำรายการ" onClick={() => navigate("/IihCompany")} />
@@ -116,40 +86,14 @@ const Addproduct = () => {
 
       {/* Form Section */}
       <div style={{ display: "flex", justifyContent: "center", paddingTop: "2rem" }}>
-        <div
-          style={{
-            backgroundColor: "white",
-            padding: "1.5rem",
-            borderRadius: "10px",
-            width: "90%",
-            maxWidth: "400px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "1rem",
-          }}
-        >
-          <input
-            placeholder="ชื่อรายการสินค้า"
-            value={productName}
-            onChange={(e) => setProductName(e.target.value)}
-            style={inputStyle}
-          />
+        <div style={{ backgroundColor: "white", padding: "1.5rem", borderRadius: "10px", width: "90%", maxWidth: "400px", display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
+          <input placeholder="ชื่อรายการสินค้า" value={productName} onChange={(e) => setProductName(e.target.value)} style={inputStyle} />
 
           <label style={{ width: "100%" }}>
             <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: "none" }} />
             <div style={{ ...imageBoxStyle, cursor: "pointer" }}>
               {imagePreview ? (
-                <img
-                  src={imagePreview}
-                  alt="preview"
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    borderRadius: "10px",
-                  }}
-                />
+                <img src={imagePreview} alt="preview" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "10px" }} />
               ) : (
                 "ภาพสินค้า"
               )}
@@ -161,13 +105,7 @@ const Addproduct = () => {
             value={productDetail}
             onChange={(e) => setProductDetail(e.target.value)}
             ref={textareaRef}
-            style={{
-              ...inputStyle,
-              resize: "none",
-              overflow: "hidden",
-              lineHeight: "1.6",
-              minHeight: "50px",
-            }}
+            style={{ ...inputStyle, resize: "none", overflow: "hidden", lineHeight: "1.6", minHeight: "50px" }}
           />
 
           <input
@@ -184,16 +122,9 @@ const Addproduct = () => {
             style={inputStyle}
           />
 
-          <input
-            placeholder="หน่วย/unit"
-            value={productUnit}
-            onChange={(e) => setProductUnit(e.target.value)}
-            style={inputStyle}
-          />
+          <input placeholder="หน่วย/unit" value={productUnit} onChange={(e) => setProductUnit(e.target.value)} style={inputStyle} />
 
-          <button onClick={handleSave} style={saveButtonStyle}>
-            บันทึกข้อมูล
-          </button>
+          <button onClick={handleSave} style={saveButtonStyle}>บันทึกข้อมูล</button>
         </div>
       </div>
     </div>
@@ -201,18 +132,7 @@ const Addproduct = () => {
 };
 
 const MenuItem = ({ icon, text, onClick }) => (
-  <div
-    onClick={onClick}
-    style={{
-      padding: "0.8rem 1rem",
-      display: "flex",
-      alignItems: "center",
-      gap: "0.8rem",
-      color: "#000",
-      cursor: "pointer",
-      fontSize: "14px",
-    }}
-  >
+  <div onClick={onClick} style={{ padding: "0.8rem 1rem", display: "flex", alignItems: "center", gap: "0.8rem", color: "#000", cursor: "pointer", fontSize: "14px" }}>
     <div style={{ fontSize: "18px" }}>{icon}</div>
     <div>{text}</div>
   </div>

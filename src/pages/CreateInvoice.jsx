@@ -20,7 +20,14 @@ const CreateInvoice = () => {
 
   useEffect(() => {
     const storedReceipts = JSON.parse(localStorage.getItem("receiptHistory")) || [];
-    setReceipts(storedReceipts);
+    const storedUser = JSON.parse(localStorage.getItem("currentUser"));
+
+    if (storedUser) {
+      const userReceipts = storedReceipts.filter(receipt => receipt.companyName === storedUser.companyName);
+      setReceipts(userReceipts);
+    } else {
+      setReceipts([]);
+    }
   }, []);
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
@@ -34,7 +41,19 @@ const CreateInvoice = () => {
       total: updatedTotal,
     };
     setReceipts(updatedReceipts);
-    localStorage.setItem("receiptHistory", JSON.stringify(updatedReceipts));
+
+    // Update only user's receipts back into localStorage
+    const storedReceipts = JSON.parse(localStorage.getItem("receiptHistory")) || [];
+    const storedUser = JSON.parse(localStorage.getItem("currentUser"));
+
+    const newAllReceipts = storedReceipts.map(receipt => {
+      if (receipt.id === updatedReceipts[selectedReceiptIndex].id) {
+        return updatedReceipts[selectedReceiptIndex];
+      }
+      return receipt;
+    });
+
+    localStorage.setItem("receiptHistory", JSON.stringify(newAllReceipts));
   };
 
   const changeQuantity = (itemIndex, delta) => {
@@ -60,6 +79,7 @@ const CreateInvoice = () => {
 
   return (
     <div style={{ height: "100vh", backgroundColor: "#e6f0ff", fontFamily: "sans-serif" }}>
+      {/* Header */}
       <div style={{ backgroundColor: "#1a1aa6", height: `${headerHeight}px`, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 1rem", color: "white" }}>
         <div onClick={toggleMenu} style={{ cursor: "pointer" }}>
           <FaBars size={20} />
@@ -68,18 +88,21 @@ const CreateInvoice = () => {
         <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiCompany")} />
       </div>
 
+      {/* Button เพิ่มใบเสร็จ */}
       <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem" }}>
         <button onClick={() => navigate("/Addreceipt")} style={{ display: "flex", alignItems: "center", gap: "0.5rem", border: "2px solid #1a1aa6", backgroundColor: "white", color: "#1a1aa6", padding: "0.6rem 1.2rem", borderRadius: "30px", fontSize: "16px", fontWeight: "bold", cursor: "pointer" }}>
           <span role="img" aria-label="icon">🗓️</span> เพิ่มใบเสร็จ
         </button>
       </div>
 
+      {/* รายการใบเสร็จ */}
       <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem" }}>
         <div style={{ backgroundColor: "#a6d4ff", padding: "0.6rem 2rem", borderRadius: "6px", fontSize: "18px", fontWeight: "bold", color: "#000" }}>
           รายการใบเสร็จ
         </div>
       </div>
 
+      {/* แสดงรายการใบเสร็จ */}
       {selectedReceiptIndex !== null ? (
         <div style={{ maxWidth: "400px", margin: "1rem auto", padding: "1rem" }}>
           <button onClick={() => setSelectedReceiptIndex(null)} style={{ marginBottom: "1rem", background: "#ccc", padding: "0.4rem 1rem", border: "none", borderRadius: "8px", cursor: "pointer" }}>
@@ -145,6 +168,7 @@ const CreateInvoice = () => {
         </div>
       )}
 
+      {/* เมนูแถบด้านข้าง */}
       {menuOpen && (
         <div style={{ position: "fixed", top: `${headerHeight}px`, left: 0, bottom: 0, width: "200px", backgroundColor: "#9999ff", display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "1rem 0", zIndex: 2 }}>
           <div>
