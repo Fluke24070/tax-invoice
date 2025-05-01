@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   FaBars,
   FaUserCircle,
@@ -12,6 +12,7 @@ import { FiFileText } from "react-icons/fi";
 
 const UiCompany = () => {
   const navigate = useNavigate();
+  const location = useLocation(); // ✅ ใช้ตรวจ path ปัจจุบัน
   const headerHeight = 64;
   const [menuOpen, setMenuOpen] = useState(true);
 
@@ -73,8 +74,14 @@ const UiCompany = () => {
         <div onClick={toggleMenu} style={{ cursor: "pointer" }}>
           <FaBars size={20} />
         </div>
-        <span style={{ fontWeight: "bold", letterSpacing: "1px" }}>TAX INVOICE</span>
-        <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiCompany")} />
+        <span style={{ fontWeight: "bold", letterSpacing: "1px" }}>
+          TAX INVOICE
+        </span>
+        <FaUserCircle
+          size={24}
+          style={{ cursor: "pointer" }}
+          onClick={() => navigate("/UiCompany")}
+        />
       </div>
 
       {/* Sidebar */}
@@ -94,11 +101,11 @@ const UiCompany = () => {
           }}
         >
           <div>
-            <MenuItem icon={<FaHome />} text="หน้าแรก" onClick={() => navigate("/MainCompany")} />
-            <MenuItem icon={<FiFileText />} text="ประวัติการทำรายการ" onClick={() => navigate("/IihCompany")} />
-            <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiCompany")} />
-            <MenuItem icon={<FaShoppingCart />} text="สินค้า" onClick={() => navigate("/Product")} />
-            <MenuItem icon={<FaClipboardList />} text="ทำใบเสร็จ" onClick={() => navigate("/CreateInvoice")} />
+            <MenuItem icon={<FaHome />} text="ใบกำกับภาษี" onClick={() => navigate("/MainCompany")} active={location.pathname === "/MainCompany"} />
+            <MenuItem icon={<FiFileText />} text="ประวัติการทำรายการ" onClick={() => navigate("/IihCompany")} active={location.pathname === "/IihCompany"} />
+            <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiCompany")} active={location.pathname === "/UiCompany"} />
+            <MenuItem icon={<FaShoppingCart />} text="สินค้า" onClick={() => navigate("/Product")} active={location.pathname === "/Product"} />
+            <MenuItem icon={<FaClipboardList />} text="ทำใบเสร็จ" onClick={() => navigate("/CreateInvoice")} active={location.pathname === "/CreateInvoice"} />
           </div>
           <MenuItem icon={<FaSignOutAlt />} text="ออกจากระบบ" onClick={() => navigate("/Enter")} />
         </div>
@@ -191,8 +198,8 @@ const UiCompany = () => {
   );
 };
 
-// Menu item style (reuse from Product.jsx)
-const MenuItem = ({ icon, text, onClick }) => (
+// ✅ MenuItem รองรับ active
+const MenuItem = ({ icon, text, onClick, active }) => (
   <div
     onClick={onClick}
     style={{
@@ -200,9 +207,11 @@ const MenuItem = ({ icon, text, onClick }) => (
       display: "flex",
       alignItems: "center",
       gap: "0.8rem",
-      color: "#000",
+      color: active ? "white" : "#000",
+      backgroundColor: active ? "#6666cc" : "transparent",
       cursor: "pointer",
       fontSize: "14px",
+      fontWeight: active ? "bold" : "normal",
     }}
   >
     <div style={{ fontSize: "18px" }}>{icon}</div>
@@ -210,7 +219,6 @@ const MenuItem = ({ icon, text, onClick }) => (
   </div>
 );
 
-// Styles
 const labelStyle = {
   display: "block",
   fontSize: "0.9rem",

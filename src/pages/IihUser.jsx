@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { FaBars, FaUser, FaHome, FaUserCircle, FaSignOutAlt, FaPrint } from "react-icons/fa";
 import { FiFileText } from "react-icons/fi";
 
 const IihUser = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(true);
   const [receipts, setReceipts] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -13,9 +14,10 @@ const IihUser = () => {
     const invoices = JSON.parse(localStorage.getItem("buyerInvoices")) || [];
     const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
 
-    const filteredReceipts = invoices.filter((invoice) =>
-      invoice.buyer.firstName === currentUser.firstName &&
-      invoice.buyer.lastName === currentUser.lastName
+    const filteredReceipts = invoices.filter(
+      (invoice) =>
+        invoice.buyer.firstName === currentUser.firstName &&
+        invoice.buyer.lastName === currentUser.lastName
     );
 
     setReceipts(filteredReceipts);
@@ -23,12 +25,18 @@ const IihUser = () => {
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
-  const formatCurrency = (amount) => Number(amount).toLocaleString("th-TH", { minimumFractionDigits: 2 });
+  const formatCurrency = (amount) =>
+    Number(amount).toLocaleString("th-TH", { minimumFractionDigits: 2 });
 
   const formatDateTime = (iso) => {
     const date = new Date(iso);
-    const options = { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" };
-    return date.toLocaleString("th-TH", options);
+    return date.toLocaleString("th-TH", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   const toggleView = (index) => setSelected(selected === index ? null : index);
@@ -53,8 +61,20 @@ const IihUser = () => {
     win.print();
   };
 
-  const MenuItem = ({ icon, text, onClick }) => (
-    <div onClick={onClick} style={{ padding: "0.8rem 1rem", display: "flex", alignItems: "center", gap: "0.5rem", color: "#000", cursor: "pointer" }}>
+  const MenuItem = ({ icon, text, onClick, active }) => (
+    <div
+      onClick={onClick}
+      style={{
+        padding: "0.8rem 1rem",
+        display: "flex",
+        alignItems: "center",
+        gap: "0.5rem",
+        color: active ? "white" : "#000",
+        cursor: "pointer",
+        backgroundColor: active ? "#6666cc" : "transparent",
+        fontWeight: active ? "bold" : "normal",
+      }}
+    >
       {icon} {text}
     </div>
   );
@@ -65,30 +85,74 @@ const IihUser = () => {
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#e6f0ff", fontFamily: "sans-serif" }}>
-      {/* Header */}
-      <div style={{ backgroundColor: "#1a1aa6", height: `${headerHeight}px`, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 1rem" }}>
+      <div
+        style={{
+          backgroundColor: "#1a1aa6",
+          height: `${headerHeight}px`,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "0 1rem",
+        }}
+      >
         <div onClick={toggleMenu} style={{ cursor: "pointer", color: "white" }}>
           <FaBars size={20} />
         </div>
-        <h1 style={{ color: "white", fontFamily: "monospace", letterSpacing: "2px", fontSize: "20px" }}>
+        <h1
+          style={{
+            color: "white",
+            fontFamily: "monospace",
+            letterSpacing: "2px",
+            fontSize: "20px",
+          }}
+        >
           TAX INVOICE
         </h1>
-        <FaUser style={{ color: "white", fontSize: "20px", cursor: "pointer" }} onClick={() => navigate("/UiUser")} />
+        <FaUser
+          style={{ color: "white", fontSize: "20px", cursor: "pointer" }}
+          onClick={() => navigate("/UiUser")}
+        />
       </div>
 
-      {/* Sidebar */}
       {menuOpen && (
-        <div style={{ position: "fixed", top: `${headerHeight}px`, left: 0, bottom: 0, width: "200px", backgroundColor: "#9999ff", display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "1rem 0" }}>
+        <div
+          style={{
+            position: "fixed",
+            top: `${headerHeight}px`,
+            left: 0,
+            bottom: 0,
+            width: "200px",
+            backgroundColor: "#9999ff",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            padding: "1rem 0",
+          }}
+        >
           <div>
-            <MenuItem icon={<FaHome />} text="หน้าแรก" onClick={() => navigate("/MainUser")} />
-            <MenuItem icon={<FiFileText />} text="ประวัติการออกใบกำกับภาษี" onClick={() => navigate("/IihUser")} />
-            <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiUser")} />
+            <MenuItem
+              icon={<FaHome />}
+              text="หน้าแรก"
+              onClick={() => navigate("/MainUser")}
+              active={location.pathname === "/MainUser"}
+            />
+            <MenuItem
+              icon={<FiFileText />}
+              text="ประวัติการออกใบกำกับภาษี"
+              onClick={() => navigate("/IihUser")}
+              active={location.pathname === "/IihUser"}
+            />
+            <MenuItem
+              icon={<FaUserCircle />}
+              text="ข้อมูลผู้ใช้งาน"
+              onClick={() => navigate("/UiUser")}
+              active={location.pathname === "/UiUser"}
+            />
           </div>
           <MenuItem icon={<FaSignOutAlt />} text="ออกจากระบบ" onClick={() => navigate("/Enter")} />
         </div>
       )}
 
-      {/* Content */}
       <div style={{ marginLeft: menuOpen ? "200px" : "0", padding: "2rem" }}>
         {receipts.length === 0 ? (
           <div style={{ textAlign: "center", fontSize: "18px", color: "#666" }}>
@@ -97,14 +161,32 @@ const IihUser = () => {
         ) : (
           receipts.map((receipt, index) => (
             <div key={index}>
-              <div style={{ backgroundColor: "#e6f2ff", padding: "1rem", borderRadius: "10px", marginBottom: "1rem", boxShadow: "0 0 6px rgba(0,0,0,0.1)" }}>
+              <div
+                style={{
+                  backgroundColor: "#e6f2ff",
+                  padding: "1rem",
+                  borderRadius: "10px",
+                  marginBottom: "1rem",
+                  boxShadow: "0 0 6px rgba(0,0,0,0.1)",
+                }}
+              >
                 <div style={{ fontWeight: "bold" }}>ประวัติรายการที่ {index + 1}</div>
                 <div>วันที่: {formatDateTime(receipt.date)}</div>
                 <div>ผู้ขาย: {receipt.seller.firstName} {receipt.seller.lastName}</div>
                 <div>บริษัท: {receipt.seller.companyName}</div>
                 <div>เลขผู้เสียภาษี: {receipt.seller.taxId}</div>
                 <div>ที่อยู่: {receipt.seller.address}</div>
-                <button style={{ marginTop: "0.5rem", padding: "0.5rem 1rem", backgroundColor: "#4da6ff", color: "white", border: "none", borderRadius: "5px" }} onClick={() => toggleView(index)}>
+                <button
+                  style={{
+                    marginTop: "0.5rem",
+                    padding: "0.5rem 1rem",
+                    backgroundColor: "#4da6ff",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "5px",
+                  }}
+                  onClick={() => toggleView(index)}
+                >
                   {selected === index ? "ซ่อนใบกำกับภาษี" : "ดูใบกำกับภาษี"}
                 </button>
               </div>
@@ -112,14 +194,37 @@ const IihUser = () => {
               {selected === index && (
                 <div style={{ marginBottom: "3rem" }}>
                   <div style={{ textAlign: "right", marginBottom: "1rem" }}>
-                    <button onClick={printInvoice} style={{ backgroundColor: "#4da6ff", border: "none", color: "white", padding: "0.5rem 1rem", borderRadius: "5px", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <button
+                      onClick={printInvoice}
+                      style={{
+                        backgroundColor: "#4da6ff",
+                        border: "none",
+                        color: "white",
+                        padding: "0.5rem 1rem",
+                        borderRadius: "5px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                      }}
+                    >
                       พิมพ์ใบกำกับภาษี <FaPrint />
                     </button>
                   </div>
-                  <div id="invoice-print" style={{ width: "21cm", minHeight: "29.7cm", backgroundColor: "white", padding: "2rem", borderRadius: "15px", boxShadow: "0 0 12px rgba(0,0,0,0.1)", margin: "auto" }}>
+                  <div
+                    id="invoice-print"
+                    style={{
+                      width: "21cm",
+                      minHeight: "29.7cm",
+                      backgroundColor: "white",
+                      padding: "2rem",
+                      borderRadius: "15px",
+                      boxShadow: "0 0 12px rgba(0,0,0,0.1)",
+                      margin: "auto",
+                    }}
+                  >
                     <h2 style={{ color: "#1a1aa6" }}>ใบเสร็จรับเงิน/ใบกำกับภาษี</h2>
                     <div style={{ fontSize: "14px", marginBottom: "1rem" }}>
-                      วันที่ {formatDateTime(receipt.date)} เล่มที่ 001 เลขที่ {String(index + 1).padStart(3, '0')}
+                      วันที่ {formatDateTime(receipt.date)} เล่มที่ 001 เลขที่ {String(index + 1).padStart(3, "0")}
                     </div>
                     <div style={{ fontSize: "14px", marginBottom: "1.5rem" }}>
                       <div style={{ marginBottom: "0.5rem" }}>

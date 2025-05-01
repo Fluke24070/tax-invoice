@@ -134,11 +134,11 @@ const Editproduct = () => {
           }}
         >
           <div>
-            <MenuItem icon={<FaHome />} text="หน้าแรก" onClick={() => navigate("/MainCompany")} />
-            <MenuItem icon={<FiFileText />} text="ประวัติการทำรายการ" onClick={() => navigate("/IihCompany")} />
-            <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiCompany")} />
-            <MenuItem icon={<FaShoppingCart />} text="สินค้า" onClick={() => navigate("/Product")} />
-            <MenuItem icon={<FaClipboardList />} text="ทำใบเสร็จ" onClick={() => navigate("/CreateInvoice")} />
+            <MenuItem icon={<FaHome />} text="ใบกำกับภาษี" onClick={() => navigate("/MainCompany")} active={location.pathname === "/MainCompany"} />
+            <MenuItem icon={<FiFileText />} text="ประวัติการทำรายการ" onClick={() => navigate("/IihCompany")} active={location.pathname === "/IihCompany"} />
+            <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiCompany")} active={location.pathname === "/UiCompany"} />
+            <MenuItem icon={<FaShoppingCart />} text="สินค้า" onClick={() => navigate("/Product")} active={location.pathname === "/Product"} />
+            <MenuItem icon={<FaClipboardList />} text="ทำใบเสร็จ" onClick={() => navigate("/CreateInvoice")} active={location.pathname === "/CreateInvoice"} />
           </div>
           <MenuItem icon={<FaSignOutAlt />} text="ออกจากระบบ" onClick={() => navigate("/Enter")} />
         </div>
@@ -229,7 +229,8 @@ const Editproduct = () => {
   );
 };
 
-const MenuItem = ({ icon, text, onClick }) => (
+// ✅ รองรับ active สำหรับเมนู
+const MenuItem = ({ icon, text, onClick, active }) => (
   <div
     onClick={onClick}
     style={{
@@ -237,9 +238,11 @@ const MenuItem = ({ icon, text, onClick }) => (
       display: "flex",
       alignItems: "center",
       gap: "0.8rem",
-      color: "#000",
+      color: active ? "white" : "#000",
+      backgroundColor: active ? "#6666cc" : "transparent",
       cursor: "pointer",
       fontSize: "14px",
+      fontWeight: active ? "bold" : "normal",
     }}
   >
     <div style={{ fontSize: "18px" }}>{icon}</div>

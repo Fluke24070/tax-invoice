@@ -1,16 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { FaBars, FaUser, FaHome, FaUserCircle, FaSignOutAlt } from "react-icons/fa";
 import { FiFileText, FiPrinter } from "react-icons/fi";
 import { QRCodeSVG } from "qrcode.react";
 
 const MainUser = () => {
   const navigate = useNavigate();
+  const location = useLocation(); // ✅ ใช้เพื่อตรวจ path ปัจจุบัน
   const [menuOpen, setMenuOpen] = useState(true);
   const [userData, setUserData] = useState(null);
   const qrRef = useRef();
-
-  const toggleMenu = () => setMenuOpen(!menuOpen);
   const headerHeight = 64;
 
   useEffect(() => {
@@ -19,6 +18,8 @@ const MainUser = () => {
       setUserData(JSON.parse(storedUser));
     }
   }, []);
+
+  const toggleMenu = () => setMenuOpen(!menuOpen);
 
   const downloadQRCode = () => {
     const svg = qrRef.current.querySelector("svg");
@@ -48,15 +49,11 @@ const MainUser = () => {
     img.src = url;
   };
 
-  // เอาเฉพาะเบอร์มือถือ และ เลขประจำตัวผู้เสียภาษี
   const qrContent = userData
-    ? JSON.stringify({
-        phone: userData.phone,
-        taxId: userData.taxId,
-      })
+    ? JSON.stringify({ phone: userData.phone, taxId: userData.taxId })
     : "";
 
-  const MenuItem = ({ icon, text, onClick }) => (
+  const MenuItem = ({ icon, text, onClick, active }) => (
     <div
       onClick={onClick}
       style={{
@@ -64,8 +61,10 @@ const MainUser = () => {
         display: "flex",
         alignItems: "center",
         gap: "0.5rem",
-        color: "#000",
         cursor: "pointer",
+        backgroundColor: active ? "#6666cc" : "transparent",
+        color: active ? "white" : "#000",
+        fontWeight: active ? "bold" : "normal",
       }}
     >
       {icon} {text}
@@ -75,125 +74,93 @@ const MainUser = () => {
   return (
     <div style={{ height: "100vh", backgroundColor: "#e6f0ff" }}>
       {/* Header */}
-      <div
-        style={{
-          backgroundColor: "#1a1aa6",
-          height: `${headerHeight}px`,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "0 1rem",
-        }}
-      >
+      <div style={{
+        backgroundColor: "#1a1aa6",
+        height: `${headerHeight}px`,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: "0 1rem",
+      }}>
         <div onClick={toggleMenu} style={{ cursor: "pointer", color: "white" }}>
           <FaBars size={20} />
         </div>
-        <h1
-          style={{
-            color: "white",
-            fontFamily: "monospace",
-            letterSpacing: "2px",
-            fontSize: "20px",
-          }}
-        >
+        <h1 style={{
+          color: "white",
+          fontFamily: "monospace",
+          letterSpacing: "2px",
+          fontSize: "20px",
+        }}>
           TAX INVOICE
         </h1>
-        <FaUser
-          style={{ color: "white", fontSize: "20px", cursor: "pointer" }}
-          onClick={() => navigate("/UiUser")}
-        />
+        <FaUser style={{ color: "white", fontSize: "20px", cursor: "pointer" }} onClick={() => navigate("/UiUser")} />
       </div>
 
       {/* Sidebar */}
       {menuOpen && (
-        <div
-          style={{
-            position: "fixed",
-            top: `${headerHeight}px`,
-            left: 0,
-            bottom: 0,
-            width: "200px",
-            backgroundColor: "#9999ff",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            padding: "1rem 0",
-          }}
-        >
+        <div style={{
+          position: "fixed",
+          top: `${headerHeight}px`,
+          left: 0,
+          bottom: 0,
+          width: "200px",
+          backgroundColor: "#9999ff",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          padding: "1rem 0",
+        }}>
           <div>
-            <MenuItem icon={<FaHome />} text="หน้าแรก" onClick={() => navigate("/MainUser")} />
-            <MenuItem icon={<FiFileText />} text="ประวัติการออกใบกำกับภาษี" onClick={() => navigate("/IihUser")} />
-            <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiUser")} />
+            <MenuItem icon={<FaHome />} text="หน้าแรก" onClick={() => navigate("/MainUser")} active={location.pathname === "/MainUser"} />
+            <MenuItem icon={<FiFileText />} text="ประวัติการออกใบกำกับภาษี" onClick={() => navigate("/IihUser")} active={location.pathname === "/IihUser"} />
+            <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiUser")} active={location.pathname === "/UiUser"} />
           </div>
           <MenuItem icon={<FaSignOutAlt />} text="ออกจากระบบ" onClick={() => navigate("/Enter")} />
         </div>
       )}
 
       {/* Main Content */}
-      <div
-        style={{
-          marginLeft: menuOpen ? "200px" : "0",
-          transition: "margin 0.3s",
+      <div style={{ marginLeft: menuOpen ? "200px" : "0", transition: "margin 0.3s", padding: "2rem" }}>
+        <div style={{
+          backgroundColor: "#9999ff",
+          borderRadius: "25px",
+          width: "360px",
+          margin: "60px auto",
           padding: "2rem",
-        }}
-      >
-        <div
-          style={{
-            backgroundColor: "#9999ff",
-            borderRadius: "25px",
-            width: "360px",
-            margin: "60px auto",
-            padding: "2rem",
-            textAlign: "center",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "20px",
-              padding: "0 10px",
-            }}
-          >
+          textAlign: "center",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+        }}>
+          <div style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "20px",
+            padding: "0 10px",
+          }}>
             <span style={{ fontWeight: "bold", fontSize: "20px" }}>นามบัตร</span>
-            <div
-              onClick={downloadQRCode}
-              style={{
-                backgroundColor: "#f5d0e0",
-                padding: "8px",
-                borderRadius: "50%",
-                cursor: "pointer",
-              }}
-            >
+            <div onClick={downloadQRCode} style={{
+              backgroundColor: "#f5d0e0",
+              padding: "8px",
+              borderRadius: "50%",
+              cursor: "pointer",
+            }}>
               <FiPrinter size={18} />
             </div>
           </div>
 
-          <div
-            ref={qrRef}
-            style={{
-              backgroundColor: "white",
-              padding: "15px",
-              borderRadius: "14px",
-              height: "260px",
-              width: "260px",
-              margin: "0 auto",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
+          <div ref={qrRef} style={{
+            backgroundColor: "white",
+            padding: "15px",
+            borderRadius: "14px",
+            height: "260px",
+            width: "260px",
+            margin: "0 auto",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}>
             {qrContent ? (
-              <QRCodeSVG
-                value={qrContent}
-                size={230}
-                level="H"
-                includeMargin={true}
-                bgColor="#ffffff"
-                fgColor="#000000"
-              />
+              <QRCodeSVG value={qrContent} size={230} level="H" includeMargin={true} />
             ) : (
               <p style={{ fontSize: "14px" }}>ไม่มีข้อมูล</p>
             )}

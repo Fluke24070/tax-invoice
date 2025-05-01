@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { FaBars, FaUser, FaHome, FaUserCircle, FaSignOutAlt } from "react-icons/fa";
 import { FiFileText } from "react-icons/fi";
 
 const UiUser = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(true);
+
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
   const [userData, setUserData] = useState({
@@ -45,7 +47,7 @@ const UiUser = () => {
   const handleSave = () => {
     localStorage.setItem("currentUser", JSON.stringify(userData));
 
-    // ✅ Update buyer in buyerInvoices too
+    // ✅ Update buyer info in buyerInvoices
     const buyerInvoices = JSON.parse(localStorage.getItem("buyerInvoices")) || [];
     const updatedInvoices = buyerInvoices.map((invoice) => ({
       ...invoice,
@@ -56,11 +58,11 @@ const UiUser = () => {
         companyName: userData.companyName,
         taxId: userData.taxId,
         address: userData.address,
-      }
+      },
     }));
     localStorage.setItem("buyerInvoices", JSON.stringify(updatedInvoices));
 
-    alert("บันทึกข้อมูลสำเร็จ และอัปเดตใบกำบักภาษีแล้ว!");
+    alert("บันทึกข้อมูลสำเร็จ และอัปเดตใบกำกับภาษีแล้ว!");
   };
 
   const headerHeight = 64;
@@ -72,7 +74,9 @@ const UiUser = () => {
         <div onClick={toggleMenu} style={{ cursor: "pointer", color: "white" }}>
           <FaBars size={20} />
         </div>
-        <h1 style={{ color: "white", fontFamily: "monospace", letterSpacing: "2px", fontSize: "20px" }}>TAX INVOICE</h1>
+        <h1 style={{ color: "white", fontFamily: "monospace", letterSpacing: "2px", fontSize: "20px" }}>
+          TAX INVOICE
+        </h1>
         <FaUser style={{ color: "white", fontSize: "20px", cursor: "pointer" }} onClick={() => navigate("/UiUser")} />
       </div>
 
@@ -80,9 +84,9 @@ const UiUser = () => {
       {menuOpen && (
         <div style={{ position: "fixed", top: `${headerHeight}px`, left: 0, bottom: 0, width: "200px", backgroundColor: "#9999ff", display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "1rem 0" }}>
           <div>
-            <MenuItem icon={<FaHome />} text="หน้าแรก" onClick={() => navigate("/MainUser")} />
-            <MenuItem icon={<FiFileText />} text="ประวัติการออกใบกำกับภาษี" onClick={() => navigate("/IihUser")} />
-            <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiUser")} />
+            <MenuItem icon={<FaHome />} text="หน้าแรก" onClick={() => navigate("/MainUser")} active={location.pathname === "/MainUser"} />
+            <MenuItem icon={<FiFileText />} text="ประวัติการออกใบกำกับภาษี" onClick={() => navigate("/IihUser")} active={location.pathname === "/IihUser"} />
+            <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiUser")} active={location.pathname === "/UiUser"} />
           </div>
           <MenuItem icon={<FaSignOutAlt />} text="ออกจากระบบ" onClick={() => navigate("/Enter")} />
         </div>
@@ -91,7 +95,6 @@ const UiUser = () => {
       {/* Main Content */}
       <div style={{ marginLeft: menuOpen ? "200px" : "0", transition: "margin 0.3s", padding: "2rem" }}>
         <div style={{ backgroundColor: "white", width: "90%", maxWidth: "500px", margin: "0 auto", padding: "60px 40px", borderRadius: "15px", boxShadow: "0 6px 12px rgba(0,0,0,0.1)" }}>
-          {/* First Name + Last Name */}
           <div style={{ display: "flex", gap: "10px", marginBottom: "14px" }}>
             <div style={{ flex: 1.0 }}>
               <label style={labelStyle}>ชื่อจริง</label>
@@ -103,15 +106,19 @@ const UiUser = () => {
             </div>
           </div>
 
-          {/* Other Fields */}
-          {[{ label: "เบอร์มือถือ", name: "phone" }, { label: "ชื่อบริษัท", name: "companyName" }, { label: "เลขประจำตัวผู้เสียภาษี", name: "taxId" }, { label: "รายละเอียดที่อยู่บริษัท", name: "address" }, { label: "สาขาสำนักงาน", name: "branch" }].map((field) => (
+          {[
+            { label: "เบอร์มือถือ", name: "phone" },
+            { label: "ชื่อบริษัท", name: "companyName" },
+            { label: "เลขประจำตัวผู้เสียภาษี", name: "taxId" },
+            { label: "รายละเอียดที่อยู่บริษัท", name: "address" },
+            { label: "สาขาสำนักงาน", name: "branch" },
+          ].map((field) => (
             <div key={field.name} style={{ marginBottom: "14px" }}>
               <label style={labelStyle}>{field.label}</label>
               <input name={field.name} value={userData[field.name]} onChange={handleChange} placeholder={field.label} style={inputStyle} />
             </div>
           ))}
 
-          {/* Save Button */}
           <div style={{ textAlign: "center", marginTop: "30px" }}>
             <button onClick={handleSave} style={{ backgroundColor: "#4cd964", color: "white", border: "none", padding: "10px 40px", borderRadius: "6px", fontSize: "1rem", fontWeight: "bold", cursor: "pointer" }}>
               บันทึก
@@ -123,9 +130,24 @@ const UiUser = () => {
   );
 };
 
-const MenuItem = ({ icon, text, onClick }) => (
-  <div onClick={onClick} style={{ padding: "0.8rem 1rem", display: "flex", alignItems: "center", gap: "0.5rem", color: "#000", cursor: "pointer" }}>
-    {icon} {text}
+// ✅ MenuItem รองรับ active
+const MenuItem = ({ icon, text, onClick, active }) => (
+  <div
+    onClick={onClick}
+    style={{
+      padding: "0.8rem 1rem",
+      display: "flex",
+      alignItems: "center",
+      gap: "0.5rem",
+      cursor: "pointer",
+      fontSize: "14px",
+      backgroundColor: active ? "#6666cc" : "transparent",
+      color: active ? "white" : "#000",
+      fontWeight: active ? "bold" : "normal",
+    }}
+  >
+    {icon}
+    {text}
   </div>
 );
 
