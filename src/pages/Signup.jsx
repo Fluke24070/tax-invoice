@@ -80,17 +80,33 @@ const Signup = () => {
     return true;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-
-    const allUsers = JSON.parse(localStorage.getItem("registeredUsers")) || [];
-    allUsers.push(formData);
-    localStorage.setItem("registeredUsers", JSON.stringify(allUsers));
-
-    console.log("✅ Data saved:", formData);
-    navigate("/success");
+  
+    try {
+      const response = await fetch("http://localhost:3000/create_user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        console.log("Signup successful:", data);
+        navigate("/success");
+      } else {
+        alert(data.message || "เกิดข้อผิดพลาด");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้");
+    }
   };
+  
 
   return (
     <div style={{ backgroundColor: "#e6f0ff", minHeight: "100vh" }}>

@@ -6,37 +6,52 @@ const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!username || !password) {
       alert("กรุณากรอกชื่อผู้ใช้และรหัสผ่าน");
       return;
     }
+  
+    try {
+      const response = await fetch("http://localhost:3000/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: username,
+          password: password,
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        // บันทึกข้อมูลผู้ใช้ที่ล็อกอินไว้
+        localStorage.setItem("currentUser", JSON.stringify(data.user));
+  
+        alert("เข้าสู่ระบบสำเร็จ!");
 
-    const users = JSON.parse(localStorage.getItem("registeredUsers")) || [];
-
-    const foundUser = users.find(
-      (user) => user.email === username && user.password === password
-    );
-
-    if (!foundUser) {
-      alert("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
-      return;
-    }
-
-    // บันทึกผู้ใช้งานที่เข้าสู่ระบบไว้ใน localStorage
-    localStorage.setItem("currentUser", JSON.stringify(foundUser));
-
-    alert("เข้าสู่ระบบสำเร็จ!");
-
-    // ✅ เงื่อนไขเปลี่ยนเส้นทางตาม Role
-    if (foundUser.accountType === "บุคคล") {
-      navigate("/mainuser");
-    } else if (foundUser.accountType === "บริษัท") {
-      navigate("/maincompany");
-    } else {
-      navigate("/"); // fallback
+          
+        if (data.user.accountType === "บุคคล") {
+          navigate("/UiUser", {
+            state: { email: data.user.email },
+          });
+        } else if (data.user.accountType === "บริษัท") {
+          navigate("/maincompany");
+        } else {
+          navigate("/");
+        }
+        
+      } else {
+        alert(data.message || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้");
     }
   };
+  
 
   return (
     <div style={{ backgroundColor: "#e6f0ff", height: "100vh" }}>

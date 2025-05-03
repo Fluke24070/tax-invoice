@@ -3,11 +3,15 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { FaBars, FaUser, FaHome, FaUserCircle, FaSignOutAlt } from "react-icons/fa";
 import { FiFileText } from "react-icons/fi";
 
+
 const UiUser = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(true);
+  const email = location.state?.email || localStorage.getItem("currentEmail");
 
+ 
+localStorage.setItem("currentEmail", email);
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
   const [userData, setUserData] = useState({
@@ -19,22 +23,37 @@ const UiUser = () => {
     address: "",
     branch: "",
   });
+  
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("currentUser");
-    if (storedUser) {
-      const parsed = JSON.parse(storedUser);
-      setUserData({
-        firstName: parsed.firstName || "",
-        lastName: parsed.lastName || "",
-        phone: parsed.phone || "",
-        companyName: parsed.companyName || "",
-        taxId: parsed.taxId || "",
-        address: parsed.address || "",
-        branch: parsed.branch || "",
-      });
-    }
-  }, []);
+    const fetchUserData = async () => {
+      if (!email) return;
+  
+      try {
+        const response = await fetch(`http://localhost:3000/profile_get/${email}`);
+        const result = await response.json();
+  
+        if (response.ok) {
+          const data = result.data.card[0];
+          setUserData({
+            firstName: data.firstName || "",
+            lastName: data.lastName || "",
+            phone: data.phone || "",
+            companyName: data.companyName || "",
+            taxId: data.taxId || "",
+            address: data.address || "",
+            branch: data.branch || "",
+          });
+        } else {
+          alert("ไม่สามารถโหลดข้อมูลผู้ใช้ได้");
+        }
+      } catch (err) {
+        console.error("เกิดข้อผิดพลาด:", err);
+      }
+    };
+  
+    fetchUserData();
+  }, [email]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -44,26 +63,29 @@ const UiUser = () => {
     }));
   };
 
-  const handleSave = () => {
-    localStorage.setItem("currentUser", JSON.stringify(userData));
-
-    // ✅ Update buyer info in buyerInvoices
-    const buyerInvoices = JSON.parse(localStorage.getItem("buyerInvoices")) || [];
-    const updatedInvoices = buyerInvoices.map((invoice) => ({
-      ...invoice,
-      buyer: {
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        phone: userData.phone,
-        companyName: userData.companyName,
-        taxId: userData.taxId,
-        address: userData.address,
-      },
-    }));
-    localStorage.setItem("buyerInvoices", JSON.stringify(updatedInvoices));
-
-    alert("บันทึกข้อมูลสำเร็จ และอัปเดตใบกำกับภาษีแล้ว!");
+  const handleSave = async () => {
+    try {
+      const response = await fetch(`http://localhost:3000/users/${email}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      });
+  
+      const result = await response.json();
+  
+      if (response.ok) {
+        alert("บันทึกข้อมูลลงระบบสำเร็จแล้ว!");
+      } else {
+        alert("เกิดข้อผิดพลาด: " + result.message);
+      }
+    } catch (error) {
+      console.error("เกิดข้อผิดพลาดในการส่งข้อมูล:", error);
+      alert("เกิดข้อผิดพลาดในการเชื่อมต่อกับระบบ");
+    }
   };
+  
 
   const headerHeight = 64;
 
