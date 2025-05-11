@@ -22,18 +22,31 @@ const CreateInvoice = () => {
   const receiptRefs = useRef([]);
 
   useEffect(() => {
-    const storedReceipts = JSON.parse(localStorage.getItem("receiptHistory")) || [];
-    const user = JSON.parse(localStorage.getItem("currentUser"));
-    if (user) {
-      const userReceipts = storedReceipts.filter(
-        (r) => r.companyName === user.companyName
-      );
-      setReceipts(userReceipts);
-      setCurrentUser(user);
-    } else {
-      setReceipts([]);
-    }
+    const fetchReceipts = async () => {
+      const user = JSON.parse(localStorage.getItem("currentUser"));
+      if (!user) return;
+  
+      try {
+        const res = await fetch(`http://localhost:3000/receist_get_com/${encodeURIComponent(user.companyName)}`);
+        const data = await res.json();
+  
+        const formatted = data.data.product.map((receipt) => ({
+          ...receipt,
+          items: JSON.parse(receipt.item),
+          isInvoiced: receipt.status,
+        }));
+  
+        setReceipts(formatted);
+        setCurrentUser(user);
+      } catch (error) {
+        console.error("โหลดใบเสร็จล้มเหลว:", error);
+      }
+    };
+  
+    fetchReceipts();
   }, []);
+  
+  
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
@@ -42,17 +55,34 @@ const CreateInvoice = () => {
     return d.toLocaleDateString("th-TH") + " " + d.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
   };
 
-  const handleDeleteReceipt = (receiptToDelete) => {
+  const handleDeleteReceipt = async (receiptToDelete) => {
     const confirmed = window.confirm("คุณแน่ใจหรือไม่ว่าต้องการลบใบเสร็จนี้?");
     if (!confirmed) return;
-
-    const updatedReceipts = receipts.filter(
-      (r) => JSON.stringify(r) !== JSON.stringify(receiptToDelete)
-    );
-    localStorage.setItem("receiptHistory", JSON.stringify(updatedReceipts));
-    setReceipts(updatedReceipts);
-    setSelectedReceipt(null);
+  
+    try {
+      const res = await fetch("http://localhost:3000/delete_receipt", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ re_id: receiptToDelete.re_id })
+      });
+  
+      const result = await res.json();
+      if (result.status === 200) {
+        const updatedReceipts = receipts.filter((r) => r.re_id !== receiptToDelete.re_id);
+        setReceipts(updatedReceipts);
+        setSelectedReceipt(null);
+        alert("ลบสำเร็จแล้ว");
+      } else {
+        alert("เกิดข้อผิดพลาดในการลบ");
+      }
+    } catch (error) {
+      console.error("ลบใบเสร็จล้มเหลว:", error);
+      alert("เกิดข้อผิดพลาด");
+    }
   };
+  
 
   const filteredReceipts = receipts.filter((receipt) => {
     if (filterType === "invoiced") return receipt.isInvoiced;

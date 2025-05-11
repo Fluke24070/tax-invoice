@@ -10,18 +10,44 @@ const Product = () => {
   const [menuOpen, setMenuOpen] = useState(true);
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-
   const toggleMenu = () => setMenuOpen(!menuOpen);
+  const [companyName, setCompanyName] = useState("");
 
   useEffect(() => {
-    const storedProducts = JSON.parse(localStorage.getItem("products")) || [];
-    const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
-    const filteredProducts = storedProducts.filter(
-      (product) => product.companyName === currentUser.companyName
-    );
-    setProducts(filteredProducts);
+    const storedCompanyName = localStorage.getItem("companyName");
+    if (storedCompanyName) {
+      setCompanyName(storedCompanyName);
+    } else {
+      console.warn("ไม่พบ companyName ใน localStorage");
+    }
   }, []);
-
+  
+  useEffect(() => {
+    console.log("Current companyName:", companyName);
+    const fetchProducts = async () => {
+      if (companyName) { // ตรวจสอบให้แน่ใจว่า companyName มีค่า
+        try {
+          const res = await fetch(`http://localhost:3000/product_get_com/${companyName}`);
+          const data = await res.json();
+          if (data.status === 200) {
+            setProducts(data.data.product); // เก็บข้อมูลสินค้าที่ได้จาก API
+          } else {
+            console.error('Failed to fetch products:', data.message);
+          }
+        } catch (error) {
+          console.error('Error fetching products:', error);
+        }
+      } else {
+        console.warn('Company name is not available');
+      }
+    };
+  
+    // เรียกใช้ฟังก์ชันหลังจากที่ companyName มีค่าแล้ว
+    if (companyName) {
+      fetchProducts();
+    }
+  }, [companyName]);  // จะเรียกเมื่อ companyName เปลี่ยน
+  
   const handleAddProduct = () => navigate("/Addproduct");
 
   const filteredProducts = products.filter((product) =>
@@ -99,7 +125,7 @@ const Product = () => {
         {filteredProducts.map((product) => (
           <div
             key={product.id}
-            onClick={() => navigate("/Editproduct", { state: { productId: product.id } })}
+            onClick={() => navigate(`/Editproduct/${product.id}`)}
             style={{ backgroundColor: "#fff", border: "2px solid #1a1aa6", padding: "0.5rem", textAlign: "center", borderRadius: "6px", cursor: "pointer", transition: "transform 0.2s" }}
             onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.02)")}
             onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}

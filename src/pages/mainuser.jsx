@@ -6,16 +6,30 @@ import { QRCodeSVG } from "qrcode.react";
 
 const MainUser = () => {
   const navigate = useNavigate();
-  const location = useLocation(); // ✅ ใช้เพื่อตรวจ path ปัจจุบัน
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(true);
   const [userData, setUserData] = useState(null);
   const qrRef = useRef();
   const headerHeight = 64;
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("currentUser");
-    if (storedUser) {
-      setUserData(JSON.parse(storedUser));
+    const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
+    const email = currentUser.email;
+
+    if (email) {
+      fetch("http://localhost:3000/get_users")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.status === 200) {
+            const foundUser = data.data.users.find((u) => u.email === email);
+            if (foundUser) {
+              setUserData(foundUser);
+            } else {
+              console.warn("ไม่พบผู้ใช้ที่ตรงกับ email:", email);
+            }
+          }
+        })
+        .catch((err) => console.error("API Error:", err));
     }
   }, []);
 

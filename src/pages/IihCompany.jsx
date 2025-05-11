@@ -8,20 +8,45 @@ import { FiFileText } from "react-icons/fi";
 
 const IihCompany = () => {
   const navigate = useNavigate();
-  const location = useLocation(); // ✅ ใช้ตรวจ path ปัจจุบัน
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(true);
   const [receipts, setReceipts] = useState([]);
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
-    const invoices = JSON.parse(localStorage.getItem("companyInvoices")) || [];
+  const fetchReceipts = async () => {
     const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
-    const filteredReceipts = invoices.filter((invoice) =>
-      invoice.seller.firstName === currentUser.firstName &&
-      invoice.seller.lastName === currentUser.lastName
-    );
-    setReceipts(filteredReceipts);
-  }, []);
+    console.log("✅ currentUser:", currentUser);
+
+    if (!currentUser.companyName) return;
+
+    try {
+      const url = `http://localhost:3000/invoice_get_com/${encodeURIComponent(currentUser.companyName)}`;
+      console.log("📡 Fetching URL:", url);
+
+      const res = await fetch(url);
+      const json = await res.json();
+      console.log("📦 API Response:", json);
+
+      const data = json.data?.product || [];
+
+      const parsed = data.map((row) => ({
+        ...row,
+        seller: typeof row.seller === "string" ? JSON.parse(row.seller) : row.seller,
+        buyer: typeof row.buyer === "string" ? JSON.parse(row.buyer) : row.buyer,
+        item: typeof row.item === "string" ? JSON.parse(row.item) : row.item,
+      }));
+
+      console.log("✅ Final Parsed Receipts:", parsed);
+      setReceipts(parsed);
+    } catch (err) {
+      console.error("❌ Fetch error:", err);
+    }
+  };
+
+  fetchReceipts();
+}, []);
+
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
   const toggleView = (index) => setSelected(selected === index ? null : index);
@@ -197,7 +222,7 @@ const IihCompany = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {receipt.items.map((item, idx) => (
+                        {receipt.item.map((item, idx) => (
                           <tr key={idx}>
                             <td style={tdStyle}>{idx + 1}</td>
                             <td style={tdStyle}>{item.name}</td>
@@ -212,7 +237,7 @@ const IihCompany = () => {
                     <div style={{ marginTop: "1rem", fontSize: "14px", textAlign: "right" }}>
                       <div>มูลค่าก่อนเสียภาษี {formatCurrency(receipt.total)}</div>
                       <div>ภาษีมูลค่าเพิ่ม (VAT) {formatCurrency(receipt.vat)}</div>
-                      <div style={{ fontWeight: "bold" }}>ยอดรวม {formatCurrency(receipt.total + receipt.vat)}</div>
+                      <div style={{ fontWeight: "bold" }}>ยอดรวม {formatCurrency(receipt.grand_total)}</div>
                     </div>
                   </div>
                 </div>

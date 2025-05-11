@@ -110,7 +110,7 @@ localStorage.setItem("currentEmail", email);
             <MenuItem icon={<FiFileText />} text="ประวัติการออกใบกำกับภาษี" onClick={() => navigate("/IihUser")} active={location.pathname === "/IihUser"} />
             <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiUser")} active={location.pathname === "/UiUser"} />
           </div>
-          <MenuItem icon={<FaSignOutAlt />} text="ออกจากระบบ" onClick={() => navigate("/Enter")} />
+          <MenuItem icon={<FaSignOutAlt />}text="ออกจากระบบ"onClick={() => {localStorage.clear();navigate("/Enter");}}/>
         </div>
       )}
 

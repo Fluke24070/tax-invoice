@@ -11,16 +11,23 @@ const IihUser = () => {
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
-    const invoices = JSON.parse(localStorage.getItem("buyerInvoices")) || [];
     const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
+    const email = currentUser.email;
 
-    const filteredReceipts = invoices.filter(
-      (invoice) =>
-        invoice.buyer.firstName === currentUser.firstName &&
-        invoice.buyer.lastName === currentUser.lastName
-    );
-
-    setReceipts(filteredReceipts);
+    if (email) {
+      fetch(`http://localhost:3000/invoice_get_email/${email}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.status === 200) {
+            setReceipts(data.data.product);
+          } else {
+            console.error("ไม่สามารถดึงข้อมูลใบกำกับภาษีได้");
+          }
+        })
+        .catch((err) => {
+          console.error("เกิดข้อผิดพลาดขณะเชื่อมต่อ API", err);
+        });
+    }
   }, []);
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
@@ -254,7 +261,7 @@ const IihUser = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {receipt.items.map((item, idx) => (
+                        {receipt.item.map((item, idx) => (
                           <tr key={idx}>
                             <td style={tdStyle}>{idx + 1}</td>
                             <td style={tdStyle}>{item.name}</td>

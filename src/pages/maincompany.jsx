@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import {
-  FaBars, FaUser, FaHome, FaUserCircle,
-  FaSignOutAlt, FaShoppingCart, FaClipboardList
-} from "react-icons/fa";
+import {FaBars, FaUser, FaHome, FaUserCircle,FaSignOutAlt, FaShoppingCart, FaClipboardList} from "react-icons/fa";
 import { FiFileText } from "react-icons/fi";
 import { Html5Qrcode } from "html5-qrcode";
 
@@ -20,21 +17,26 @@ const MainCompany = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef(null);
 
+  // Fetch users from API and ensure registeredUsers is an array
   useEffect(() => {
-    const stored = localStorage.getItem("registeredUsers");
-    if (stored) setRegisteredUsers(JSON.parse(stored));
+    fetch("http://localhost:3000/get_users")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.data && Array.isArray(data.data.users)) {
+          setRegisteredUsers(data.data.users); // <-- Correct access
+        } else {
+          console.error("Fetched data is not an array:", data);
+        }
+      })
+      .catch((err) => console.error("Error fetching registered users:", err));
   }, []);
 
-  const toggleMenu = () => setMenuOpen(!menuOpen);
-
-  const handleInputChange = (e) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-
-    if (value.trim() !== "") {
+  useEffect(() => {
+    // When searchTerm changes, filter the users
+    if (searchTerm.trim() !== "") {
       const filtered = registeredUsers.filter(user =>
         Object.values(user).some(val =>
-          typeof val === "string" && val.toLowerCase().includes(value.toLowerCase())
+          typeof val === "string" && val.toLowerCase().includes(searchTerm.toLowerCase())
         )
       );
       setFilteredSuggestions(filtered);
@@ -43,13 +45,18 @@ const MainCompany = () => {
       setFilteredSuggestions([]);
       setShowSuggestions(false);
     }
+  }, [searchTerm, registeredUsers]); // Re-run whenever searchTerm or registeredUsers changes
+
+  const toggleMenu = () => setMenuOpen(!menuOpen);
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
   };
 
   const handleSuggestionClick = (user) => {
     setSearchTerm(user.phone || user.email || "");
     setResults(user);
     setShowSuggestions(false);
-    localStorage.setItem("currentBuyer", JSON.stringify(user));
   };
 
   const handleSearch = () => {
@@ -59,18 +66,18 @@ const MainCompany = () => {
       )
     );
     setResults(found || null);
-    if (found) localStorage.setItem("currentBuyer", JSON.stringify(found));
   };
 
   const handleScanResult = (scannedData) => {
     try {
       const parsed = JSON.parse(scannedData);
       if (parsed.phone && parsed.taxId) {
-        const found = registeredUsers.find(user => user.phone === parsed.phone && user.taxId === parsed.taxId);
+        const found = registeredUsers.find(user =>
+          user.phone === parsed.phone && user.taxId === parsed.taxId
+        );
         if (found) {
           setResults(found);
           setSearchTerm(found.phone);
-          localStorage.setItem("currentBuyer", JSON.stringify(found));
         } else {
           alert("ไม่พบข้อมูลลูกค้าในระบบ");
           setResults(null);
@@ -193,7 +200,7 @@ const MainCompany = () => {
             <input value={results.branch || ""} readOnly placeholder="สาขา" style={inputStyle} />
             <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1rem" }}>
               <button style={{ backgroundColor: "#ff4d4d", color: "#fff", padding: "0.5rem 1rem", border: "none", borderRadius: "5px" }}>ยกเลิก</button>
-              <button onClick={() => navigate("/Invoice")} style={{ backgroundColor: "#4da6ff", color: "#fff", padding: "0.5rem 1rem", border: "none", borderRadius: "5px", cursor: "pointer" }}>ทำใบกำกับ</button>
+              <button onClick={() =>navigate("/Invoice", {state: { buyer: results }})}style={{backgroundColor: "#4da6ff",color: "#fff",padding: "0.5rem 1rem",border: "none",borderRadius: "5px",cursor: "pointer",}}>ทำใบกำกับ</button>
             </div>
           </div>
         )}

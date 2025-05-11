@@ -15,6 +15,7 @@ const UiCompany = () => {
   const location = useLocation(); // ✅ ใช้ตรวจ path ปัจจุบัน
   const headerHeight = 64;
   const [menuOpen, setMenuOpen] = useState(true);
+  const email = location.state?.email || localStorage.getItem("currentEmail");
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
@@ -29,20 +30,35 @@ const UiCompany = () => {
   });
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("currentUser");
-    if (storedUser) {
-      const parsed = JSON.parse(storedUser);
-      setUserData({
-        firstName: parsed.firstName || "",
-        lastName: parsed.lastName || "",
-        phone: parsed.phone || "",
-        companyName: parsed.companyName || "",
-        taxId: parsed.taxId || "",
-        address: parsed.address || "",
-        branch: parsed.branch || "",
-      });
-    }
-  }, []);
+    // console.log("Current email:", email);
+    const fetchUserData = async () => {
+      if (!email) return;
+  
+      try {
+        const response = await fetch(`http://localhost:3000/profile_get/${email}`);
+        const result = await response.json();
+  
+        if (response.ok) {
+          const data = result.data.card[0];
+          setUserData({
+            firstName: data.firstName || "",
+            lastName: data.lastName || "",
+            phone: data.phone || "",
+            companyName: data.companyName || "",
+            taxId: data.taxId || "",
+            address: data.address || "",
+            branch: data.branch || "",
+          });
+        } else {
+          alert("ไม่สามารถโหลดข้อมูลผู้ใช้ได้");
+        }
+      } catch (err) {
+        console.error("เกิดข้อผิดพลาด:", err);
+      }
+    };
+  
+    fetchUserData();
+  }, [email]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -52,9 +68,27 @@ const UiCompany = () => {
     }));
   };
 
-  const handleSave = () => {
-    localStorage.setItem("currentUser", JSON.stringify(userData));
-    alert("บันทึกข้อมูลสำเร็จ");
+  const handleSave = async () => {
+    try {
+      const response = await fetch(`http://localhost:3000/users/${email}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      });
+  
+      const result = await response.json();
+  
+      if (response.ok) {
+        alert("บันทึกข้อมูลลงระบบสำเร็จแล้ว!");
+      } else {
+        alert("เกิดข้อผิดพลาด: " + result.message);
+      }
+    } catch (error) {
+      console.error("เกิดข้อผิดพลาดในการส่งข้อมูล:", error);
+      alert("เกิดข้อผิดพลาดในการเชื่อมต่อกับระบบ");
+    }
   };
 
   return (
@@ -107,7 +141,8 @@ const UiCompany = () => {
             <MenuItem icon={<FaShoppingCart />} text="สินค้า" onClick={() => navigate("/Product")} active={location.pathname === "/Product"} />
             <MenuItem icon={<FaClipboardList />} text="ทำใบเสร็จ" onClick={() => navigate("/CreateInvoice")} active={location.pathname === "/CreateInvoice"} />
           </div>
-          <MenuItem icon={<FaSignOutAlt />} text="ออกจากระบบ" onClick={() => navigate("/Enter")} />
+          <MenuItem icon={<FaSignOutAlt />}text="ออกจากระบบ"onClick={() => {localStorage.clear();navigate("/Enter");}}/>
+
         </div>
       )}
 

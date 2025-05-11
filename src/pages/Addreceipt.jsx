@@ -14,17 +14,41 @@ const Addreceipt = () => {
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
-
+  const [companyName, setCompanyName] = useState("");
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
   useEffect(() => {
-    const storedProducts = JSON.parse(localStorage.getItem("products")) || [];
-    const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
-    const filteredProducts = storedProducts.filter(
-      (product) => product.companyName === currentUser.companyName
-    );
-    setProducts(filteredProducts);
-  }, []);
+      const storedCompanyName = localStorage.getItem("companyName");
+      if (storedCompanyName) {
+        setCompanyName(storedCompanyName);
+      } else {
+        console.warn("ไม่พบ companyName ใน localStorage");
+      }
+    }, []);
+
+  useEffect(() => {
+      console.log("Current companyName:", companyName);
+      const fetchProducts = async () => {
+        if (companyName) {
+          try {
+            const res = await fetch(`http://localhost:3000/product_get_com/${companyName}`);
+            const data = await res.json();
+            if (data.status === 200) {
+              setProducts(data.data.product);
+            } else {
+              console.error('Failed to fetch products:', data.message);
+            }
+          } catch (error) {
+            console.error('Error fetching products:', error);
+          }
+        } else {
+          console.warn('Company name is not available');
+        }
+      };
+      if (companyName) {
+        fetchProducts();
+      }
+    }, [companyName]);
 
   const handleQuantityChange = (productId, delta) => {
     setCart((prev) => ({
@@ -33,36 +57,59 @@ const Addreceipt = () => {
     }));
   };
 
-  const handleCreateReceipt = () => {
-    const receiptItems = products
-      .filter((product) => cart[product.id] > 0)
-      .map((product) => ({
-        ...product,
-        quantity: cart[product.id],
-      }));
-
-    if (receiptItems.length === 0) {
+  const handleCreateReceipt = async () => {
+    const selectedItems = Object.entries(cart)
+      .filter(([_, quantity]) => quantity > 0)
+      .map(([productId, quantity]) => {
+        const product = products.find((p) => p.id === parseInt(productId));
+        return {
+          productId: parseInt(productId),
+          name: product?.name,
+          price: product?.price,
+          quantity,
+        };
+      });
+  
+    if (selectedItems.length === 0) {
       alert("กรุณาเลือกสินค้าก่อนทำใบเสร็จ");
       return;
     }
-
-    const receiptHistory = JSON.parse(localStorage.getItem("receiptHistory")) || [];
-    const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
-
-    const newReceipt = {
-      id: Date.now(),
-      date: new Date().toISOString(),
-      items: receiptItems,
-      companyName: currentUser.companyName || "",
-      total: receiptItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+  
+    const total = selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  
+    const receiptData = {
+      date: new Date().toISOString(), // ตรงกับ backend ที่ใช้ column ชื่อ "date"
+      item: JSON.stringify(selectedItems), // แปลงเป็น string เพื่อเก็บลงฐานข้อมูล
+      companyName,
+      total, // ส่งยอดรวม
     };
-
-    receiptHistory.push(newReceipt);
-    localStorage.setItem("receiptHistory", JSON.stringify(receiptHistory));
-
-    alert("สร้างใบเสร็จเรียบร้อยแล้ว");
-    navigate("/CreateInvoice");
+  
+    console.log("ส่งข้อมูลใบเสร็จ:", receiptData);
+  
+    try {
+      const res = await fetch("http://localhost:3000/create_receipt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(receiptData),
+      });
+  
+      const data = await res.json();
+  
+      if (data.status === 200) {
+        alert("สร้างใบเสร็จเรียบร้อยแล้ว");
+        setCart({});
+        navigate("/IihCompany");
+      } else {
+        console.error("การสร้างใบเสร็จล้มเหลว:", data.message);
+        alert("เกิดข้อผิดพลาดในการสร้างใบเสร็จ");
+      }
+    } catch (error) {
+      console.error("เกิดข้อผิดพลาด:", error);
+      alert("ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้");
+    }
   };
+  
+  
 
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase())

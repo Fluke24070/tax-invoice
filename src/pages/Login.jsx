@@ -25,11 +25,17 @@ const Login = () => {
       });
   
       const data = await response.json();
+      console.log("User data:", data.user);
   
       if (response.ok) {
         // บันทึกข้อมูลผู้ใช้ที่ล็อกอินไว้
         localStorage.setItem("currentUser", JSON.stringify(data.user));
-  
+        localStorage.setItem("currentEmail", data.user.email);
+        localStorage.setItem("companyName", data.user.companyName);
+        localStorage.setItem("address", data.user.address);
+        localStorage.setItem("phone", data.user.phone);
+        localStorage.setItem("taxId", data.user.taxId);
+        localStorage.setItem("branch", data.user.branch);
         alert("เข้าสู่ระบบสำเร็จ!");
 
           

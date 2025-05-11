@@ -16,18 +16,18 @@ const Addproduct = () => {
   const [productDetail, setProductDetail] = useState("");
   const [productPrice, setProductPrice] = useState("");
   const [productUnit, setProductUnit] = useState("");
-  const [imagePreview, setImagePreview] = useState(null);
+  // const [imagePreview, setImagePreview] = useState(null);
 
   const textareaRef = useRef(null);
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImagePreview(URL.createObjectURL(file));
-    }
-  };
+  // const handleImageUpload = (e) => {
+  //   const file = e.target.files[0];
+  //   if (file) {
+  //     setImagePreview(URL.createObjectURL(file));
+  //   }
+  // };
 
   const formatNumberWithCommas = (value) => {
     const num = parseFloat(value.replace(/,/g, ""));
@@ -37,26 +37,36 @@ const Addproduct = () => {
 
   const unformatNumber = (value) => value.replace(/,/g, "").replace(/[^\d]/g, "");
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
-
+  
     const product = {
-      id: Date.now(),
       name: productName,
       detail: productDetail,
-      price: unformatNumber(productPrice),
+      price: parseFloat(unformatNumber(productPrice)),
       unit: productUnit,
-      image: imagePreview,
-      companyName: currentUser.companyName,
+      email: currentUser.email,
     };
-
-    const oldProducts = JSON.parse(localStorage.getItem("products")) || [];
-    oldProducts.push(product);
-    localStorage.setItem("products", JSON.stringify(oldProducts));
-
-    alert("เพิ่มสินค้าเรียบร้อยแล้ว");
-    navigate("/Product");
+  
+    try {
+      const response = await fetch("http://localhost:3000/item", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(product),
+      });
+  
+      if (!response.ok) throw new Error("Failed to save product");
+  
+      alert("เพิ่มสินค้าเรียบร้อยแล้ว");
+      navigate("/Product");
+    } catch (error) {
+      alert("เกิดข้อผิดพลาดในการบันทึกสินค้า");
+      console.error(error);
+    }
   };
+  
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -104,19 +114,6 @@ const Addproduct = () => {
           alignItems: "center", gap: "1rem"
         }}>
           <input placeholder="ชื่อรายการสินค้า" value={productName} onChange={(e) => setProductName(e.target.value)} style={inputStyle} />
-
-          <label style={{ width: "100%" }}>
-            <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: "none" }} />
-            <div style={{ ...imageBoxStyle, cursor: "pointer" }}>
-              {imagePreview ? (
-                <img src={imagePreview} alt="preview" style={{
-                  width: "100%", height: "100%", objectFit: "cover", borderRadius: "10px"
-                }} />
-              ) : (
-                "ภาพสินค้า"
-              )}
-            </div>
-          </label>
 
           <textarea
             placeholder="รายละเอียดสินค้า"

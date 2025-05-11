@@ -13,7 +13,7 @@ import { FiFileText } from "react-icons/fi";
 
 const CreatetaxInvoice = () => {
   const navigate = useNavigate();
-  const location = useLocation(); // ✅ ใช้เพื่อเช็คหน้า
+  const location = useLocation();
   const headerHeight = 64;
   const [menuOpen, setMenuOpen] = useState(true);
   const [seller, setSeller] = useState(null);
@@ -31,39 +31,8 @@ const CreatetaxInvoice = () => {
       setReceipt(passedData.receipt);
     }
 
-    const allInvoices = JSON.parse(localStorage.getItem("companyInvoices") || "[]");
-    setInvoiceNumber(allInvoices.length + 1);
+    setInvoiceNumber(Math.floor(Math.random() * 900) + 100);
   }, [location.state]);
-
-  useEffect(() => {
-    const saveToHistories = () => {
-      const invoice = {
-        buyer,
-        seller,
-        items: receipt?.items || [],
-        date: new Date().toISOString(),
-        total: calculateTotal(),
-        vat: calculateVAT(),
-        number: invoiceNumber,
-      };
-
-      const companyHistory = JSON.parse(localStorage.getItem("companyInvoices") || "[]");
-      const buyerHistory = JSON.parse(localStorage.getItem("buyerInvoices") || "[]");
-
-      localStorage.setItem("companyInvoices", JSON.stringify([...companyHistory, invoice]));
-      localStorage.setItem("buyerInvoices", JSON.stringify([...buyerHistory, invoice]));
-
-      const allReceipts = JSON.parse(localStorage.getItem("receiptHistory") || "[]");
-      const updatedReceipts = allReceipts.map(r =>
-        r.date === receipt.date ? { ...r, isInvoiced: true } : r
-      );
-      localStorage.setItem("receiptHistory", JSON.stringify(updatedReceipts));
-    };
-
-    if (buyer && seller && receipt) {
-      saveToHistories();
-    }
-  }, [buyer, seller, receipt]);
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
   const formatCurrency = (amount) =>
@@ -71,6 +40,44 @@ const CreatetaxInvoice = () => {
   const calculateTotal = () =>
     receipt?.items?.reduce((sum, i) => sum + i.quantity * i.price, 0) || 0;
   const calculateVAT = () => calculateTotal() * 0.07;
+
+  const handleSaveTaxInvoice = async () => {
+    console.log("🧾 Receipt Object:", receipt);
+
+    try {
+      const res = await fetch("http://localhost:3000/create_taxinvoice", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          invoice_num: invoiceNumber,
+          receipt_id: receipt?.re_id || null,
+          companyname: seller?.companyName || "", // ✅ ใช้ชื่อ column ตรงกับ DB
+          seller,
+          buyer,
+          item: receipt?.items || [],
+          total: calculateTotal(),
+          vat: calculateVAT(),
+          grand_total: calculateTotal() + calculateVAT(),
+          date: new Date().toISOString().split("T")[0], // ✅ รูปแบบ YYYY-MM-DD
+        }),
+      });
+
+      const result = await res.json();
+      console.log("🔥 RESPONSE:", result);
+
+      if (result.status === 200) {
+        alert("บันทึกใบกำกับภาษีเรียบร้อยแล้ว");
+        navigate("/IihCompany");
+      } else {
+        alert("ไม่สามารถบันทึกใบกำกับภาษีได้");
+      }
+    } catch (error) {
+      console.error("เกิดข้อผิดพลาด:", error);
+      alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
+    }
+  };
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#e6f0ff", fontFamily: "sans-serif" }}>
@@ -102,7 +109,7 @@ const CreatetaxInvoice = () => {
         <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiCompany")} />
       </div>
 
-      {/* ใบกำกับภาษี */}
+      {/* Invoice Content */}
       <div id="invoice-area" style={{ width: "21cm", minHeight: "29.7cm", margin: "2rem auto", backgroundColor: "white", padding: "2rem", borderRadius: "15px", boxShadow: "0 0 12px rgba(0,0,0,0.1)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
           <h2 style={{ color: "#1a1aa6" }}>ใบเสร็จรับเงิน/ใบกำกับภาษี</h2>
@@ -118,7 +125,7 @@ const CreatetaxInvoice = () => {
           วันที่ {new Date().toLocaleDateString("th-TH")} เล่มที่ 001 เลขที่ {String(invoiceNumber).padStart(3, "0")}
         </div>
 
-        {/* ข้อมูลผู้ขายและผู้ซื้อ */}
+        {/* Seller / Buyer Info */}
         <div style={{ fontSize: "14px", marginBottom: "1.5rem" }}>
           <div style={{ marginBottom: "0.5rem" }}>
             <strong>ชื่อผู้ขาย</strong>
@@ -131,13 +138,13 @@ const CreatetaxInvoice = () => {
           <div style={{ marginTop: "1.5rem" }}>
             <strong>ชื่อผู้ซื้อ</strong>
             <div>{buyer?.firstName} {buyer?.lastName}</div>
-            <div>{buyer?.companyName}</div>
+            <div>ชื่อบริษัท: {buyer?.companyName}</div>
             <div>ที่อยู่: {buyer?.address}</div>
             <div>เลขประจำตัวผู้เสียภาษี: {buyer?.taxId} โทรศัพท์ {buyer?.phone}</div>
           </div>
         </div>
 
-        {/* ตารางสินค้า */}
+        {/* Items Table */}
         {receipt && receipt.items && (
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
             <thead>
@@ -163,15 +170,34 @@ const CreatetaxInvoice = () => {
           </table>
         )}
 
-        {/* ยอดรวม */}
+        {/* Totals */}
         <div style={{ marginTop: "1rem", fontSize: "14px", textAlign: "right" }}>
           <div>มูลค่าก่อนเสียภาษี {formatCurrency(calculateTotal())}</div>
           <div>ภาษีมูลค่าเพิ่ม (VAT) {formatCurrency(calculateVAT())}</div>
           <div style={{ fontWeight: "bold" }}>ยอดรวม {formatCurrency(calculateTotal() + calculateVAT())}</div>
         </div>
+
+        {/* Confirm Button */}
+        <div style={{ textAlign: "right", marginTop: "1rem" }}>
+          <button
+            onClick={handleSaveTaxInvoice}
+            style={{
+              backgroundColor: "#1a75ff",
+              color: "white",
+              padding: "0.75rem 2rem",
+              borderRadius: "8px",
+              border: "none",
+              fontSize: "16px",
+              fontWeight: "bold",
+              cursor: "pointer"
+            }}
+          >
+             ยืนยันออกใบกำกับภาษี
+          </button>
+        </div>
       </div>
 
-      {/* เมนูด้านข้าง */}
+      {/* Sidebar */}
       {menuOpen && (
         <div style={{
           position: "fixed",
@@ -212,7 +238,6 @@ const tdStyle = {
   textAlign: "center",
 };
 
-// ✅ MenuItem รองรับ active
 const MenuItem = ({ icon, text, onClick, active }) => (
   <div onClick={onClick} style={{
     padding: "0.8rem 1rem",

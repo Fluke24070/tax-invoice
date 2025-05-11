@@ -1,46 +1,57 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import {
-  FaShoppingCart,
-  FaBars,
-  FaUserCircle,
-  FaSignOutAlt,
-  FaClipboardList,
-  FaHome,
-} from "react-icons/fa";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
+import {FaShoppingCart,FaBars,FaUserCircle,FaSignOutAlt,FaClipboardList,FaHome,} from "react-icons/fa";
 import { FiFileText } from "react-icons/fi";
 
 const Editproduct = () => {
   const navigate = useNavigate();
+  const { id: productId } = useParams(); 
   const location = useLocation();
-  const productId = location.state?.productId;
 
   const headerHeight = 64;
   const [menuOpen, setMenuOpen] = useState(true);
   const [product, setProduct] = useState({
-    id: null,
+    id:"",
     name: "",
     detail: "",
     price: "",
     unit: "",
-    image: "",
   });
-  const [imagePreview, setImagePreview] = useState(null);
+  
   const textareaRef = useRef(null);
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
   useEffect(() => {
-    const storedProducts = JSON.parse(localStorage.getItem("products")) || [];
-    const item = storedProducts.find((p) => p.id === productId);
-    if (!item) {
+    if (!productId) {
       alert("ไม่พบสินค้าที่ต้องการแก้ไข");
       navigate("/Product");
-    } else {
-      setProduct(item);
-      setImagePreview(item.image || null);
+      return;
     }
+  
+    fetch(`http://localhost:3000/product_get_id/${productId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data) {
+          setProduct({
+            id: data.id,
+            name: data.name,
+            detail: data.detail,
+            price: data.price,
+            unit: data.unit,
+          });
+        } else {
+          alert("ไม่พบสินค้าที่ต้องการแก้ไข");
+          navigate("/Product");
+        }
+      })
+      .catch((err) => {
+        console.error("Error loading product:", err);
+        alert("เกิดข้อผิดพลาดในการโหลดข้อมูล");
+        navigate("/Product");
+      });
   }, [productId, navigate]);
+  
 
   const formatNumberWithCommas = (value) => {
     const num = parseFloat(value.replace(/,/g, ""));
@@ -50,41 +61,56 @@ const Editproduct = () => {
 
   const unformatNumber = (value) => value.replace(/,/g, "").replace(/[^\d]/g, "");
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImagePreview(URL.createObjectURL(file));
+  const handleSave = async () => {
+    try {
+      const response = await fetch(`http://localhost:3000/item_edit/${productId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: product.name,
+          detail: product.detail,
+          price: parseFloat(unformatNumber(product.price)),
+          unit: product.unit,
+        }),
+      });
+  
+      const result = await response.json();
+  
+      if (response.ok) {
+        alert("บันทึกข้อมูลเรียบร้อยแล้ว");
+        navigate("/Product");
+      } else {
+        alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล: " + result.message);
+      }
+    } catch (error) {
+      console.error("Error updating product:", error);
+      alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
     }
   };
+  
 
-  const handleSave = () => {
-    const updated = {
-      ...product,
-      price: unformatNumber(product.price),
-      image: imagePreview,
-    };
-
-    const stored = JSON.parse(localStorage.getItem("products")) || [];
-    const index = stored.findIndex((p) => p.id === productId);
-    if (index !== -1) {
-      stored[index] = updated;
-      localStorage.setItem("products", JSON.stringify(stored));
-      alert("บันทึกข้อมูลเรียบร้อยแล้ว");
-      navigate("/Product");
-    }
-  };
-
-  const handleDelete = () => {
+  const handleDelete = async () => {
     const confirmDelete = window.confirm("คุณแน่ใจหรือไม่ว่าต้องการลบสินค้านี้?");
-    if (confirmDelete) {
-      const stored = JSON.parse(localStorage.getItem("products")) || [];
-      const index = stored.findIndex((p) => p.id === productId);
-      if (index !== -1) {
-        stored.splice(index, 1);
-        localStorage.setItem("products", JSON.stringify(stored));
+    if (!confirmDelete) return;
+  
+    try {
+      const response = await fetch(`http://localhost:3000/delete_pro/${productId}`, {
+        method: "DELETE",
+      });
+  
+      const result = await response.json();
+  
+      if (response.ok) {
         alert("ลบสินค้าเรียบร้อยแล้ว");
         navigate("/Product");
+      } else {
+        alert("เกิดข้อผิดพลาดในการลบสินค้า: " + result.message);
       }
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
     }
   };
 
@@ -166,26 +192,6 @@ const Editproduct = () => {
             style={inputStyle}
           />
 
-          <label style={{ width: "100%" }}>
-            <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: "none" }} />
-            <div style={{ ...imageBoxStyle, cursor: "pointer" }}>
-              {imagePreview ? (
-                <img
-                  src={imagePreview}
-                  alt="preview"
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    borderRadius: "10px",
-                  }}
-                />
-              ) : (
-                "ภาพสินค้า"
-              )}
-            </div>
-          </label>
-
           <textarea
             placeholder="รายละเอียดสินค้า"
             value={product.detail}
@@ -256,19 +262,6 @@ const inputStyle = {
   borderRadius: "10px",
   border: "1px solid #ccc",
   fontSize: "15px",
-};
-
-const imageBoxStyle = {
-  width: "100%",
-  height: "180px",
-  backgroundColor: "#f5f5f5",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  borderRadius: "10px",
-  border: "1px dashed #aaa",
-  fontSize: "14px",
-  color: "#333",
 };
 
 const saveButtonStyle = {

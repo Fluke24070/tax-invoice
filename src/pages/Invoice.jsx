@@ -13,24 +13,49 @@ import { FiFileText } from "react-icons/fi";
 
 const Invoice = () => {
   const navigate = useNavigate();
-  const location = useLocation(); // ✅ ใช้ตรวจ path ปัจจุบัน
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(true);
   const [receiptHistory, setReceiptHistory] = useState([]);
   const [filterType, setFilterType] = useState("all");
   const headerHeight = 64;
+  const [companyName, setCompanyName] = useState("");
 
   useEffect(() => {
-    const storedReceipts = JSON.parse(localStorage.getItem("receiptHistory")) || [];
-    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-
-    if (currentUser && currentUser.companyName) {
-      const filteredReceipts = storedReceipts.filter(
-        (receipt) => receipt.companyName === currentUser.companyName
-      );
-      setReceiptHistory(filteredReceipts);
+    const storedCompanyName = localStorage.getItem("companyName");
+    if (storedCompanyName) {
+      setCompanyName(storedCompanyName);
     } else {
-      setReceiptHistory([]);
+      console.warn("ไม่พบ companyName ใน localStorage");
     }
+  }, []);
+
+  useEffect(() => {
+    const fetchReceipts = async () => {
+      try {
+        const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+        if (!currentUser || !currentUser.companyName) {
+          console.warn("ไม่พบข้อมูลผู้ใช้งานใน localStorage");
+          return;
+        }
+
+        const response = await fetch(
+          `http://localhost:3000/receist_get_com/${currentUser.companyName}`
+        );
+        const data = await response.json();
+        console.log("data from API:", data); // ตรวจสอบข้อมูลจาก API
+
+        if (data.status === 200) {
+          setReceiptHistory(data.data.product); // ใช้ข้อมูลที่ได้รับจาก API
+          setCompanyName(currentUser.companyName);
+        } else {
+          console.warn("การดึงข้อมูลไม่สำเร็จ");
+        }
+      } catch (err) {
+        console.error("เกิดข้อผิดพลาดขณะดึงข้อมูล:", err);
+      }
+    };
+
+    fetchReceipts();
   }, []);
 
   const formatDate = (isoDate) => {
@@ -50,11 +75,20 @@ const Invoice = () => {
     });
   };
 
-  const filteredReceipts = receiptHistory.filter((receipt) => {
-    if (filterType === "invoiced") return receipt.isInvoiced;
-    if (filterType === "notInvoiced") return !receipt.isInvoiced;
-    return true;
-  });
+  // แปลง item จาก string เป็น array
+  const filteredReceipts = receiptHistory
+    .map((receipt) => {
+      const items = receipt.item ? JSON.parse(receipt.item) : [];
+      return {
+        ...receipt,
+        items,  // ใช้ items ที่แปลงแล้ว
+      };
+    })
+    .filter((receipt) => {
+      if (filterType === "invoiced") return receipt.isInvoiced;
+      if (filterType === "notInvoiced") return !receipt.isInvoiced;
+      return true;
+    });
 
   const MenuItem = ({ icon, text, onClick, active }) => (
     <div
@@ -78,6 +112,7 @@ const Invoice = () => {
 
   return (
     <div style={{ height: "100vh", backgroundColor: "#e6f0ff" }}>
+      {/* Header */}
       <div
         style={{
           backgroundColor: "#1a1aa6",
@@ -172,10 +207,9 @@ const Invoice = () => {
         </div>
 
         {filteredReceipts.map((receipt, index) => {
-          const total = receipt.items.reduce(
-            (sum, item) => sum + item.price * item.quantity,
-            0
-          );
+          const total = Array.isArray(receipt.items)
+            ? receipt.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+            : 0;
 
           return (
             <div
@@ -183,7 +217,7 @@ const Invoice = () => {
               onClick={() =>
                 navigate("/CreatetaxInvoice", {
                   state: {
-                    buyer: JSON.parse(localStorage.getItem("currentBuyer")),
+                    buyer: location.state?.buyer, 
                     receipt,
                   },
                 })
@@ -195,6 +229,9 @@ const Invoice = () => {
                 marginBottom: "1rem",
                 boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
                 cursor: "pointer",
+                maxWidth: "700px", 
+                margin: "1rem auto", 
+                padding: "1rem"
               }}
             >
               <div
@@ -211,18 +248,19 @@ const Invoice = () => {
                 </span>
               </div>
               <hr />
-              {receipt.items.map((item, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    padding: "0.3rem 0",
-                  }}
-                >
-                  <span>{item.quantity.toFixed(2)} × {item.name}</span>
-                  <span>{item.price.toLocaleString()}</span>
-                </div>
+              {Array.isArray(receipt.items) &&
+                receipt.items.map((item, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      padding: "0.3rem 0",
+                    }}
+                  >
+                    <span>{item.quantity.toFixed(2)} × {item.name}</span>
+                    <span>{item.price.toLocaleString()}</span>
+                  </div>
               ))}
               <hr />
               <div
