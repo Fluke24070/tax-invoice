@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
-import {FaShoppingCart,FaBars,FaUserCircle,FaSignOutAlt,FaClipboardList,FaHome,} from "react-icons/fa";
+import { FaShoppingCart, FaBars, FaUserCircle, FaSignOutAlt, FaClipboardList, FaHome } from "react-icons/fa";
 import { FiFileText } from "react-icons/fi";
 
 const Editproduct = () => {
@@ -11,15 +11,24 @@ const Editproduct = () => {
   const headerHeight = 64;
   const [menuOpen, setMenuOpen] = useState(true);
   const [product, setProduct] = useState({
-    id:"",
+    id: "",
     name: "",
     detail: "",
     price: "",
     unit: "",
+    item_type: "ยังไม่ได้จัดหมวดหมู่",
   });
-  
-  const textareaRef = useRef(null);
 
+  const [productCategory, setProductCategory] = useState("");
+  const [categories, setCategories] = useState(() => {
+    const stored = JSON.parse(localStorage.getItem("categories")) || [
+      "อาหารจานเดียว", "อาหารแปลก", "เครื่องใช้ไฟฟ้า", "อื่น ๆ"
+    ];
+    if (!stored.includes("ยังไม่ได้จัดหมวดหมู่")) stored.push("ยังไม่ได้จัดหมวดหมู่");
+    return stored;
+  });
+
+  const textareaRef = useRef(null);
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
   useEffect(() => {
@@ -28,7 +37,7 @@ const Editproduct = () => {
       navigate("/Product");
       return;
     }
-  
+
     fetch(`http://localhost:3000/product_get_id/${productId}`)
       .then((res) => res.json())
       .then((data) => {
@@ -39,7 +48,9 @@ const Editproduct = () => {
             detail: data.detail,
             price: data.price,
             unit: data.unit,
+            item_type: data.item_type || "ยังไม่ได้จัดหมวดหมู่",
           });
+          setProductCategory(data.item_type || "ยังไม่ได้จัดหมวดหมู่");
         } else {
           alert("ไม่พบสินค้าที่ต้องการแก้ไข");
           navigate("/Product");
@@ -51,7 +62,6 @@ const Editproduct = () => {
         navigate("/Product");
       });
   }, [productId, navigate]);
-  
 
   const formatNumberWithCommas = (value) => {
     const num = parseFloat(value.replace(/,/g, ""));
@@ -73,11 +83,12 @@ const Editproduct = () => {
           detail: product.detail,
           price: parseFloat(unformatNumber(product.price)),
           unit: product.unit,
+          item_type: productCategory.trim() || "ยังไม่ได้จัดหมวดหมู่",
         }),
       });
-  
+
       const result = await response.json();
-  
+
       if (response.ok) {
         alert("บันทึกข้อมูลเรียบร้อยแล้ว");
         navigate("/Product");
@@ -89,19 +100,18 @@ const Editproduct = () => {
       alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
     }
   };
-  
 
   const handleDelete = async () => {
     const confirmDelete = window.confirm("คุณแน่ใจหรือไม่ว่าต้องการลบสินค้านี้?");
     if (!confirmDelete) return;
-  
+
     try {
       const response = await fetch(`http://localhost:3000/delete_pro/${productId}`, {
         method: "DELETE",
       });
-  
+
       const result = await response.json();
-  
+
       if (response.ok) {
         alert("ลบสินค้าเรียบร้อยแล้ว");
         navigate("/Product");
@@ -142,7 +152,7 @@ const Editproduct = () => {
         <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiCompany")} />
       </div>
 
-      {/* Sidebar Menu */}
+      {/* Sidebar */}
       {menuOpen && (
         <div
           style={{
@@ -197,13 +207,7 @@ const Editproduct = () => {
             value={product.detail}
             onChange={(e) => setProduct((p) => ({ ...p, detail: e.target.value }))}
             ref={textareaRef}
-            style={{
-              ...inputStyle,
-              resize: "none",
-              overflow: "hidden",
-              lineHeight: "1.6",
-              minHeight: "50px",
-            }}
+            style={{ ...inputStyle, resize: "none", overflow: "hidden", lineHeight: "1.6", minHeight: "50px" }}
           />
 
           <input
@@ -227,6 +231,17 @@ const Editproduct = () => {
             style={inputStyle}
           />
 
+          <select
+            value={productCategory}
+            onChange={(e) => setProductCategory(e.target.value)}
+            style={inputStyle}
+          >
+            <option value="">เลือกหมวดหมู่</option>
+            {categories.map((cat, idx) => (
+              <option key={idx} value={cat}>{cat}</option>
+            ))}
+          </select>
+
           <button onClick={handleSave} style={saveButtonStyle}>บันทึกข้อมูล</button>
           <button onClick={handleDelete} style={{ ...saveButtonStyle, backgroundColor: "#dc3545" }}>ลบสินค้า</button>
         </div>
@@ -235,7 +250,6 @@ const Editproduct = () => {
   );
 };
 
-// ✅ รองรับ active สำหรับเมนู
 const MenuItem = ({ icon, text, onClick, active }) => (
   <div
     onClick={onClick}

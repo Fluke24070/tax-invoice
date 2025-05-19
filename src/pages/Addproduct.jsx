@@ -8,7 +8,7 @@ import { FiFileText } from "react-icons/fi";
 
 const Addproduct = () => {
   const navigate = useNavigate();
-  const location = useLocation(); // ใช้เพื่อเช็ค path ปัจจุบัน
+  const location = useLocation();
   const headerHeight = 64;
   const [menuOpen, setMenuOpen] = useState(true);
 
@@ -16,18 +16,16 @@ const Addproduct = () => {
   const [productDetail, setProductDetail] = useState("");
   const [productPrice, setProductPrice] = useState("");
   const [productUnit, setProductUnit] = useState("");
-  // const [imagePreview, setImagePreview] = useState(null);
+  const [productCategory, setProductCategory] = useState("");
+  const [categories, setCategories] = useState(() => {
+    const stored = JSON.parse(localStorage.getItem("categories")) || ["อาหารจานเดียว", "อาหารแปลก", "เครื่องใช้ไฟฟ้า", "อื่น ๆ"];
+    if (!stored.includes("ยังไม่ได้จัดหมวดหมู่")) stored.push("ยังไม่ได้จัดหมวดหมู่");
+    return stored;
+  });
 
   const textareaRef = useRef(null);
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
-
-  // const handleImageUpload = (e) => {
-  //   const file = e.target.files[0];
-  //   if (file) {
-  //     setImagePreview(URL.createObjectURL(file));
-  //   }
-  // };
 
   const formatNumberWithCommas = (value) => {
     const num = parseFloat(value.replace(/,/g, ""));
@@ -39,15 +37,16 @@ const Addproduct = () => {
 
   const handleSave = async () => {
     const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
-  
+
     const product = {
-      name: productName,
-      detail: productDetail,
+      name: productName.trim(),
+      detail: productDetail.trim(),
       price: parseFloat(unformatNumber(productPrice)),
-      unit: productUnit,
+      unit: productUnit.trim(),
       email: currentUser.email,
+      item_type: productCategory.trim() || "ยังไม่ได้จัดหมวดหมู่",
     };
-  
+
     try {
       const response = await fetch("http://localhost:3000/item", {
         method: "POST",
@@ -56,9 +55,9 @@ const Addproduct = () => {
         },
         body: JSON.stringify(product),
       });
-  
+
       if (!response.ok) throw new Error("Failed to save product");
-  
+
       alert("เพิ่มสินค้าเรียบร้อยแล้ว");
       navigate("/Product");
     } catch (error) {
@@ -66,7 +65,6 @@ const Addproduct = () => {
       console.error(error);
     }
   };
-  
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -106,7 +104,6 @@ const Addproduct = () => {
         </div>
       )}
 
-      {/* Form Section */}
       <div style={{ display: "flex", justifyContent: "center", paddingTop: "2rem" }}>
         <div style={{
           backgroundColor: "white", padding: "1.5rem", borderRadius: "10px",
@@ -139,6 +136,13 @@ const Addproduct = () => {
 
           <input placeholder="หน่วย/unit" value={productUnit} onChange={(e) => setProductUnit(e.target.value)} style={inputStyle} />
 
+          <select value={productCategory} onChange={(e) => setProductCategory(e.target.value)} style={inputStyle}>
+            <option value="">เลือกหมวดหมู่</option>
+            {categories.map((cat, idx) => (
+              <option key={idx} value={cat}>{cat}</option>
+            ))}
+          </select>
+
           <button onClick={handleSave} style={saveButtonStyle}>บันทึกข้อมูล</button>
         </div>
       </div>
@@ -146,7 +150,6 @@ const Addproduct = () => {
   );
 };
 
-// ✅ MenuItem แบบไฮไลต์
 const MenuItem = ({ icon, text, onClick, active }) => (
   <div
     onClick={onClick}
@@ -173,19 +176,6 @@ const inputStyle = {
   borderRadius: "10px",
   border: "1px solid #ccc",
   fontSize: "15px",
-};
-
-const imageBoxStyle = {
-  width: "100%",
-  height: "180px",
-  backgroundColor: "#f5f5f5",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  borderRadius: "10px",
-  border: "1px dashed #aaa",
-  fontSize: "14px",
-  color: "#333",
 };
 
 const saveButtonStyle = {
