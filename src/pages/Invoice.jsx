@@ -42,10 +42,8 @@ const Invoice = () => {
           `http://localhost:3000/receist_get_com/${currentUser.companyName}`
         );
         const data = await response.json();
-        console.log("data from API:", data); // ตรวจสอบข้อมูลจาก API
-
         if (data.status === 200) {
-          setReceiptHistory(data.data.product); // ใช้ข้อมูลที่ได้รับจาก API
+          setReceiptHistory(data.data.product);
           setCompanyName(currentUser.companyName);
         } else {
           console.warn("การดึงข้อมูลไม่สำเร็จ");
@@ -75,13 +73,12 @@ const Invoice = () => {
     });
   };
 
-  // แปลง item จาก string เป็น array
   const filteredReceipts = receiptHistory
     .map((receipt) => {
       const items = receipt.item ? JSON.parse(receipt.item) : [];
       return {
         ...receipt,
-        items,  // ใช้ items ที่แปลงแล้ว
+        items,
       };
     })
     .filter((receipt) => {
@@ -111,185 +108,129 @@ const Invoice = () => {
   );
 
   return (
-    <div style={{ height: "100vh", backgroundColor: "#e6f0ff" }}>
-      {/* Header */}
+    <div style={{ minHeight: "100vh", backgroundColor: "#e6f0ff", display: "flex" }}>
       <div
         style={{
-          backgroundColor: "#1a1aa6",
-          height: `${headerHeight}px`,
-          display: "flex",
+          width: "200px",
+          backgroundColor: "#9999ff",
+          paddingTop: `${headerHeight}px`,
+          display: menuOpen ? "flex" : "none",
+          flexDirection: "column",
           justifyContent: "space-between",
-          alignItems: "center",
-          padding: "0 1rem",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          height: "100vh",
+          zIndex: 2,
         }}
       >
-        <div
-          onClick={() => setMenuOpen(!menuOpen)}
-          style={{ cursor: "pointer", color: "white" }}
-        >
-          <FaBars size={20} />
+        <div>
+          <MenuItem icon={<FaHome />} text="ใบกำกับภาษี" onClick={() => navigate("/MainCompany")} active={location.pathname === "/MainCompany"} />
+          <MenuItem icon={<FiFileText />} text="ประวัติการทำรายการ" onClick={() => navigate("/IihCompany")} active={location.pathname === "/IihCompany"} />
+          <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiCompany")} active={location.pathname === "/UiCompany"} />
+          <MenuItem icon={<FaShoppingCart />} text="สินค้า" onClick={() => navigate("/Product")} active={location.pathname === "/Product"} />
+          <MenuItem icon={<FaClipboardList />} text="ทำใบเสร็จ" onClick={() => navigate("/CreateInvoice")} active={location.pathname === "/CreateInvoice"} />
         </div>
-        <h1
-          style={{
-            color: "white",
-            fontFamily: "monospace",
-            letterSpacing: "2px",
-            fontSize: "20px",
-          }}
-        >
-          TAX INVOICE
-        </h1>
-        <FaUser
-          style={{ color: "white", fontSize: "20px", cursor: "pointer" }}
-          onClick={() => navigate("/UiCompany")}
-        />
+        <MenuItem icon={<FaSignOutAlt />} text="ออกจากระบบ" onClick={() => navigate("/Enter")} />
       </div>
 
-      {/* Sidebar */}
-      {menuOpen && (
+      <div style={{ flex: 1, marginLeft: menuOpen ? "200px" : "0", transition: "margin 0.3s" }}>
         <div
           style={{
-            position: "fixed",
-            top: `${headerHeight}px`,
-            left: 0,
-            bottom: 0,
-            width: "200px",
-            backgroundColor: "#9999ff",
+            backgroundColor: "#1a1aa6",
+            height: `${headerHeight}px`,
             display: "flex",
-            flexDirection: "column",
             justifyContent: "space-between",
-            padding: "1rem 0",
-            zIndex: 2,
+            alignItems: "center",
+            padding: "0 1rem",
+            color: "white",
+            position: "sticky",
+            top: 0,
+            zIndex: 1,
           }}
         >
-          <div>
-            <MenuItem icon={<FaHome />} text="ใบกำกับภาษี" onClick={() => navigate("/MainCompany")} active={location.pathname === "/MainCompany"} />
-            <MenuItem icon={<FiFileText />} text="ประวัติการทำรายการ" onClick={() => navigate("/IihCompany")} active={location.pathname === "/IihCompany"} />
-            <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiCompany")} active={location.pathname === "/UiCompany"} />
-            <MenuItem icon={<FaShoppingCart />} text="สินค้า" onClick={() => navigate("/Product")} active={location.pathname === "/Product"} />
-            <MenuItem icon={<FaClipboardList />} text="ทำใบเสร็จ" onClick={() => navigate("/CreateInvoice")} active={location.pathname === "/CreateInvoice"} />
-          </div>
-          <MenuItem icon={<FaSignOutAlt />} text="ออกจากระบบ" onClick={() => navigate("/Enter")} />
-        </div>
-      )}
-
-      {/* Content */}
-      <div style={{ marginLeft: menuOpen ? "200px" : "0", transition: "margin 0.3s", padding: "2rem" }}>
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: "1rem" }}>
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-            style={{
-              padding: "0.5rem 1rem",
-              borderRadius: "20px",
-              border: "1px solid #ccc",
-              fontSize: "16px"
-            }}
-          >
-            <option value="all">แสดงทั้งหมด</option>
-            <option value="notInvoiced">ยังไม่ออกใบกำกับ</option>
-            <option value="invoiced">ออกใบกำกับแล้ว</option>
-          </select>
+          <FaBars onClick={() => setMenuOpen(!menuOpen)} style={{ cursor: "pointer" }} />
+          <h1 style={{ fontFamily: "monospace", letterSpacing: "2px", fontSize: "20px" }}>
+            TAX INVOICE
+          </h1>
+          <FaUser style={{ cursor: "pointer" }} onClick={() => navigate("/UiCompany")} />
         </div>
 
-        <div
-          style={{
-            backgroundColor: "#a6d4ff",
-            padding: "0.75rem 2rem",
-            borderRadius: "8px",
-            textAlign: "center",
-            fontWeight: "bold",
-            fontSize: "20px",
-            marginBottom: "1.5rem",
-          }}
-        >
-          รายการใบเสร็จ
-        </div>
-
-        {filteredReceipts.map((receipt, index) => {
-          const total = Array.isArray(receipt.items)
-            ? receipt.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-            : 0;
-
-          return (
-            <div
-              key={index}
-              onClick={() =>
-                navigate("/CreatetaxInvoice", {
-                  state: {
-                    buyer: location.state?.buyer, 
-                    receipt,
-                  },
-                })
-              }
+        <div style={{ padding: "2rem" }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: "1rem" }}>
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
               style={{
-                backgroundColor: "#fff",
-                padding: "1rem",
-                borderRadius: "10px",
-                marginBottom: "1rem",
-                boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                cursor: "pointer",
-                maxWidth: "700px", 
-                margin: "1rem auto", 
-                padding: "1rem"
+                padding: "0.5rem 1rem",
+                borderRadius: "20px",
+                border: "1px solid #ccc",
+                fontSize: "16px"
               }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontWeight: "bold",
-                  marginBottom: "0.5rem",
-                }}
-              >
-                <span>ประวัติรายการที่ {index + 1}</span>
-                <span style={{ fontWeight: "normal" }}>
-                  {formatDate(receipt.date)} {formatTime(receipt.date)}
-                </span>
-              </div>
-              <hr />
-              {Array.isArray(receipt.items) &&
-                receipt.items.map((item, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      padding: "0.3rem 0",
-                    }}
-                  >
-                    <span>{item.quantity.toFixed(2)} × {item.name}</span>
-                    <span>{item.price.toLocaleString()}</span>
-                  </div>
-              ))}
-              <hr />
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontWeight: "bold",
-                }}
-              >
-                <span>รวม</span>
-                <span>{total.toLocaleString()} บาท</span>
-              </div>
+              <option value="all">แสดงทั้งหมด</option>
+              <option value="notInvoiced">ยังไม่ออกใบกำกับ</option>
+              <option value="invoiced">ออกใบกำกับแล้ว</option>
+            </select>
+          </div>
 
-              {receipt.isInvoiced && (
-                <div style={{
-                  marginTop: "0.5rem",
-                  color: "green",
-                  fontWeight: "bold",
-                  fontSize: "14px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem"
-                }}>
-                  ✅ ออกใบกำกับภาษีแล้ว
+          <div style={{ backgroundColor: "#a6d4ff", padding: "0.75rem 2rem", borderRadius: "8px", textAlign: "center", fontWeight: "bold", fontSize: "20px", marginBottom: "1.5rem" }}>
+            รายการใบเสร็จ
+          </div>
+
+          {filteredReceipts.map((receipt, index) => {
+            const total = Array.isArray(receipt.items)
+              ? receipt.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+              : 0;
+
+            return (
+              <div
+                key={index}
+                onClick={() =>
+                  navigate("/CreatetaxInvoice", {
+                    state: {
+                      buyer: location.state?.buyer,
+                      receipt,
+                    },
+                  })
+                }
+                style={{
+                  backgroundColor: "#fff",
+                  padding: "1rem",
+                  borderRadius: "10px",
+                  marginBottom: "1rem",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                  cursor: "pointer",
+                  maxWidth: "700px",
+                  margin: "1rem auto",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold", marginBottom: "0.5rem" }}>
+                  <span>ประวัติรายการที่ {index + 1}</span>
+                  <span style={{ fontWeight: "normal" }}>{formatDate(receipt.date)} {formatTime(receipt.date)}</span>
                 </div>
-              )}
-            </div>
-          );
-        })}
+                <hr />
+                {Array.isArray(receipt.items) &&
+                  receipt.items.map((item, idx) => (
+                    <div key={idx} style={{ display: "flex", justifyContent: "space-between", padding: "0.3rem 0" }}>
+                      <span>{item.quantity.toFixed(2)} × {item.name}</span>
+                      <span>{item.price.toLocaleString()}</span>
+                    </div>
+                  ))}
+                <hr />
+                <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold" }}>
+                  <span>รวม</span>
+                  <span>{total.toLocaleString()} บาท</span>
+                </div>
+                {receipt.isInvoiced && (
+                  <div style={{ marginTop: "0.5rem", color: "green", fontWeight: "bold", fontSize: "14px", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    ✅ ออกใบกำกับภาษีแล้ว
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

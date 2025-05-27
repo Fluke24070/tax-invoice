@@ -11,7 +11,7 @@ const Product = () => {
   const location = useLocation();
   const headerHeight = 64;
 
-  const [menuOpen, setMenuOpen] = useState(true);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [companyName, setCompanyName] = useState("");
@@ -32,8 +32,6 @@ const Product = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
-
-  const toggleMenu = () => setMenuOpen(!menuOpen);
 
   useEffect(() => {
     const storedCompanyName = localStorage.getItem("companyName");
@@ -77,40 +75,47 @@ const Product = () => {
   }, {});
 
   return (
-    <div style={{ height: "100vh", backgroundColor: "#e6f0ff", fontFamily: "sans-serif" }}>
+    <div style={{ minHeight: "100vh", backgroundColor: "#e6f0ff" }}>
       {/* Header */}
       <div style={{
-        backgroundColor: "#1a1aa6", height: `${headerHeight}px`,
-        display: "flex", justifyContent: "space-between", alignItems: "center",
-        padding: "0 1rem", color: "white"
+        backgroundColor: "#1a1aa6", height: `${headerHeight}px`, display: "flex",
+        justifyContent: "space-between", alignItems: "center", padding: "0 1rem",
+        color: "white", position: "sticky", top: 0, zIndex: 10,
       }}>
-        <div onClick={toggleMenu} style={{ cursor: "pointer" }}>
+        <div onClick={() => setSidebarVisible(!sidebarVisible)} style={{ cursor: "pointer" }}>
           <FaBars size={20} />
         </div>
         <span style={{ fontWeight: "bold", letterSpacing: "1px" }}>TAX INVOICE</span>
         <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiCompany")} />
       </div>
 
-      {/* Side Menu */}
-      {menuOpen && (
+      {/* Sidebar */}
+      {sidebarVisible && (
         <div style={{
-          position: "fixed", top: `${headerHeight}px`, left: 0, bottom: 0,
-          width: "200px", backgroundColor: "#9999ff",
-          display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "1rem 0", zIndex: 2
+          position: "fixed", top: `${headerHeight}px`, left: 0,
+          width: "200px", height: `calc(100vh - ${headerHeight}px)`,
+          backgroundColor: "#9999ff", zIndex: 20, overflow: "hidden"
         }}>
-          <div>
-            <MenuItem icon={<FaHome />} text="ใบกำกับภาษี" onClick={() => navigate("/MainCompany")} active={location.pathname === "/MainCompany"} />
-            <MenuItem icon={<FiFileText />} text="ประวัติการทำรายการ" onClick={() => navigate("/IihCompany")} active={location.pathname === "/IihCompany"} />
-            <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiCompany")} active={location.pathname === "/UiCompany"} />
-            <MenuItem icon={<FaShoppingCart />} text="สินค้า" onClick={() => navigate("/Product")} active={location.pathname === "/Product"} />
-            <MenuItem icon={<FaClipboardList />} text="ทำใบเสร็จ" onClick={() => navigate("/CreateInvoice")} active={location.pathname === "/CreateInvoice"} />
+          <div style={{
+            display: "flex", flexDirection: "column", justifyContent: "space-between",
+            height: "100%", padding: "1rem 0",
+          }}>
+            <div>
+              <MenuItem icon={<FaHome />} text="ใบกำกับภาษี" onClick={() => navigate("/MainCompany")} active={location.pathname === "/MainCompany"} />
+              <MenuItem icon={<FiFileText />} text="ประวัติการทำรายการ" onClick={() => navigate("/IihCompany")} active={location.pathname === "/IihCompany"} />
+              <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiCompany")} active={location.pathname === "/UiCompany"} />
+              <MenuItem icon={<FaShoppingCart />} text="สินค้า" onClick={() => navigate("/Product")} active={location.pathname === "/Product"} />
+              <MenuItem icon={<FaClipboardList />} text="ทำใบเสร็จ" onClick={() => navigate("/CreateInvoice")} active={location.pathname === "/CreateInvoice"} />
+            </div>
+            <div style={{ marginBottom: "20px" }}>
+              <MenuItem icon={<FaSignOutAlt />} text="ออกจากระบบ" onClick={() => { localStorage.clear(); navigate("/Enter"); }} />
+            </div>
           </div>
-          <MenuItem icon={<FaSignOutAlt />} text="ออกจากระบบ" onClick={() => navigate("/Enter")} />
         </div>
       )}
 
-      {/* Search + Dropdown + Button */}
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: "2rem", gap: "1rem" }}>
+      {/* Content */}
+      <div style={{ paddingTop: "40px", paddingBottom: "60px", display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
         <button onClick={handleAddProduct} style={buttonStyle}>
           <FaShoppingCart style={iconStyle} /> เพิ่มรายการสินค้า
         </button>
@@ -188,45 +193,42 @@ const Product = () => {
             </div>
           )}
         </div>
-      </div>
 
-      {/* Title */}
-      <h3 style={{ textAlign: "center", marginTop: "2rem" }}>สินค้าของคุณ</h3>
-      <h4 style={{ textAlign: "center", color: "#1a1aa6", marginTop: "0.5rem" }}>
-        หมวดหมู่ที่เลือก: {selectedCategory}
-      </h4>
+        <h3 style={{ textAlign: "center", marginTop: "2rem" }}>สินค้าของคุณ</h3>
+        <h4 style={{ textAlign: "center", color: "#1a1aa6", marginTop: "0.5rem" }}>
+          หมวดหมู่ที่เลือก: {selectedCategory}
+        </h4>
 
-      {/* Product List */}
-      <div style={{ padding: "0 1rem" }}>
-        {Object.keys(groupedProducts).map((category) => (
-          <div key={category} style={{ marginBottom: "2rem" }}>
-            <h4 style={{ marginBottom: "1rem", textAlign: "left" }}>{category}</h4>
-            <div style={{
-              display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: "1rem"
-            }}>
-              {groupedProducts[category].map((product) => (
-                <div key={product.id} onClick={() => navigate(`/Editproduct/${product.id}`)} style={{
-                  backgroundColor: "#fff", border: "2px solid #1a1aa6", padding: "0.5rem",
-                  textAlign: "center", borderRadius: "6px", cursor: "pointer",
-                  transition: "transform 0.2s"
-                }}
-                  onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.02)")}
-                  onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                >
-                  {product.image && (
-                    <img src={product.image} alt={product.name}
-                      style={{ width: "100%", height: "100px", objectFit: "cover", borderRadius: "4px" }} />
-                  )}
-                  <div style={{ marginTop: "0.5rem", fontWeight: "bold" }}>{product.name}</div>
-                  <div>{Number(product.price).toLocaleString()} บาท</div>
-                </div>
-              ))}
+        <div style={{ padding: "0 1rem" }}>
+          {Object.keys(groupedProducts).map((category) => (
+            <div key={category} style={{ marginBottom: "2rem" }}>
+              <h4 style={{ marginBottom: "1rem", textAlign: "left" }}>{category}</h4>
+              <div style={{
+                display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: "1rem"
+              }}>
+                {groupedProducts[category].map((product) => (
+                  <div key={product.id} onClick={() => navigate(`/Editproduct/${product.id}`)} style={{
+                    backgroundColor: "#fff", border: "2px solid #1a1aa6", padding: "0.5rem",
+                    textAlign: "center", borderRadius: "6px", cursor: "pointer",
+                    transition: "transform 0.2s"
+                  }}
+                    onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.02)")}
+                    onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                  >
+                    {product.image && (
+                      <img src={product.image} alt={product.name}
+                        style={{ width: "100%", height: "100px", objectFit: "cover", borderRadius: "4px" }} />
+                    )}
+                    <div style={{ marginTop: "0.5rem", fontWeight: "bold" }}>{product.name}</div>
+                    <div>{Number(product.price).toLocaleString()} บาท</div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
-      {/* Modal เพิ่มหมวดหมู่ */}
       {showModal && (
         <div style={{
           position: "fixed", top: 0, left: 0, right: 0, bottom: 0,

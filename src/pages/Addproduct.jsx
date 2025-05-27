@@ -10,7 +10,7 @@ const Addproduct = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const headerHeight = 64;
-  const [menuOpen, setMenuOpen] = useState(true);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
 
   const [productName, setProductName] = useState("");
   const [productDetail, setProductDetail] = useState("");
@@ -24,8 +24,6 @@ const Addproduct = () => {
   });
 
   const textareaRef = useRef(null);
-
-  const toggleMenu = () => setMenuOpen(!menuOpen);
 
   const formatNumberWithCommas = (value) => {
     const num = parseFloat(value.replace(/,/g, ""));
@@ -50,9 +48,7 @@ const Addproduct = () => {
     try {
       const response = await fetch("http://localhost:3000/item", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(product),
       });
 
@@ -74,37 +70,47 @@ const Addproduct = () => {
   }, [productDetail]);
 
   return (
-    <div style={{ height: "100vh", backgroundColor: "#e6f0ff", fontFamily: "sans-serif" }}>
+    <div style={{ minHeight: "100vh", backgroundColor: "#e6f0ff" }}>
+      {/* Header */}
       <div style={{
-        backgroundColor: "#1a1aa6", height: `${headerHeight}px`,
-        display: "flex", justifyContent: "space-between", alignItems: "center",
-        padding: "0 1rem", color: "white"
+        backgroundColor: "#1a1aa6", height: `${headerHeight}px`, display: "flex",
+        justifyContent: "space-between", alignItems: "center", padding: "0 1rem",
+        color: "white", position: "sticky", top: 0, zIndex: 10,
       }}>
-        <div onClick={toggleMenu} style={{ cursor: "pointer" }}>
+        <div onClick={() => setSidebarVisible(!sidebarVisible)} style={{ cursor: "pointer" }}>
           <FaBars size={20} />
         </div>
         <span style={{ fontWeight: "bold", letterSpacing: "1px" }}>TAX INVOICE</span>
         <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiCompany")} />
       </div>
 
-      {menuOpen && (
+      {/* Sidebar */}
+      {sidebarVisible && (
         <div style={{
-          position: "fixed", top: `${headerHeight}px`, left: 0, bottom: 0,
-          width: "200px", backgroundColor: "#9999ff",
-          display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "1rem 0", zIndex: 2
+          position: "fixed", top: `${headerHeight}px`, left: 0,
+          width: "200px", height: `calc(100vh - ${headerHeight}px)`,
+          backgroundColor: "#9999ff", zIndex: 20, overflow: "hidden"
         }}>
-          <div>
-            <MenuItem icon={<FaHome />} text="ใบกำกับภาษี" onClick={() => navigate("/MainCompany")} active={location.pathname === "/MainCompany"} />
-            <MenuItem icon={<FiFileText />} text="ประวัติการทำรายการ" onClick={() => navigate("/IihCompany")} active={location.pathname === "/IihCompany"} />
-            <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiCompany")} active={location.pathname === "/UiCompany"} />
-            <MenuItem icon={<FaShoppingCart />} text="สินค้า" onClick={() => navigate("/Product")} active={location.pathname === "/Product"} />
-            <MenuItem icon={<FaClipboardList />} text="ทำใบเสร็จ" onClick={() => navigate("/CreateInvoice")} active={location.pathname === "/CreateInvoice"} />
+          <div style={{
+            display: "flex", flexDirection: "column", justifyContent: "space-between",
+            height: "100%", padding: "1rem 0",
+          }}>
+            <div>
+              <MenuItem icon={<FaHome />} text="ใบกำกับภาษี" onClick={() => navigate("/MainCompany")} active={location.pathname === "/MainCompany"} />
+              <MenuItem icon={<FiFileText />} text="ประวัติการทำรายการ" onClick={() => navigate("/IihCompany")} active={location.pathname === "/IihCompany"} />
+              <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiCompany")} active={location.pathname === "/UiCompany"} />
+              <MenuItem icon={<FaShoppingCart />} text="สินค้า" onClick={() => navigate("/Product")} active={location.pathname === "/Product"} />
+              <MenuItem icon={<FaClipboardList />} text="ทำใบเสร็จ" onClick={() => navigate("/CreateInvoice")} active={location.pathname === "/CreateInvoice"} />
+            </div>
+            <div style={{ marginBottom: "20px" }}>
+              <MenuItem icon={<FaSignOutAlt />} text="ออกจากระบบ" onClick={() => { localStorage.clear(); navigate("/Enter"); }} />
+            </div>
           </div>
-          <MenuItem icon={<FaSignOutAlt />} text="ออกจากระบบ" onClick={() => navigate("/Enter")} />
         </div>
       )}
 
-      <div style={{ display: "flex", justifyContent: "center", paddingTop: "2rem" }}>
+      {/* Content */}
+      <div style={{ display: "flex", justifyContent: "center", paddingTop: "2rem", paddingBottom: "4rem" }}>
         <div style={{
           backgroundColor: "white", padding: "1.5rem", borderRadius: "10px",
           width: "90%", maxWidth: "400px", display: "flex", flexDirection: "column",

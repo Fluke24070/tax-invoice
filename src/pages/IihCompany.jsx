@@ -9,46 +9,38 @@ import { FiFileText } from "react-icons/fi";
 const IihCompany = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [menuOpen, setMenuOpen] = useState(true);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
   const [receipts, setReceipts] = useState([]);
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
-  const fetchReceipts = async () => {
-    const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
-    console.log("✅ currentUser:", currentUser);
+    const fetchReceipts = async () => {
+      const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
+      if (!currentUser.companyName) return;
 
-    if (!currentUser.companyName) return;
+      try {
+        const url = `http://localhost:3000/invoice_get_com/${encodeURIComponent(currentUser.companyName)}`;
+        const res = await fetch(url);
+        const json = await res.json();
+        const data = json.data?.product || [];
 
-    try {
-      const url = `http://localhost:3000/invoice_get_com/${encodeURIComponent(currentUser.companyName)}`;
-      console.log("📡 Fetching URL:", url);
+        const parsed = data.map((row) => ({
+          ...row,
+          seller: typeof row.seller === "string" ? JSON.parse(row.seller) : row.seller,
+          buyer: typeof row.buyer === "string" ? JSON.parse(row.buyer) : row.buyer,
+          item: typeof row.item === "string" ? JSON.parse(row.item) : row.item,
+        }));
 
-      const res = await fetch(url);
-      const json = await res.json();
-      console.log("📦 API Response:", json);
+        setReceipts(parsed);
+      } catch (err) {
+        console.error("❌ Fetch error:", err);
+      }
+    };
 
-      const data = json.data?.product || [];
+    fetchReceipts();
+  }, []);
 
-      const parsed = data.map((row) => ({
-        ...row,
-        seller: typeof row.seller === "string" ? JSON.parse(row.seller) : row.seller,
-        buyer: typeof row.buyer === "string" ? JSON.parse(row.buyer) : row.buyer,
-        item: typeof row.item === "string" ? JSON.parse(row.item) : row.item,
-      }));
-
-      console.log("✅ Final Parsed Receipts:", parsed);
-      setReceipts(parsed);
-    } catch (err) {
-      console.error("❌ Fetch error:", err);
-    }
-  };
-
-  fetchReceipts();
-}, []);
-
-
-  const toggleMenu = () => setMenuOpen(!menuOpen);
+  const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
   const toggleView = (index) => setSelected(selected === index ? null : index);
 
   const formatCurrency = (amount) =>
@@ -81,20 +73,7 @@ const IihCompany = () => {
   };
 
   const MenuItem = ({ icon, text, onClick, active }) => (
-    <div
-      onClick={onClick}
-      style={{
-        padding: "0.8rem 1rem",
-        display: "flex",
-        alignItems: "center",
-        gap: "0.8rem",
-        color: active ? "white" : "#000",
-        backgroundColor: active ? "#6666cc" : "transparent",
-        cursor: "pointer",
-        fontSize: "14px",
-        fontWeight: active ? "bold" : "normal"
-      }}
-    >
+    <div onClick={onClick} style={{ padding: "0.8rem 1rem", display: "flex", alignItems: "center", gap: "0.8rem", color: active ? "white" : "#000", backgroundColor: active ? "#6666cc" : "transparent", cursor: "pointer", fontSize: "14px", fontWeight: active ? "bold" : "normal" }}>
       <div style={{ fontSize: "18px" }}>{icon}</div>
       <div>{text}</div>
     </div>
@@ -104,57 +83,41 @@ const IihCompany = () => {
   const tdStyle = { border: "1px solid #ddd", padding: "8px", textAlign: "center" };
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#e6f0ff", fontFamily: "sans-serif" }}>
-      <style>
-        {`
-          @media print {
-            body * {
-              visibility: hidden;
-            }
-            #invoice-print, #invoice-print * {
-              visibility: visible;
-            }
-            #invoice-print {
-              position: absolute;
-              top: 0;
-              left: 0;
-              width: 100%;
-            }
-          }
-        `}
-      </style>
+    <div style={{ minHeight: "100vh", backgroundColor: "#e6f0ff" }}>
+      <style>{`
+        @media print {
+          body * { visibility: hidden; }
+          #invoice-print, #invoice-print * { visibility: visible; }
+          #invoice-print { position: absolute; top: 0; left: 0; width: 100%; }
+        }
+      `}</style>
 
-      {/* Header */}
-      <div style={{ backgroundColor: "#1a1aa6", height: "64px", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 1rem", color: "white" }}>
-        <div onClick={toggleMenu} style={{ cursor: "pointer" }}><FaBars size={20} /></div>
+      <div style={{ backgroundColor: "#1a1aa6", height: "64px", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 1rem", color: "white", position: "sticky", top: 0, zIndex: 10 }}>
+        <div onClick={toggleSidebar} style={{ cursor: "pointer" }}><FaBars size={20} /></div>
         <h1 style={{ fontSize: "20px" }}>TAX INVOICE</h1>
         <FaUser style={{ cursor: "pointer" }} onClick={() => navigate("/UiCompany")} />
       </div>
 
-      {/* Sidebar */}
-      {menuOpen && (
-        <div style={{
-          position: "fixed", top: "64px", left: 0, bottom: 0, width: "200px",
-          backgroundColor: "#9999ff", display: "flex", flexDirection: "column",
-          justifyContent: "space-between", padding: "1rem 0", zIndex: 2
-        }}>
-          <div>
-            <MenuItem icon={<FaHome />} text="ใบกำกับภาษี" onClick={() => navigate("/MainCompany")} active={location.pathname === "/MainCompany"} />
-            <MenuItem icon={<FiFileText />} text="ประวัติการทำรายการ" onClick={() => navigate("/IihCompany")} active={location.pathname === "/IihCompany"} />
-            <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiCompany")} active={location.pathname === "/UiCompany"} />
-            <MenuItem icon={<FaShoppingCart />} text="สินค้า" onClick={() => navigate("/Product")} active={location.pathname === "/Product"} />
-            <MenuItem icon={<FaClipboardList />} text="ทำใบเสร็จ" onClick={() => navigate("/CreateInvoice")} active={location.pathname === "/CreateInvoice"} />
+      {sidebarVisible && (
+        <div style={{ position: "fixed", top: "64px", left: 0, width: "200px", height: "calc(100vh - 64px)", backgroundColor: "#9999ff", zIndex: 20 }}>
+          <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: "100%", padding: "1rem 0" }}>
+            <div>
+              <MenuItem icon={<FaHome />} text="ใบกำกับภาษี" onClick={() => navigate("/MainCompany")} active={location.pathname === "/MainCompany"} />
+              <MenuItem icon={<FiFileText />} text="ประวัติการทำรายการ" onClick={() => navigate("/IihCompany")} active={location.pathname === "/IihCompany"} />
+              <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiCompany")} active={location.pathname === "/UiCompany"} />
+              <MenuItem icon={<FaShoppingCart />} text="สินค้า" onClick={() => navigate("/Product")} active={location.pathname === "/Product"} />
+              <MenuItem icon={<FaClipboardList />} text="ทำใบเสร็จ" onClick={() => navigate("/CreateInvoice")} active={location.pathname === "/CreateInvoice"} />
+            </div>
+            <div style={{ marginBottom: "20px" }}>
+              <MenuItem icon={<FaSignOutAlt />} text="ออกจากระบบ" onClick={() => { localStorage.clear(); navigate("/Enter"); }} />
+            </div>
           </div>
-          <MenuItem icon={<FaSignOutAlt />} text="ออกจากระบบ" onClick={() => navigate("/Enter")} />
         </div>
       )}
 
-      {/* Content */}
-      <div style={{ marginLeft: menuOpen ? "200px" : "0", padding: "2rem" }}>
+      <div style={{ padding: "2rem" }}>
         {receipts.length === 0 ? (
-          <div style={{ textAlign: "center", fontSize: "18px", color: "#666" }}>
-            ไม่พบใบกำกับภาษีที่ตรงกับข้อมูลของบริษัทนี้
-          </div>
+          <div style={{ textAlign: "center", fontSize: "18px", color: "#666" }}>ไม่พบใบกำกับภาษีที่ตรงกับข้อมูลของบริษัทนี้</div>
         ) : (
           receipts.map((receipt, index) => (
             <div key={index}>
@@ -164,10 +127,7 @@ const IihCompany = () => {
                 <div>ลูกค้า: {receipt.buyer.firstName} {receipt.buyer.lastName}</div>
                 <div>เลขผู้เสียภาษี: {receipt.buyer.taxId}</div>
                 <div>ที่อยู่: {receipt.buyer.address}</div>
-                <button
-                  style={{ marginTop: "0.5rem", padding: "0.5rem 1rem", backgroundColor: "#4da6ff", color: "white", border: "none", borderRadius: "5px" }}
-                  onClick={() => toggleView(index)}
-                >
+                <button style={{ marginTop: "0.5rem", padding: "0.5rem 1rem", backgroundColor: "#4da6ff", color: "white", border: "none", borderRadius: "5px" }} onClick={() => toggleView(index)}>
                   {selected === index ? "ซ่อนใบกำกับภาษี" : "ดูใบกำกับภาษี"}
                 </button>
               </div>
@@ -175,20 +135,12 @@ const IihCompany = () => {
               {selected === index && (
                 <div style={{ marginBottom: "3rem" }}>
                   <div style={{ textAlign: "right", marginBottom: "1rem" }}>
-                    <button onClick={printInvoice} style={{
-                      backgroundColor: "#4da6ff", border: "none", color: "white",
-                      padding: "0.5rem 1rem", borderRadius: "5px",
-                      display: "flex", alignItems: "center", gap: "0.5rem"
-                    }}>
+                    <button onClick={printInvoice} style={{ backgroundColor: "#4da6ff", border: "none", color: "white", padding: "0.5rem 1rem", borderRadius: "5px", display: "flex", alignItems: "center", gap: "0.5rem" }}>
                       พิมพ์ใบกำกับภาษี <FaPrint />
                     </button>
                   </div>
 
-                  <div id="invoice-print" style={{
-                    width: "21cm", minHeight: "29.7cm", backgroundColor: "white",
-                    padding: "2rem", borderRadius: "15px",
-                    boxShadow: "0 0 12px rgba(0,0,0,0.1)", margin: "auto"
-                  }}>
+                  <div id="invoice-print" style={{ width: "21cm", minHeight: "29.7cm", backgroundColor: "white", padding: "2rem", borderRadius: "15px", boxShadow: "0 0 12px rgba(0,0,0,0.1)", margin: "auto" }}>
                     <h2 style={{ color: "#1a1aa6" }}>ใบเสร็จรับเงิน/ใบกำกับภาษี</h2>
                     <div style={{ fontSize: "14px", marginBottom: "1rem" }}>
                       วันที่ {formatDateTime(receipt.date)} เล่มที่ 001 เลขที่ {String(index + 1).padStart(3, '0')}
