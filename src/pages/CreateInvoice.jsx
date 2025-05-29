@@ -1,48 +1,60 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
-  FaShoppingCart,
-  FaBars,
-  FaUserCircle,
-  FaSignOutAlt,
-  FaClipboardList,
-  FaHome,
+  FaShoppingCart, FaBars, FaUserCircle, FaSignOutAlt, FaClipboardList,
+  FaHome, FaSearch
 } from "react-icons/fa";
 import { FiFileText } from "react-icons/fi";
+
+const MenuItem = ({ icon, text, onClick, active }) => (
+  <div onClick={onClick} style={{
+    padding: "0.8rem 1rem",
+    display: "flex",
+    alignItems: "center",
+    gap: "0.8rem",
+    color: active ? "white" : "#000",
+    backgroundColor: active ? "#6666cc" : "transparent",
+    cursor: "pointer",
+    fontSize: "14px",
+    fontWeight: active ? "bold" : "normal"
+  }}>
+    <div style={{ fontSize: "18px" }}>{icon}</div>
+    <div>{text}</div>
+  </div>
+);
 
 const CreateInvoice = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const headerHeight = 64;
+
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [receipts, setReceipts] = useState([]);
-  const [filterType, setFilterType] = useState("all");
   const [selectedReceipt, setSelectedReceipt] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
-  const receiptRefs = useRef([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortOrder, setSortOrder] = useState("desc");
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchReceipts = async () => {
       const user = JSON.parse(localStorage.getItem("currentUser"));
       if (!user) return;
-
       try {
         const res = await fetch(`http://localhost:3000/receist_get_com/${encodeURIComponent(user.companyName)}`);
         const data = await res.json();
-
         const formatted = data.data.product.map((receipt) => ({
           ...receipt,
           items: JSON.parse(receipt.item),
           isInvoiced: receipt.status,
         }));
-
         setReceipts(formatted);
         setCurrentUser(user);
       } catch (error) {
         console.error("โหลดใบเสร็จล้มเหลว:", error);
       }
     };
-
     fetchReceipts();
   }, []);
 
@@ -53,87 +65,57 @@ const CreateInvoice = () => {
     return d.toLocaleDateString("th-TH") + " " + d.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
   };
 
-  const handleDeleteReceipt = async (receiptToDelete) => {
-    const confirmed = window.confirm("คุณแน่ใจหรือไม่ว่าต้องการลบใบเสร็จนี้?");
-    if (!confirmed) return;
-
-    try {
-      const res = await fetch("http://localhost:3000/delete_receipt", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ re_id: receiptToDelete.re_id })
-      });
-
-      const result = await res.json();
-      if (result.status === 200) {
-        const updatedReceipts = receipts.filter((r) => r.re_id !== receiptToDelete.re_id);
-        setReceipts(updatedReceipts);
-        setSelectedReceipt(null);
-        alert("ลบสำเร็จแล้ว");
-      } else {
-        alert("เกิดข้อผิดพลาดในการลบ");
-      }
-    } catch (error) {
-      console.error("ลบใบเสร็จล้มเหลว:", error);
-      alert("เกิดข้อผิดพลาด");
-    }
-  };
-
   const filteredReceipts = receipts.filter((receipt) => {
-    if (filterType === "invoiced") return receipt.isInvoiced;
-    if (filterType === "notInvoiced") return !receipt.isInvoiced;
-    return true;
+    const itemMatch = receipt.items.some((item) =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    const dateMatch = new Date(receipt.date).toLocaleDateString("th-TH").includes(searchTerm);
+    const priceMatch = receipt.total.toString().includes(searchTerm);
+    return itemMatch || dateMatch || priceMatch;
   });
 
-  const ReceiptModal = ({ receipt, onClose }) => (
-    <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000 }}>
-      <div style={{ backgroundColor: "white", padding: "2rem", borderRadius: "10px", width: "600px", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 4px 12px rgba(0,0,0,0.2)" }}>
-        <h2 style={{ textAlign: "center", marginBottom: "1rem" }}>ใบเสร็จรับเงิน</h2>
-        {currentUser && (
-          <div style={{ marginBottom: "1rem" }}>
-            <p><strong>ชื่อบริษัท:</strong> {currentUser.companyName}</p>
-            <p><strong>ที่อยู่:</strong> {currentUser.address}</p>
-            <p><strong>เบอร์โทร:</strong> {currentUser.phone}</p>
-            <p><strong>เลขประจำตัวผู้เสียภาษี:</strong> {currentUser.taxId}</p>
-            <p><strong>สาขา:</strong> {currentUser.branch}</p>
-          </div>
-        )}
-        <p><strong>วันที่:</strong> {formatDateTime(receipt.date)}</p>
-        <hr />
-        {receipt.items.map((item, i) => (
-          <div key={i} style={{ display: "flex", justifyContent: "space-between" }}>
-            <span>{item.quantity.toFixed(2)} × {item.name}</span>
-            <span>{Number(item.price).toLocaleString()}</span>
-          </div>
-        ))}
-        <hr />
-        <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold" }}>
-          <span>รวม</span>
-          <span>{Number(receipt.total).toLocaleString()} บาท</span>
-        </div>
-        <div style={{ marginTop: "1rem", display: "flex", justifyContent: "center", gap: "1rem" }}>
-          <button onClick={onClose} style={{ padding: "0.5rem 2rem", backgroundColor: "#1a1aa6", color: "white", border: "none", borderRadius: "8px", cursor: "pointer" }}>ปิด</button>
-          <button onClick={() => handleDeleteReceipt(receipt)} style={{ padding: "0.5rem 2rem", backgroundColor: "#ff4d4d", color: "white", border: "none", borderRadius: "8px", cursor: "pointer" }}>🗑 ลบ</button>
-        </div>
-      </div>
-    </div>
-  );
+  const sortedReceipts = [...filteredReceipts].sort((a, b) => {
+    const dateA = new Date(a.date);
+    const dateB = new Date(b.date);
+    return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+  });
+
+  const paginatedReceipts = sortedReceipts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.ceil(filteredReceipts.length / itemsPerPage);
+
+  const thStyle = { padding: "12px", borderBottom: "1px solid #aaa" };
+  const tdStyle = { padding: "10px" };
+  const pageButtonStyle = {
+    padding: "6px 12px",
+    borderRadius: "6px",
+    border: "none",
+    backgroundColor: "#cce0ff",
+    fontWeight: "bold",
+    cursor: "pointer"
+  };
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#e6f0ff" }}>
-      <div style={{ backgroundColor: "#1a1aa6", height: `${headerHeight}px`, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 1rem", color: "white", position: "sticky", top: 0, zIndex: 10 }}>
-        <div onClick={toggleSidebar} style={{ cursor: "pointer" }}>
-          <FaBars size={20} />
-        </div>
-        <span style={{ fontWeight: "bold", letterSpacing: "1px" }}>TAX INVOICE</span>
-        <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiCompany")} />
+    <div style={{ minHeight: "100vh", backgroundColor: "#e6f0ff", paddingBottom: "3rem" }}>
+      {/* Header */}
+      <div style={{
+        backgroundColor: "#1a1aa6", height: `${headerHeight}px`, display: "flex",
+        justifyContent: "space-between", alignItems: "center", padding: "0 1rem",
+        color: "white", position: "sticky", top: 0, zIndex: 10
+      }}>
+        <FaBars onClick={toggleSidebar} style={{ cursor: "pointer" }} />
+        <span style={{ fontWeight: "bold" }}>TAX INVOICE</span>
+        <FaUserCircle size={24} onClick={() => navigate("/UiCompany")} style={{ cursor: "pointer" }} />
       </div>
 
+      {/* Sidebar */}
       {sidebarVisible && (
-        <div style={{ position: "fixed", top: `${headerHeight}px`, left: 0, width: "200px", height: `calc(100vh - ${headerHeight}px)`, backgroundColor: "#9999ff", zIndex: 20, overflow: "hidden" }}>
+        <div style={{
+          position: "fixed", top: `${headerHeight}px`, left: 0, width: "200px",
+          height: `calc(100vh - ${headerHeight}px)`, backgroundColor: "#9999ff", zIndex: 20
+        }}>
           <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: "100%", padding: "1rem 0" }}>
             <div>
-              <MenuItem icon={<FaHome />} text="ใบกำกับภาษี" onClick={() => navigate("/MainCompany")} active={location.pathname === "/MainCompany"} />
+              <MenuItem icon={<FaHome />} text="หน้าแรก" onClick={() => navigate("/MainCompany")} active={location.pathname === "/MainCompany"} />
               <MenuItem icon={<FiFileText />} text="ประวัติการทำรายการ" onClick={() => navigate("/IihCompany")} active={location.pathname === "/IihCompany"} />
               <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiCompany")} active={location.pathname === "/UiCompany"} />
               <MenuItem icon={<FaShoppingCart />} text="สินค้า" onClick={() => navigate("/Product")} active={location.pathname === "/Product"} />
@@ -146,73 +128,148 @@ const CreateInvoice = () => {
         </div>
       )}
 
-      <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem" }}>
-        <button onClick={() => navigate("/Addreceipt")} style={{ display: "flex", alignItems: "center", gap: "0.5rem", border: "2px solid #1a1aa6", backgroundColor: "white", color: "#1a1aa6", padding: "0.6rem 1.2rem", borderRadius: "30px", fontSize: "16px", fontWeight: "bold", cursor: "pointer" }}>
-          <span role="img" aria-label="icon">🗓️</span> เพิ่มใบเสร็จ
+      {/* ค้นหา */}
+      <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem", gap: "1rem", flexWrap: "wrap" }}>
+        <button onClick={() => navigate("/Addreceipt")} style={{ borderRadius: "30px", padding: "0.7rem 2rem", border: "none", backgroundColor: "#a6d4ff", fontWeight: "bold", fontSize: "16px", cursor: "pointer" }}>
+          เพิ่มรายการสินค้า
         </button>
-      </div>
-
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: "1rem" }}>
-        <select value={filterType} onChange={(e) => setFilterType(e.target.value)} style={{ padding: "0.5rem 1rem", borderRadius: "20px", border: "1px solid #ccc", fontSize: "16px" }}>
-          <option value="all">แสดงทั้งหมด</option>
-          <option value="notInvoiced">ยังไม่ออกใบกำกับ</option>
-          <option value="invoiced">ออกใบกำกับแล้ว</option>
-        </select>
-      </div>
-
-      <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem" }}>
-        <div style={{ backgroundColor: "#a6d4ff", padding: "0.6rem 2rem", borderRadius: "6px", fontSize: "18px", fontWeight: "bold", color: "#000" }}>
-          รายการใบเสร็จ
+        <div style={{ display: "flex", alignItems: "center", backgroundColor: "white", padding: "0.4rem 1rem", borderRadius: "30px" }}>
+          <input
+            type="text"
+            placeholder="ค้นหาจากวันที่รายการ ชื่อลูกค้า หรือราคา"
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
+            style={{ border: "none", outline: "none", fontSize: "16px", backgroundColor: "transparent", width: "220px" }}
+          />
+          <FaSearch />
         </div>
       </div>
 
-      <div style={{ maxWidth: "700px", margin: "1rem auto", padding: "1rem" }}>
-        {filteredReceipts.length === 0 ? (
-          <div style={{ textAlign: "center", color: "#777" }}>ไม่มีประวัติใบเสร็จ</div>
-        ) : (
-          filteredReceipts.map((receipt, index) => (
-            <div key={index} ref={(el) => (receiptRefs.current[index] = el)} style={{ backgroundColor: "white", padding: "1rem", marginBottom: "1rem", borderRadius: "10px", boxShadow: "0 2px 6px rgba(0,0,0,0.1)" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
-                <strong>ประวัติรายการที่ {index + 1}</strong>
-                <span>{formatDateTime(receipt.date)}</span>
-              </div>
-              <hr />
-              {receipt.items.map((item, idx) => (
-                <div key={idx} style={{ display: "flex", justifyContent: "space-between", margin: "0.3rem 0" }}>
-                  <span>{item.quantity.toFixed(2)} × {item.name}</span>
-                  <span>{Number(item.price).toLocaleString()}</span>
-                </div>
-              ))}
-              <hr />
-              <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold" }}>
-                <span>รวม</span>
-                <span>{Number(receipt.total).toLocaleString()} บาท</span>
-              </div>
-              <div style={{ textAlign: "right", marginTop: "0.5rem" }}>
-                <button onClick={() => setSelectedReceipt(receipt)} style={{ padding: "0.3rem 1rem", border: "1px solid #1a1aa6", background: "white", color: "#1a1aa6", borderRadius: "6px", cursor: "pointer" }}>
-                  ดูรายละเอียด
+      {/* ตารางใบเสร็จ */}
+      <div style={{ margin: "1rem auto", width: "95%", maxWidth: "850px", overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", backgroundColor: "white", marginTop: "1rem", borderRadius: "12px", overflow: "hidden" }}>
+          <thead style={{ backgroundColor: "#d0e8ff", color: "#000", fontWeight: "bold" }}>
+            <tr>
+              <th style={thStyle}>ลำดับ</th>
+              <th style={thStyle}>เวลา</th>
+              <th style={thStyle}>
+                วันที่{" "}
+                <button onClick={() => setSortOrder(prev => prev === "asc" ? "desc" : "asc")} style={{
+                  background: "none", border: "none", cursor: "pointer", fontSize: "16px"
+                }}>
+                  {sortOrder === "asc" ? "⬆️" : "⬇️"}
                 </button>
-              </div>
-              {receipt.isInvoiced && (
-                <div style={{ marginTop: "0.5rem", color: "green", fontWeight: "bold", fontSize: "14px" }}>
-                  ✅ ออกใบกำกับภาษีแล้ว
-                </div>
-              )}
-            </div>
-          ))
-        )}
+              </th>
+              <th style={thStyle}>รายการ</th>
+              <th style={thStyle}>ราคา</th>
+              <th style={thStyle}>รายละเอียด</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paginatedReceipts.length === 0 ? (
+              <tr><td colSpan="6" style={{ textAlign: "center", padding: "1rem" }}>ไม่พบรายการ</td></tr>
+            ) : (
+              paginatedReceipts.map((receipt, i) => {
+                const dateObj = new Date(receipt.date);
+                const time = dateObj.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+                const date = dateObj.toLocaleDateString("th-TH");
+                return (
+                  <tr key={i} style={{ textAlign: "center", borderBottom: "1px solid #ccc" }}>
+                    <td style={tdStyle}>{(currentPage - 1) * itemsPerPage + i + 1}</td>
+                    <td style={tdStyle}>{time}</td>
+                    <td style={tdStyle}>{date}</td>
+                    <td style={tdStyle}>{receipt.items[0]?.name || "-"}</td>
+                    <td style={tdStyle}>{Number(receipt.total).toLocaleString()} ฿</td>
+                    <td style={tdStyle}>
+                      <button onClick={() => setSelectedReceipt(receipt)} style={{ color: "#1a1aa6", textDecoration: "underline", cursor: "pointer", background: "none", border: "none" }}>
+                        ดูใบเสร็จ
+                      </button>
+                      <span style={{ margin: "0 6px" }}>/</span>
+                      <button onClick={() => navigate("/makeinvoice", { state: { receipt } })} style={{ color: "#1a1aa6", textDecoration: "underline", cursor: "pointer", background: "none", border: "none" }}>
+                        ออกใบกำกับ
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
       </div>
 
-      {selectedReceipt && <ReceiptModal receipt={selectedReceipt} onClose={() => setSelectedReceipt(null)} />}
+      {/* Pagination */}
+      <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem", gap: "0.5rem", flexWrap: "wrap" }}>
+        <button onClick={() => setCurrentPage(p => Math.max(p - 1, 1))} style={pageButtonStyle}>หน้าก่อน</button>
+        {Array.from({ length: totalPages }, (_, i) => (
+          <button key={i} onClick={() => setCurrentPage(i + 1)} style={{
+            ...pageButtonStyle,
+            backgroundColor: currentPage === i + 1 ? "#1a1aa6" : "#cce0ff",
+            color: currentPage === i + 1 ? "white" : "black"
+          }}>
+            {i + 1}
+          </button>
+        ))}
+        <button onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))} style={pageButtonStyle}>หน้าถัดไป</button>
+      </div>
+
+      {/* Modal แสดงใบเสร็จ */}
+      {selectedReceipt && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+          backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center",
+          alignItems: "center", zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: "white", padding: "2rem", borderRadius: "10px",
+            width: "600px", maxHeight: "90vh", overflowY: "auto"
+          }}>
+            <h2 style={{ textAlign: "center", fontWeight: "bold" }}>ใบเสร็จรับเงิน</h2>
+            {currentUser && (
+              <div>
+                <p><strong>ชื่อบริษัท:</strong> {currentUser.companyName}</p>
+                <p><strong>ที่อยู่:</strong> {currentUser.address}</p>
+                <p><strong>เบอร์โทร:</strong> {currentUser.phone}</p>
+                <p><strong>เลขประจำตัวผู้เสียภาษี:</strong> {currentUser.taxId}</p>
+                <p><strong>สาขา:</strong> {currentUser.branch}</p>
+              </div>
+            )}
+            <p><strong>วันที่:</strong> {formatDateTime(selectedReceipt.date)}</p>
+            <hr />
+            {selectedReceipt.items.map((item, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: "space-between" }}>
+                <span>{item.quantity.toFixed(2)} × {item.name}</span>
+                <span>{Number(item.price).toLocaleString()}</span>
+              </div>
+            ))}
+            <hr />
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span><strong>มูลค่าก่อนภาษี:</strong></span>
+              <span>{selectedReceipt.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span><strong>VAT 7%:</strong></span>
+              <span>{(selectedReceipt.total * 0.07).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold", fontSize: "18px", marginTop: "1rem" }}>
+              <span>ยอดรวม:</span>
+              <span>{(selectedReceipt.total * 1.07).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
+            <div style={{ marginTop: "1.5rem", display: "flex", justifyContent: "center" }}>
+              <button onClick={() => setSelectedReceipt(null)} style={{
+                padding: "0.5rem 2rem", backgroundColor: "#1a1aa6", color: "white",
+                border: "none", borderRadius: "8px"
+              }}>
+                ปิด
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
-
-const MenuItem = ({ icon, text, onClick, active }) => (
-  <div onClick={onClick} style={{ padding: "0.8rem 1rem", display: "flex", alignItems: "center", gap: "0.8rem", color: active ? "white" : "#000", backgroundColor: active ? "#6666cc" : "transparent", cursor: "pointer", fontSize: "14px", fontWeight: active ? "bold" : "normal" }}>
-    <div style={{ fontSize: "18px" }}>{icon}</div>
-    <div>{text}</div>
-  </div>
-);
 
 export default CreateInvoice;

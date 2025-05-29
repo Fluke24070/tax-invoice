@@ -1,13 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
-  FaShoppingCart,
-  FaBars,
-  FaUserCircle,
-  FaSignOutAlt,
-  FaClipboardList,
-  FaHome,
-  FaPrint,
+  FaShoppingCart, FaBars, FaUserCircle, FaSignOutAlt, FaClipboardList,
+  FaHome, FaPrint
 } from "react-icons/fa";
 import { FiFileText } from "react-icons/fi";
 
@@ -71,6 +66,20 @@ const CreatetaxInvoice = () => {
     }
   };
 
+  const thStyle = { border: "1px solid #ddd", padding: "8px", textAlign: "center" };
+  const tdStyle = { border: "1px solid #ddd", padding: "8px", textAlign: "center" };
+
+  const MenuItem = ({ icon, text, onClick, active }) => (
+    <div onClick={onClick} style={{
+      padding: "0.8rem 1rem", display: "flex", alignItems: "center", gap: "0.8rem",
+      color: active ? "white" : "#000", backgroundColor: active ? "#6666cc" : "transparent",
+      cursor: "pointer", fontSize: "14px", fontWeight: active ? "bold" : "normal"
+    }}>
+      <div style={{ fontSize: "18px" }}>{icon}</div>
+      <div>{text}</div>
+    </div>
+  );
+
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#e6f0ff", fontFamily: "sans-serif" }}>
       <style>{`
@@ -93,17 +102,27 @@ const CreatetaxInvoice = () => {
         }
       `}</style>
 
-      <div style={{ backgroundColor: "#1a1aa6", height: `${headerHeight}px`, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 1rem", color: "white", position: "sticky", top: 0, zIndex: 10 }}>
-        <div onClick={toggleSidebar} style={{ cursor: "pointer" }}><FaBars size={20} /></div>
-        <span style={{ fontWeight: "bold", letterSpacing: "1px" }}>TAX INVOICE</span>
-        <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiCompany")} />
+      {/* Header */}
+      <div style={{
+        backgroundColor: "#1a1aa6", height: `${headerHeight}px`,
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        padding: "0 1rem", color: "white", position: "sticky", top: 0, zIndex: 10
+      }}>
+        <FaBars onClick={toggleSidebar} style={{ cursor: "pointer" }} />
+        <span style={{ fontWeight: "bold" }}>TAX INVOICE</span>
+        <FaUserCircle size={24} onClick={() => navigate("/UiCompany")} style={{ cursor: "pointer" }} />
       </div>
 
+      {/* Sidebar */}
       {sidebarVisible && (
-        <div style={{ position: "fixed", top: `${headerHeight}px`, left: 0, width: "200px", height: `calc(100vh - ${headerHeight}px)`, backgroundColor: "#9999ff", zIndex: 20 }}>
+        <div style={{
+          position: "fixed", top: `${headerHeight}px`, left: 0,
+          width: "200px", height: `calc(100vh - ${headerHeight}px)`,
+          backgroundColor: "#9999ff", zIndex: 20
+        }}>
           <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: "100%", padding: "1rem 0" }}>
             <div>
-              <MenuItem icon={<FaHome />} text="ใบกำกับภาษี" onClick={() => navigate("/MainCompany")} active={location.pathname === "/MainCompany"} />
+              <MenuItem icon={<FaHome />} text="หน้าแรก" onClick={() => navigate("/MainCompany")} active={location.pathname === "/MainCompany"} />
               <MenuItem icon={<FiFileText />} text="ประวัติการทำรายการ" onClick={() => navigate("/IihCompany")} active={location.pathname === "/IihCompany"} />
               <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiCompany")} active={location.pathname === "/UiCompany"} />
               <MenuItem icon={<FaShoppingCart />} text="สินค้า" onClick={() => navigate("/Product")} active={location.pathname === "/Product"} />
@@ -116,16 +135,31 @@ const CreatetaxInvoice = () => {
         </div>
       )}
 
-      <div id="invoice-area" style={{ width: "21cm", minHeight: "29.7cm", margin: "2rem auto", backgroundColor: "white", padding: "2rem", borderRadius: "15px", boxShadow: "0 0 12px rgba(0,0,0,0.1)" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+      {/* Invoice Display */}
+      <div id="invoice-area" style={{
+        width: "21cm", minHeight: "29.7cm", margin: "2rem auto",
+        backgroundColor: "white", padding: "2rem", borderRadius: "15px",
+        boxShadow: "0 0 12px rgba(0,0,0,0.1)"
+      }}>
+        <div style={{
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+          marginBottom: "1rem"
+        }}>
           <h2 style={{ color: "#1a1aa6" }}>ใบเสร็จรับเงิน/ใบกำกับภาษี</h2>
-          <button className="no-print" onClick={() => window.print()} style={{ backgroundColor: "#4da6ff", border: "none", color: "white", padding: "0.5rem 1rem", borderRadius: "5px", fontWeight: "bold", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <button className="no-print" onClick={() => window.print()} style={{
+            backgroundColor: "#4da6ff", border: "none", color: "white",
+            padding: "0.5rem 1rem", borderRadius: "5px", fontWeight: "bold",
+            display: "flex", alignItems: "center", gap: "0.5rem"
+          }}>
             พิมพ์หน้านี้ <FaPrint />
           </button>
         </div>
 
-        <div style={{ fontSize: "14px", marginBottom: "1rem" }}>วันที่ {new Date().toLocaleDateString("th-TH")} เล่มที่ 001 เลขที่ {String(invoiceNumber).padStart(3, "0")}</div>
+        <div style={{ fontSize: "14px", marginBottom: "1rem" }}>
+          วันที่ {new Date().toLocaleDateString("th-TH")} เล่มที่ 001 เลขที่ {String(invoiceNumber).padStart(3, "0")}
+        </div>
 
+        {/* Seller & Buyer Info */}
         <div style={{ fontSize: "14px", marginBottom: "1.5rem" }}>
           <div style={{ marginBottom: "0.5rem" }}>
             <strong>ชื่อผู้ขาย</strong>
@@ -143,6 +177,7 @@ const CreatetaxInvoice = () => {
           </div>
         </div>
 
+        {/* Product Table */}
         {receipt && receipt.items && (
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
             <thead>
@@ -168,6 +203,7 @@ const CreatetaxInvoice = () => {
           </table>
         )}
 
+        {/* Totals */}
         <div style={{ marginTop: "1rem", fontSize: "14px", textAlign: "right" }}>
           <div>มูลค่าก่อนเสียภาษี {formatCurrency(calculateTotal())}</div>
           <div>ภาษีมูลค่าเพิ่ม (VAT) {formatCurrency(calculateVAT())}</div>
@@ -175,7 +211,11 @@ const CreatetaxInvoice = () => {
         </div>
 
         <div className="no-print" style={{ textAlign: "right", marginTop: "1rem" }}>
-          <button onClick={handleSaveTaxInvoice} style={{ backgroundColor: "#1a75ff", color: "white", padding: "0.75rem 2rem", borderRadius: "8px", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer" }}>
+          <button onClick={handleSaveTaxInvoice} style={{
+            backgroundColor: "#1a75ff", color: "white", padding: "0.75rem 2rem",
+            borderRadius: "8px", border: "none", fontSize: "16px",
+            fontWeight: "bold", cursor: "pointer"
+          }}>
             ยืนยันออกใบกำกับภาษี
           </button>
         </div>
@@ -183,15 +223,5 @@ const CreatetaxInvoice = () => {
     </div>
   );
 };
-
-const thStyle = { border: "1px solid #ddd", padding: "8px", textAlign: "center" };
-const tdStyle = { border: "1px solid #ddd", padding: "8px", textAlign: "center" };
-
-const MenuItem = ({ icon, text, onClick, active }) => (
-  <div onClick={onClick} style={{ padding: "0.8rem 1rem", display: "flex", alignItems: "center", gap: "0.8rem", color: active ? "white" : "#000", backgroundColor: active ? "#6666cc" : "transparent", cursor: "pointer", fontSize: "14px", fontWeight: active ? "bold" : "normal" }}>
-    <div style={{ fontSize: "18px" }}>{icon}</div>
-    <div>{text}</div>
-  </div>
-);
 
 export default CreatetaxInvoice;

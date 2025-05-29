@@ -17,6 +17,7 @@ import Invoice from "../pages/Invoice";
 import CreatetaxInvoice from "../pages/CreatetaxInvoice";
 import IihCompany from "../pages/IihCompany";
 import IihUser from "../pages/IihUser";
+import Makeinvoice from "../pages/makeinvoice";
 
 
 const Routers = () => {
@@ -41,6 +42,7 @@ const Routers = () => {
         <Route path="/CreatetaxInvoice" element={<CreatetaxInvoice />} />
         <Route path="/IihCompany" element={<IihCompany />} />
         <Route path="/IihUser" element={<IihUser />} />
+        <Route path="/makeinvoice" element={<Makeinvoice />} />
       </Routes>
     </Router>
   );

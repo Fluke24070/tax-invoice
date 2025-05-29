@@ -6,7 +6,7 @@ import {
 import { FiFileText } from "react-icons/fi";
 import { Html5Qrcode } from "html5-qrcode";
 
-const MainCompany = () => {
+const Makeinvoice = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(true);
@@ -18,6 +18,8 @@ const MainCompany = () => {
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef(null);
+
+  const receipt = location.state?.receipt || null;
 
   useEffect(() => {
     fetch("http://localhost:3000/get_users")
@@ -143,7 +145,7 @@ const MainCompany = () => {
       }}>
         <div onClick={toggleMenu} style={{ cursor: "pointer", color: "white" }}><FaBars size={20} /></div>
         <h1 style={{ color: "white", fontFamily: "monospace", fontSize: "20px" }}>TAX INVOICE</h1>
-        <FaUserCircle  size={24}  style={{ cursor: "pointer", color: "white" }}  onClick={() => navigate("/UiCompany")}/>
+        <FaUser style={{ color: "white", fontSize: "20px", cursor: "pointer" }} onClick={() => navigate("/UiCompany")} />
       </div>
 
       {menuOpen && (
@@ -239,8 +241,15 @@ const MainCompany = () => {
               <input value={results.branch || ""} readOnly placeholder="สาขา" style={inputStyle} />
               <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1rem" }}>
                 <button style={{ backgroundColor: "#ff4d4d", color: "#fff", padding: "0.5rem 1rem", border: "none", borderRadius: "5px" }}>ยกเลิก</button>
-                <button onClick={() => navigate("/Invoice", { state: { buyer: results } })}
-                  style={{ backgroundColor: "#4da6ff", color: "#fff", padding: "0.5rem 1rem", border: "none", borderRadius: "5px", cursor: "pointer" }}>
+                <button
+                  onClick={() => navigate("/CreatetaxInvoice", {
+                    state: {
+                      buyer: results,
+                      receipt: receipt
+                    }
+                  })}
+                  style={{ backgroundColor: "#4da6ff", color: "#fff", padding: "0.5rem 1rem", border: "none", borderRadius: "5px", cursor: "pointer" }}
+                >
                   ทำใบกำกับ
                 </button>
               </div>
@@ -252,4 +261,4 @@ const MainCompany = () => {
   );
 };
 
-export default MainCompany;
+export default Makeinvoice;
