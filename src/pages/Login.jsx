@@ -40,11 +40,11 @@ const Login = () => {
 
           
         if (data.user.accountType === "บุคคล") {
-          navigate("/UiUser", {
+          navigate("/MainUser", {
             state: { email: data.user.email },
           });
         } else if (data.user.accountType === "บริษัท") {
-          navigate("/maincompany");
+          navigate("/IihCompany");
         } else {
           navigate("/");
         }

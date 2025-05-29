@@ -199,7 +199,7 @@ const UiUser = () => {
               <label style={labelStyle}>
                 {["เบอร์มือถือ", "ชื่อบริษัท", "เลขประจำตัวผู้เสียภาษี", "รายละเอียดที่อยู่บริษัท", "สาขาสำนักงาน"][i]}
               </label>
-              <input name={field} value={userData[field]} onChange={handleChange} style={{ ...inputStyle, maxWidth: "440px" }} />
+              <input name={field} value={userData[field]} onChange={handleChange} style={{ ...inputStyle, maxWidth: "475px" }} />
             </div>
           ))}
 

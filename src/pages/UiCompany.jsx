@@ -97,7 +97,7 @@ const UiCompany = () => {
         <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiCompany")} />
       </div>
 
-      {/* Sidebar - Fixed */}
+      {/* Sidebar */}
       {sidebarVisible && (
         <div style={{
           position: "fixed",
@@ -114,7 +114,6 @@ const UiCompany = () => {
             height: "100%", padding: "1rem 0",
           }}>
             <div>
-              <MenuItem icon={<FaHome />} text="หน้าแรก" onClick={() => navigate("/MainCompany")} active={location.pathname === "/MainCompany"} />
               <MenuItem icon={<FiFileText />} text="ประวัติการทำรายการ" onClick={() => navigate("/IihCompany")} active={location.pathname === "/IihCompany"} />
               <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiCompany")} active={location.pathname === "/UiCompany"} />
               <MenuItem icon={<FaShoppingCart />} text="สินค้า" onClick={() => navigate("/Product")} active={location.pathname === "/Product"} />
@@ -133,9 +132,9 @@ const UiCompany = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "flex-start",
-        paddingTop: "40px",
-        paddingBottom: "60px",
-        position: "relative", // so z-index works well
+        padding: "40px 20px 60px 20px",
+        boxSizing: "border-box",
+        position: "relative",
         zIndex: 1,
       }}>
         <div style={{
@@ -145,7 +144,8 @@ const UiCompany = () => {
           borderRadius: "12px",
           boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
           width: "100%",
-          maxWidth: "480px",
+          maxWidth: "600px",
+          boxSizing: "border-box"
         }}>
           <h3 style={{ textAlign: "center", marginBottom: "24px", color: "#333" }}>
             ข้อมูลผู้ใช้งาน
@@ -165,7 +165,7 @@ const UiCompany = () => {
               <label style={labelStyle}>
                 {["เบอร์มือถือ", "ชื่อบริษัท", "เลขประจำตัวผู้เสียภาษี", "รายละเอียดที่อยู่บริษัท", "สาขาสำนักงาน"][i]}
               </label>
-              <input name={field} value={userData[field]} onChange={handleChange} style={{ ...inputStyle, maxWidth: "440px" }} />
+              <input name={field} value={userData[field]} onChange={handleChange} style={{ ...inputStyle, maxWidth: "475px" }} />
             </div>
           ))}
           <div style={{ textAlign: "center", marginTop: "30px" }}>

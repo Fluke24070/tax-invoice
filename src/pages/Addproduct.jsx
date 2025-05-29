@@ -96,7 +96,6 @@ const Addproduct = () => {
             height: "100%", padding: "1rem 0",
           }}>
             <div>
-              <MenuItem icon={<FaHome />} text="หน้าแรก" onClick={() => navigate("/MainCompany")} active={location.pathname === "/MainCompany"} />
               <MenuItem icon={<FiFileText />} text="ประวัติการทำรายการ" onClick={() => navigate("/IihCompany")} active={location.pathname === "/IihCompany"} />
               <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiCompany")} active={location.pathname === "/UiCompany"} />
               <MenuItem icon={<FaShoppingCart />} text="สินค้า" onClick={() => navigate("/Product")} active={location.pathname === "/Product"} />
