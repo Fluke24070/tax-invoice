@@ -17,11 +17,7 @@ const Addproduct = () => {
   const [productPrice, setProductPrice] = useState("");
   const [productUnit, setProductUnit] = useState("");
   const [productCategory, setProductCategory] = useState("");
-  const [categories, setCategories] = useState(() => {
-    const stored = JSON.parse(localStorage.getItem("categories")) || ["อาหารจานเดียว", "อาหารแปลก", "เครื่องใช้ไฟฟ้า", "อื่น ๆ"];
-    if (!stored.includes("ยังไม่ได้จัดหมวดหมู่")) stored.push("ยังไม่ได้จัดหมวดหมู่");
-    return stored;
-  });
+  const [categories, setCategories] = useState(["ยังไม่ได้จัดหมวดหมู่"]);
 
   const textareaRef = useRef(null);
 
@@ -33,6 +29,33 @@ const Addproduct = () => {
 
   const unformatNumber = (value) => value.replace(/,/g, "").replace(/[^\d]/g, "");
 
+  useEffect(() => {
+    const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
+    const companyName = currentUser.companyName;
+    if (!companyName) return;
+
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch(`http://localhost:3000/product_get_com/${companyName}`);
+        const data = await res.json();
+        if (data.status === 200) {
+          const items = data.data.product;
+          const uniqueTypes = new Set();
+          items.forEach((item) => {
+            const type = item.item_type?.trim();
+            if (type && type !== "") uniqueTypes.add(type);
+            else uniqueTypes.add("ยังไม่ได้จัดหมวดหมู่");
+          });
+          setCategories(Array.from(uniqueTypes));
+        }
+      } catch (err) {
+        console.error("Error loading categories", err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
   const handleSave = async () => {
     const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
 
@@ -42,6 +65,7 @@ const Addproduct = () => {
       price: parseFloat(unformatNumber(productPrice)),
       unit: productUnit.trim(),
       email: currentUser.email,
+      companyName: currentUser.companyName || "",
       item_type: productCategory.trim() || "ยังไม่ได้จัดหมวดหมู่",
     };
 
@@ -70,7 +94,11 @@ const Addproduct = () => {
   }, [productDetail]);
 
   return (
+<<<<<<< Updated upstream
     <div style={{ minHeight: "100vh", backgroundColor: "#e6f0ff" }}>
+=======
+    <div style={{ height: "100vh", backgroundColor: "#e6f0ff", fontFamily: "sans-serif" }}>
+>>>>>>> Stashed changes
       {/* Header */}
       <div style={{
         backgroundColor: "#1a1aa6", height: `${headerHeight}px`, display: "flex",
@@ -85,7 +113,11 @@ const Addproduct = () => {
       </div>
 
       {/* Sidebar */}
+<<<<<<< Updated upstream
       {sidebarVisible && (
+=======
+      {menuOpen && (
+>>>>>>> Stashed changes
         <div style={{
           position: "fixed", top: `${headerHeight}px`, left: 0,
           width: "200px", height: `calc(100vh - ${headerHeight}px)`,
@@ -108,15 +140,19 @@ const Addproduct = () => {
         </div>
       )}
 
+<<<<<<< Updated upstream
       {/* Content */}
       <div style={{ display: "flex", justifyContent: "center", paddingTop: "2rem", paddingBottom: "4rem" }}>
+=======
+      {/* Form */}
+      <div style={{ display: "flex", justifyContent: "center", paddingTop: "2rem" }}>
+>>>>>>> Stashed changes
         <div style={{
           backgroundColor: "white", padding: "1.5rem", borderRadius: "10px",
           width: "90%", maxWidth: "400px", display: "flex", flexDirection: "column",
           alignItems: "center", gap: "1rem"
         }}>
           <input placeholder="ชื่อรายการสินค้า" value={productName} onChange={(e) => setProductName(e.target.value)} style={inputStyle} />
-
           <textarea
             placeholder="รายละเอียดสินค้า"
             value={productDetail}
@@ -124,7 +160,6 @@ const Addproduct = () => {
             ref={textareaRef}
             style={{ ...inputStyle, resize: "none", overflow: "hidden", lineHeight: "1.6", minHeight: "50px" }}
           />
-
           <input
             placeholder="ราคาสินค้า"
             value={productPrice}
@@ -138,7 +173,6 @@ const Addproduct = () => {
             }}
             style={inputStyle}
           />
-
           <input placeholder="หน่วย/unit" value={productUnit} onChange={(e) => setProductUnit(e.target.value)} style={inputStyle} />
 
           <select value={productCategory} onChange={(e) => setProductCategory(e.target.value)} style={inputStyle}>

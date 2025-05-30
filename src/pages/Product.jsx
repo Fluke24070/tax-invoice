@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   FaShoppingCart, FaSearch, FaBars, FaUserCircle,
-  FaSignOutAlt, FaClipboardList, FaHome, FaTrashAlt
+  FaSignOutAlt, FaClipboardList, FaHome
 } from "react-icons/fa";
 import { FiFileText } from "react-icons/fi";
 
@@ -15,45 +15,44 @@ const Product = () => {
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [companyName, setCompanyName] = useState("");
-
-  const [selectedCategory, setSelectedCategory] = useState(() =>
-    localStorage.getItem("selectedCategory") || "ทั้งหมด"
-  );
-
-  const [categories, setCategories] = useState(() => {
-    const stored = JSON.parse(localStorage.getItem("categories")) || [
-      "ทั้งหมด", "อาหารจานเดียว", "อาหารแปลก", "เครื่องใช้ไฟฟ้า", "อื่น ๆ"
-    ];
-    if (!stored.includes("ยังไม่ได้จัดหมวดหมู่")) stored.push("ยังไม่ได้จัดหมวดหมู่");
-    localStorage.setItem("categories", JSON.stringify(stored));
-    return stored;
-  });
-
+  const [selectedCategory, setSelectedCategory] = useState("ทั้งหมด");
+  const [categories, setCategories] = useState(["ทั้งหมด"]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState("");
 
   useEffect(() => {
     const storedCompanyName = localStorage.getItem("companyName");
-    if (storedCompanyName) setCompanyName(storedCompanyName);
+    if (storedCompanyName) {
+      setCompanyName(storedCompanyName);
+    }
   }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
-      if (companyName) {
-        try {
-          const res = await fetch(`http://localhost:3000/product_get_com/${companyName}`);
-          const data = await res.json();
-          if (data.status === 200) {
-            setProducts(data.data.product);
-          }
-        } catch (error) {
-          console.error("Error fetching products:", error);
+      try {
+        const res = await fetch(`http://localhost:3000/product_get_com/${companyName}`);
+        const data = await res.json();
+        if (data.status === 200) {
+          setProducts(data.data.product);
         }
+      } catch (error) {
+        console.error("Error fetching products:", error);
       }
     };
-    if (companyName) fetchProducts();
+
+    if (companyName) {
+      fetchProducts();
+    }
   }, [companyName]);
+
+  useEffect(() => {
+    const uniqueCategories = new Set();
+    products.forEach((p) => {
+      const type = p.item_type?.trim();
+      if (type && type !== "") uniqueCategories.add(type);
+      else uniqueCategories.add("ยังไม่ได้จัดหมวดหมู่");
+    });
+    setCategories(["ทั้งหมด", ...Array.from(uniqueCategories)]);
+  }, [products]);
 
   const handleAddProduct = () => navigate("/Addproduct");
 
@@ -89,8 +88,13 @@ const Product = () => {
         <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiCompany")} />
       </div>
 
+<<<<<<< Updated upstream
       {/* Sidebar */}
       {sidebarVisible && (
+=======
+      {/* Sidebar Menu */}
+      {menuOpen && (
+>>>>>>> Stashed changes
         <div style={{
           position: "fixed", top: `${headerHeight}px`, left: 0,
           width: "200px", height: `calc(100vh - ${headerHeight}px)`,
@@ -113,8 +117,13 @@ const Product = () => {
         </div>
       )}
 
+<<<<<<< Updated upstream
       {/* Content */}
       <div style={{ paddingTop: "40px", paddingBottom: "60px", display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
+=======
+      {/* Search + Category */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: "2rem", gap: "1rem" }}>
+>>>>>>> Stashed changes
         <button onClick={handleAddProduct} style={buttonStyle}>
           <FaShoppingCart style={iconStyle} /> เพิ่มรายการสินค้า
         </button>
@@ -155,44 +164,21 @@ const Product = () => {
             }}>
               {categories.map((category, idx) => (
                 <div key={idx} style={{
-                  display: "flex", justifyContent: "space-between", alignItems: "center",
                   padding: "0.6rem 1rem", cursor: "pointer",
                   borderBottom: idx < categories.length - 1 ? "1px solid #eee" : "none"
-                }}>
-                  <div onClick={() => {
+                }}
+                  onClick={() => {
                     setSelectedCategory(category);
-                    localStorage.setItem("selectedCategory", category);
                     setDropdownOpen(false);
-                  }} style={{ flex: 1 }}>{category}</div>
-                  {category !== "ทั้งหมด" && category !== "ยังไม่ได้จัดหมวดหมู่" && (
-                    <FaTrashAlt
-                      title="ลบหมวดหมู่"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const confirmDelete = window.confirm(`ต้องการลบข้อมูลหมวดหมู่ "${category}" หรือไม่?`);
-                        if (confirmDelete) {
-                          const newCategories = categories.filter((c) => c !== category);
-                          setCategories(newCategories);
-                          setSelectedCategory("ทั้งหมด");
-                          localStorage.setItem("categories", JSON.stringify(newCategories));
-                          localStorage.setItem("selectedCategory", "ทั้งหมด");
-                        }
-                      }}
-                      style={{ color: "red", marginLeft: "10px", cursor: "pointer" }}
-                    />
-                  )}
+                  }}>
+                  {category}
                 </div>
               ))}
-              <div onClick={() => setShowModal(true)} style={{
-                padding: "0.6rem 1rem", cursor: "pointer",
-                backgroundColor: "#f0f8ff", textAlign: "center", fontWeight: "bold", borderTop: "1px solid #ccc"
-              }}>
-                + เพิ่มหมวดหมู่ใหม่
-              </div>
             </div>
           )}
         </div>
 
+<<<<<<< Updated upstream
         <h3 style={{ textAlign: "center", marginTop: "2rem" }}>สินค้าของคุณ</h3>
         <h4 style={{ textAlign: "center", color: "#1a1aa6", marginTop: "0.5rem" }}>
           หมวดหมู่ที่เลือก: {selectedCategory}
@@ -223,10 +209,43 @@ const Product = () => {
                   </div>
                 ))}
               </div>
+=======
+      {/* Product Section */}
+      <h3 style={{ textAlign: "center", marginTop: "2rem" }}>สินค้าของคุณ</h3>
+      <h4 style={{ textAlign: "center", color: "#1a1aa6", marginTop: "0.5rem" }}>
+        หมวดหมู่ที่เลือก: {selectedCategory}
+      </h4>
+
+      <div style={{ padding: "0 1rem" }}>
+        {Object.keys(groupedProducts).map((category) => (
+          <div key={category} style={{ marginBottom: "2rem" }}>
+            <h4 style={{ marginBottom: "1rem", textAlign: "left" }}>{category}</h4>
+            <div style={{
+              display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: "1rem"
+            }}>
+              {groupedProducts[category].map((product) => (
+                <div key={product.id} onClick={() => navigate(`/Editproduct/${product.id}`)} style={{
+                  backgroundColor: "#fff", border: "2px solid #1a1aa6", padding: "0.5rem",
+                  textAlign: "center", borderRadius: "6px", cursor: "pointer",
+                  transition: "transform 0.2s"
+                }}
+                  onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.02)")}
+                  onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                >
+                  {product.image && (
+                    <img src={product.image} alt={product.name}
+                      style={{ width: "100%", height: "100px", objectFit: "cover", borderRadius: "4px" }} />
+                  )}
+                  <div style={{ marginTop: "0.5rem", fontWeight: "bold" }}>{product.name}</div>
+                  <div>{Number(product.price).toLocaleString()} บาท</div>
+                </div>
+              ))}
+>>>>>>> Stashed changes
             </div>
           ))}
         </div>
       </div>
+<<<<<<< Updated upstream
 
       {showModal && (
         <div style={{
@@ -258,6 +277,8 @@ const Product = () => {
           </div>
         </div>
       )}
+=======
+>>>>>>> Stashed changes
     </div>
   );
 };

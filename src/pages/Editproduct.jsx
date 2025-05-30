@@ -1,11 +1,14 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
-import { FaShoppingCart, FaBars, FaUserCircle, FaSignOutAlt, FaClipboardList, FaHome } from "react-icons/fa";
+import {
+  FaShoppingCart, FaBars, FaUserCircle, FaSignOutAlt,
+  FaClipboardList, FaHome
+} from "react-icons/fa";
 import { FiFileText } from "react-icons/fi";
 
 const Editproduct = () => {
   const navigate = useNavigate();
-  const { id: productId } = useParams(); 
+  const { id: productId } = useParams();
   const location = useLocation();
 
   const headerHeight = 64;
@@ -19,17 +22,12 @@ const Editproduct = () => {
     item_type: "ยังไม่ได้จัดหมวดหมู่",
   });
 
-  const [productCategory, setProductCategory] = useState("");
-  const [categories, setCategories] = useState(() => {
-    const stored = JSON.parse(localStorage.getItem("categories")) || [
-      "อาหารจานเดียว", "อาหารแปลก", "เครื่องใช้ไฟฟ้า", "อื่น ๆ"
-    ];
-    if (!stored.includes("ยังไม่ได้จัดหมวดหมู่")) stored.push("ยังไม่ได้จัดหมวดหมู่");
-    return stored;
-  });
+  const [productCategory, setProductCategory] = useState("ยังไม่ได้จัดหมวดหมู่");
+  const [categories, setCategories] = useState(["ยังไม่ได้จัดหมวดหมู่"]);
 
   const textareaRef = useRef(null);
 
+  // โหลดสินค้าเป้าหมาย
   useEffect(() => {
     if (!productId) {
       alert("ไม่พบสินค้าที่ต้องการแก้ไข");
@@ -61,6 +59,34 @@ const Editproduct = () => {
         navigate("/Product");
       });
   }, [productId, navigate]);
+
+  // โหลดหมวดหมู่ของบริษัท
+  useEffect(() => {
+    const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
+    const companyName = currentUser.companyName;
+    if (!companyName) return;
+
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch(`http://localhost:3000/product_get_com/${companyName}`);
+        const data = await res.json();
+        if (data.status === 200) {
+          const items = data.data.product;
+          const uniqueTypes = new Set();
+          items.forEach((item) => {
+            const type = item.item_type?.trim();
+            if (type && type !== "") uniqueTypes.add(type);
+            else uniqueTypes.add("ยังไม่ได้จัดหมวดหมู่");
+          });
+          setCategories(Array.from(uniqueTypes));
+        }
+      } catch (err) {
+        console.error("Error loading categories", err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const formatNumberWithCommas = (value) => {
     const num = parseFloat(value.replace(/,/g, ""));
@@ -132,11 +158,19 @@ const Editproduct = () => {
     <div style={{ minHeight: "100vh", backgroundColor: "#e6f0ff" }}>
       {/* Header */}
       <div style={{
+<<<<<<< Updated upstream
         backgroundColor: "#1a1aa6", height: `${headerHeight}px`, display: "flex",
         justifyContent: "space-between", alignItems: "center", padding: "0 1rem",
         color: "white", position: "sticky", top: 0, zIndex: 10,
       }}>
         <div onClick={() => setSidebarVisible(!sidebarVisible)} style={{ cursor: "pointer" }}>
+=======
+        backgroundColor: "#1a1aa6", height: `${headerHeight}px`,
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        padding: "0 1rem", color: "white"
+      }}>
+        <div onClick={toggleMenu} style={{ cursor: "pointer" }}>
+>>>>>>> Stashed changes
           <FaBars size={20} />
         </div>
         <span style={{ fontWeight: "bold", letterSpacing: "1px" }}>TAX INVOICE</span>
@@ -144,6 +178,7 @@ const Editproduct = () => {
       </div>
 
       {/* Sidebar */}
+<<<<<<< Updated upstream
       {sidebarVisible && (
         <div style={{
           position: "fixed", top: `${headerHeight}px`, left: 0,
@@ -163,12 +198,30 @@ const Editproduct = () => {
             <div style={{ marginBottom: "20px" }}>
               <MenuItem icon={<FaSignOutAlt />} text="ออกจากระบบ" onClick={() => { localStorage.clear(); navigate("/Enter"); }} />
             </div>
+=======
+      {menuOpen && (
+        <div style={{
+          position: "fixed", top: `${headerHeight}px`, left: 0, bottom: 0,
+          width: "200px", backgroundColor: "#9999ff",
+          display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "1rem 0", zIndex: 2
+        }}>
+          <div>
+            <MenuItem icon={<FaHome />} text="ใบกำกับภาษี" onClick={() => navigate("/MainCompany")} active={location.pathname === "/MainCompany"} />
+            <MenuItem icon={<FiFileText />} text="ประวัติการทำรายการ" onClick={() => navigate("/IihCompany")} active={location.pathname === "/IihCompany"} />
+            <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiCompany")} active={location.pathname === "/UiCompany"} />
+            <MenuItem icon={<FaShoppingCart />} text="สินค้า" onClick={() => navigate("/Product")} active={location.pathname === "/Product"} />
+            <MenuItem icon={<FaClipboardList />} text="ทำใบเสร็จ" onClick={() => navigate("/CreateInvoice")} active={location.pathname === "/CreateInvoice"} />
+>>>>>>> Stashed changes
           </div>
         </div>
       )}
 
       {/* Form */}
+<<<<<<< Updated upstream
       <div style={{ display: "flex", justifyContent: "center", paddingTop: "2rem", paddingBottom: "4rem" }}>
+=======
+      <div style={{ display: "flex", justifyContent: "center", paddingTop: "2rem" }}>
+>>>>>>> Stashed changes
         <div style={{
           backgroundColor: "white", padding: "1.5rem", borderRadius: "10px",
           width: "90%", maxWidth: "400px", display: "flex", flexDirection: "column",
@@ -210,11 +263,7 @@ const Editproduct = () => {
             style={inputStyle}
           />
 
-          <select
-            value={productCategory}
-            onChange={(e) => setProductCategory(e.target.value)}
-            style={inputStyle}
-          >
+          <select value={productCategory} onChange={(e) => setProductCategory(e.target.value)} style={inputStyle}>
             <option value="">เลือกหมวดหมู่</option>
             {categories.map((cat, idx) => (
               <option key={idx} value={cat}>{cat}</option>

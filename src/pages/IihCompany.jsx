@@ -19,31 +19,32 @@ const IihCompany = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    const fetchReceipts = async () => {
-      const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
-      if (!currentUser.companyName) return;
+  const fetchReceipts = async () => {
+    const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
+    if (!currentUser.companyName) return;
 
-      try {
-        const url = `http://localhost:3000/invoice_get_com/${encodeURIComponent(currentUser.companyName)}`;
-        const res = await fetch(url);
-        const json = await res.json();
-        const data = json.data?.product || [];
+    try {
+      const url = `http://localhost:3000/invoice_get_com/${encodeURIComponent(currentUser.companyName)}`;
+      const res = await fetch(url);
+      const json = await res.json();
+      const data = json.data?.product || [];
 
-        const parsed = data.map((row) => ({
-          ...row,
-          seller: typeof row.seller === "string" ? JSON.parse(row.seller) : row.seller,
-          buyer: typeof row.buyer === "string" ? JSON.parse(row.buyer) : row.buyer,
-          item: typeof row.item === "string" ? JSON.parse(row.item) : row.item,
-        }));
+      const parsed = data.map((row) => ({
+        ...row,
+        seller: typeof row.seller === "string" ? JSON.parse(row.seller) : row.seller,
+        buyer: typeof row.buyer === "string" ? JSON.parse(row.buyer) : row.buyer,
+        item: typeof row.item === "string" ? JSON.parse(row.item) : row.item,
+      }));
 
-        setReceipts(parsed);
-      } catch (err) {
-        console.error("❌ Fetch error:", err);
-      }
-    };
+      setReceipts(parsed);
+    } catch (err) {
+      console.error("Fetch error:", err);
+    }
+  };
 
-    fetchReceipts();
-  }, []);
+  fetchReceipts();
+}, []);
+
 
   const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
   const openModal = (receipt) => setSelectedReceipt(receipt);
