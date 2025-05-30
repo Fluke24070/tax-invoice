@@ -158,19 +158,11 @@ const Editproduct = () => {
     <div style={{ minHeight: "100vh", backgroundColor: "#e6f0ff" }}>
       {/* Header */}
       <div style={{
-<<<<<<< Updated upstream
         backgroundColor: "#1a1aa6", height: `${headerHeight}px`, display: "flex",
         justifyContent: "space-between", alignItems: "center", padding: "0 1rem",
         color: "white", position: "sticky", top: 0, zIndex: 10,
       }}>
         <div onClick={() => setSidebarVisible(!sidebarVisible)} style={{ cursor: "pointer" }}>
-=======
-        backgroundColor: "#1a1aa6", height: `${headerHeight}px`,
-        display: "flex", justifyContent: "space-between", alignItems: "center",
-        padding: "0 1rem", color: "white"
-      }}>
-        <div onClick={toggleMenu} style={{ cursor: "pointer" }}>
->>>>>>> Stashed changes
           <FaBars size={20} />
         </div>
         <span style={{ fontWeight: "bold", letterSpacing: "1px" }}>TAX INVOICE</span>
@@ -178,7 +170,6 @@ const Editproduct = () => {
       </div>
 
       {/* Sidebar */}
-<<<<<<< Updated upstream
       {sidebarVisible && (
         <div style={{
           position: "fixed", top: `${headerHeight}px`, left: 0,
@@ -198,30 +189,12 @@ const Editproduct = () => {
             <div style={{ marginBottom: "20px" }}>
               <MenuItem icon={<FaSignOutAlt />} text="ออกจากระบบ" onClick={() => { localStorage.clear(); navigate("/Enter"); }} />
             </div>
-=======
-      {menuOpen && (
-        <div style={{
-          position: "fixed", top: `${headerHeight}px`, left: 0, bottom: 0,
-          width: "200px", backgroundColor: "#9999ff",
-          display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "1rem 0", zIndex: 2
-        }}>
-          <div>
-            <MenuItem icon={<FaHome />} text="ใบกำกับภาษี" onClick={() => navigate("/MainCompany")} active={location.pathname === "/MainCompany"} />
-            <MenuItem icon={<FiFileText />} text="ประวัติการทำรายการ" onClick={() => navigate("/IihCompany")} active={location.pathname === "/IihCompany"} />
-            <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiCompany")} active={location.pathname === "/UiCompany"} />
-            <MenuItem icon={<FaShoppingCart />} text="สินค้า" onClick={() => navigate("/Product")} active={location.pathname === "/Product"} />
-            <MenuItem icon={<FaClipboardList />} text="ทำใบเสร็จ" onClick={() => navigate("/CreateInvoice")} active={location.pathname === "/CreateInvoice"} />
->>>>>>> Stashed changes
           </div>
         </div>
       )}
 
       {/* Form */}
-<<<<<<< Updated upstream
       <div style={{ display: "flex", justifyContent: "center", paddingTop: "2rem", paddingBottom: "4rem" }}>
-=======
-      <div style={{ display: "flex", justifyContent: "center", paddingTop: "2rem" }}>
->>>>>>> Stashed changes
         <div style={{
           backgroundColor: "white", padding: "1.5rem", borderRadius: "10px",
           width: "90%", maxWidth: "400px", display: "flex", flexDirection: "column",

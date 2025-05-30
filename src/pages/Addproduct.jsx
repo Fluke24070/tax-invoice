@@ -94,11 +94,7 @@ const Addproduct = () => {
   }, [productDetail]);
 
   return (
-<<<<<<< Updated upstream
     <div style={{ minHeight: "100vh", backgroundColor: "#e6f0ff" }}>
-=======
-    <div style={{ height: "100vh", backgroundColor: "#e6f0ff", fontFamily: "sans-serif" }}>
->>>>>>> Stashed changes
       {/* Header */}
       <div style={{
         backgroundColor: "#1a1aa6", height: `${headerHeight}px`, display: "flex",
@@ -113,11 +109,7 @@ const Addproduct = () => {
       </div>
 
       {/* Sidebar */}
-<<<<<<< Updated upstream
       {sidebarVisible && (
-=======
-      {menuOpen && (
->>>>>>> Stashed changes
         <div style={{
           position: "fixed", top: `${headerHeight}px`, left: 0,
           width: "200px", height: `calc(100vh - ${headerHeight}px)`,
@@ -140,13 +132,8 @@ const Addproduct = () => {
         </div>
       )}
 
-<<<<<<< Updated upstream
       {/* Content */}
       <div style={{ display: "flex", justifyContent: "center", paddingTop: "2rem", paddingBottom: "4rem" }}>
-=======
-      {/* Form */}
-      <div style={{ display: "flex", justifyContent: "center", paddingTop: "2rem" }}>
->>>>>>> Stashed changes
         <div style={{
           backgroundColor: "white", padding: "1.5rem", borderRadius: "10px",
           width: "90%", maxWidth: "400px", display: "flex", flexDirection: "column",

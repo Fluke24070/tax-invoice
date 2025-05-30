@@ -18,6 +18,8 @@ const Product = () => {
   const [selectedCategory, setSelectedCategory] = useState("ทั้งหมด");
   const [categories, setCategories] = useState(["ทั้งหมด"]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
 
   useEffect(() => {
     const storedCompanyName = localStorage.getItem("companyName");
@@ -88,13 +90,8 @@ const Product = () => {
         <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiCompany")} />
       </div>
 
-<<<<<<< Updated upstream
       {/* Sidebar */}
       {sidebarVisible && (
-=======
-      {/* Sidebar Menu */}
-      {menuOpen && (
->>>>>>> Stashed changes
         <div style={{
           position: "fixed", top: `${headerHeight}px`, left: 0,
           width: "200px", height: `calc(100vh - ${headerHeight}px)`,
@@ -117,13 +114,8 @@ const Product = () => {
         </div>
       )}
 
-<<<<<<< Updated upstream
       {/* Content */}
       <div style={{ paddingTop: "40px", paddingBottom: "60px", display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
-=======
-      {/* Search + Category */}
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: "2rem", gap: "1rem" }}>
->>>>>>> Stashed changes
         <button onClick={handleAddProduct} style={buttonStyle}>
           <FaShoppingCart style={iconStyle} /> เพิ่มรายการสินค้า
         </button>
@@ -178,7 +170,6 @@ const Product = () => {
           )}
         </div>
 
-<<<<<<< Updated upstream
         <h3 style={{ textAlign: "center", marginTop: "2rem" }}>สินค้าของคุณ</h3>
         <h4 style={{ textAlign: "center", color: "#1a1aa6", marginTop: "0.5rem" }}>
           หมวดหมู่ที่เลือก: {selectedCategory}
@@ -209,43 +200,10 @@ const Product = () => {
                   </div>
                 ))}
               </div>
-=======
-      {/* Product Section */}
-      <h3 style={{ textAlign: "center", marginTop: "2rem" }}>สินค้าของคุณ</h3>
-      <h4 style={{ textAlign: "center", color: "#1a1aa6", marginTop: "0.5rem" }}>
-        หมวดหมู่ที่เลือก: {selectedCategory}
-      </h4>
-
-      <div style={{ padding: "0 1rem" }}>
-        {Object.keys(groupedProducts).map((category) => (
-          <div key={category} style={{ marginBottom: "2rem" }}>
-            <h4 style={{ marginBottom: "1rem", textAlign: "left" }}>{category}</h4>
-            <div style={{
-              display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: "1rem"
-            }}>
-              {groupedProducts[category].map((product) => (
-                <div key={product.id} onClick={() => navigate(`/Editproduct/${product.id}`)} style={{
-                  backgroundColor: "#fff", border: "2px solid #1a1aa6", padding: "0.5rem",
-                  textAlign: "center", borderRadius: "6px", cursor: "pointer",
-                  transition: "transform 0.2s"
-                }}
-                  onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.02)")}
-                  onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                >
-                  {product.image && (
-                    <img src={product.image} alt={product.name}
-                      style={{ width: "100%", height: "100px", objectFit: "cover", borderRadius: "4px" }} />
-                  )}
-                  <div style={{ marginTop: "0.5rem", fontWeight: "bold" }}>{product.name}</div>
-                  <div>{Number(product.price).toLocaleString()} บาท</div>
-                </div>
-              ))}
->>>>>>> Stashed changes
             </div>
           ))}
         </div>
       </div>
-<<<<<<< Updated upstream
 
       {showModal && (
         <div style={{
@@ -277,8 +235,6 @@ const Product = () => {
           </div>
         </div>
       )}
-=======
->>>>>>> Stashed changes
     </div>
   );
 };
