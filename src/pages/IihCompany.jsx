@@ -1,8 +1,9 @@
+// วางแทนไฟล์ IihCompany.jsx ทั้งหมดได้เลย
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
-  FaBars, FaUser, FaPrint, FaShoppingCart,
-  FaClipboardList, FaUserCircle, FaSignOutAlt, FaHome, FaSearch
+  FaBars, FaUserCircle, FaSignOutAlt, FaShoppingCart,
+  FaClipboardList, FaPrint, FaSearch
 } from "react-icons/fa";
 import { FiFileText } from "react-icons/fi";
 
@@ -13,6 +14,7 @@ const IihCompany = () => {
   const [receipts, setReceipts] = useState([]);
   const [selectedReceipt, setSelectedReceipt] = useState(null);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const itemsPerPage = 10;
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -51,26 +53,21 @@ const IihCompany = () => {
     Number(amount).toLocaleString("th-TH", { minimumFractionDigits: 2 });
 
   const formatDate = (iso) => new Date(iso).toLocaleDateString("th-TH");
-  const formatTime = (iso) => new Date(iso).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+  const formatTime = (iso) =>
+    new Date(iso).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
 
-  const printInvoice = () => {
-    const printContent = document.getElementById("invoice-print").innerHTML;
-    const win = window.open("", "", "width=800,height=600");
-    win.document.write(`
-      <html>
-        <head>
-          <title>พิมพ์ใบกำกับภาษี</title>
-          <style>
-            body { font-family: sans-serif; padding: 20px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
-            th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-          </style>
-        </head>
-        <body>${printContent}</body>
-      </html>`);
-    win.document.close();
-    win.print();
-  };
+  const filteredReceipts = receipts.filter((receipt) => {
+    const keyword = searchTerm.toLowerCase();
+    const dateMatch = formatDate(receipt.date).includes(keyword);
+    const buyerMatch = `${receipt.buyer.firstName} ${receipt.buyer.lastName}`.toLowerCase().includes(keyword);
+    return dateMatch || buyerMatch;
+  });
+
+  const totalPages = Math.ceil(filteredReceipts.length / itemsPerPage);
+  const paginatedReceipts = filteredReceipts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const thStyle = { border: "1px solid #ccc", padding: "8px", textAlign: "center" };
   const tdStyle = { border: "1px solid #ccc", padding: "8px", textAlign: "center" };
@@ -101,89 +98,101 @@ const IihCompany = () => {
     </div>
   );
 
-  const totalPages = Math.ceil(receipts.length / itemsPerPage);
-  const paginatedReceipts = receipts.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const ReceiptModal = ({ receipt, onClose }) => {
+    const vatRate = 0.07;
+    const total = Number(receipt.total);
+    const vatAmount = Number((total * vatRate).toFixed(2));
+    const totalWithVAT = Number((total + vatAmount).toFixed(2));
 
-const ReceiptModal = ({ receipt, onClose }) => {
-  const vatRate = 0.07;
-
-  const total = Number(receipt.total);
-  const vatAmount = Number((total * vatRate).toFixed(2));
-  const totalWithVAT = Number((total + vatAmount).toFixed(2));
-
-  return (
-    <div style={{
-      position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
-      backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center",
-      alignItems: "center", zIndex: 1000
-    }}>
+    return (
       <div style={{
-        backgroundColor: "white", padding: "2rem", borderRadius: "10px",
-        width: "600px", maxHeight: "90vh", overflowY: "auto"
+        position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+        backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center",
+        alignItems: "center", zIndex: 1000
       }}>
-        <h2 style={{ textAlign: "center", fontWeight: "bold" }}>ใบเสร็จรับเงิน</h2>
-        <p><strong>วันที่:</strong> {formatDate(receipt.date)} {formatTime(receipt.date)}</p>
-        <hr />
-        {receipt.item.map((item, i) => (
-          <div key={i} style={{ display: "flex", justifyContent: "space-between" }}>
-            <span>{Number(item.quantity).toFixed(2)} × {item.name}</span>
-            <span>{Number(item.price).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-          </div>
-        ))}
-        <hr />
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <span><strong>มูลค่าก่อนภาษี:</strong></span>
-          <span>{total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-        </div>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <span><strong>VAT 7%:</strong></span>
-          <span>{vatAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-        </div>
         <div style={{
-          display: "flex", justifyContent: "space-between", fontWeight: "bold",
-          fontSize: "18px", marginTop: "1rem"
+          backgroundColor: "white", padding: "2rem", borderRadius: "10px",
+          width: "600px", maxHeight: "90vh", overflowY: "auto"
         }}>
-          <span>ยอดรวม:</span>
-          <span>{totalWithVAT.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-        </div>
-        <div style={{ marginTop: "1.5rem", textAlign: "center" }}>
-          <button onClick={onClose} style={{
-            padding: "0.5rem 2rem", backgroundColor: "#1a1aa6", color: "white",
-            border: "none", borderRadius: "8px"
+          <h2 style={{ textAlign: "center", fontWeight: "bold" }}>ใบเสร็จรับเงิน</h2>
+          <p><strong>วันที่:</strong> {formatDate(receipt.date)} {formatTime(receipt.date)}</p>
+          <hr />
+          {receipt.item.map((item, i) => (
+            <div key={i} style={{ display: "flex", justifyContent: "space-between" }}>
+              <span>{Number(item.quantity).toFixed(2)} × {item.name}</span>
+              <span>{formatCurrency(item.price)}</span>
+            </div>
+          ))}
+          <hr />
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span><strong>มูลค่าก่อนภาษี:</strong></span>
+            <span>{formatCurrency(total)}</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span><strong>VAT 7%:</strong></span>
+            <span>{formatCurrency(vatAmount)}</span>
+          </div>
+          <div style={{
+            display: "flex", justifyContent: "space-between", fontWeight: "bold",
+            fontSize: "18px", marginTop: "1rem"
           }}>
-            ปิด
-          </button>
+            <span>ยอดรวม:</span>
+            <span>{formatCurrency(totalWithVAT)}</span>
+          </div>
+          <div style={{ marginTop: "1.5rem", textAlign: "center" }}>
+            <button onClick={onClose} style={{
+              padding: "0.5rem 2rem", backgroundColor: "#1a1aa6", color: "white",
+              border: "none", borderRadius: "8px"
+            }}>
+              ปิด
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
+
+  const printInvoice = () => {
+    const printContent = document.getElementById("invoice-print").innerHTML;
+    const win = window.open("", "", "width=800,height=600");
+    win.document.write(`
+      <html>
+        <head>
+          <title>พิมพ์ใบกำกับภาษี</title>
+          <style>
+            body { font-family: sans-serif; padding: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+            th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+          </style>
+        </head>
+        <body>${printContent}</body>
+      </html>`);
+    win.document.close();
+    win.print();
+  };
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#d6e8ff" }}>
+      {/* Header */}
       <div style={{
-        backgroundColor: "#1a1aa6",
-        color: "white",
-        height: "64px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "0 1rem"
+        backgroundColor: "#1a1aa6", color: "white", height: "64px",
+        display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 1rem"
       }}>
         <div onClick={toggleSidebar} style={{ cursor: "pointer" }}><FaBars size={20} /></div>
         <h1 style={{ fontSize: "20px", fontWeight: "bold" }}>TAX INVOICE</h1>
         <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiCompany")} />
       </div>
 
+      {/* Sidebar */}
       {sidebarVisible && (
         <div style={{
           position: "fixed", top: "64px", left: 0, width: "200px",
           height: "calc(100vh - 64px)", backgroundColor: "#9999ff", zIndex: 20
         }}>
-          <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: "100%", padding: "1rem 0" }}>
+          <div style={{
+            display: "flex", flexDirection: "column", justifyContent: "space-between",
+            height: "100%", padding: "1rem 0"
+          }}>
             <div>
               <MenuItem icon={<FiFileText />} text="ประวัติการทำรายการ" onClick={() => navigate("/IihCompany")} active={location.pathname === "/IihCompany"} />
               <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiCompany")} active={location.pathname === "/UiCompany"} />
@@ -197,20 +206,27 @@ const ReceiptModal = ({ receipt, onClose }) => {
         </div>
       )}
 
+      {/* Search */}
       <div style={{ margin: "1.5rem auto", display: "flex", justifyContent: "center" }}>
         <div style={{
           display: "flex", alignItems: "center", backgroundColor: "#cce0ff",
           padding: "0.5rem 1rem", borderRadius: "30px", width: "80%", maxWidth: "600px"
         }}>
-          <input type="text" placeholder="ค้นหาผ่านวันที่ทำรายการ ชื่อลูกค้า" style={{
-            border: "none", outline: "none", background: "transparent",
-            flexGrow: 1, fontSize: "14px"
-          }} />
+          <input
+            type="text"
+            placeholder="ค้นหาผ่านวันที่ทำรายการ ชื่อลูกค้า"
+            value={searchTerm}
+            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+            style={{
+              border: "none", outline: "none", background: "transparent",
+              flexGrow: 1, fontSize: "14px"
+            }}
+          />
           <FaSearch />
-          <div style={{ marginLeft: "10px", cursor: "pointer" }}>📅</div>
         </div>
       </div>
 
+      {/* Table */}
       <div style={{ width: "90%", margin: "0 auto", background: "white", borderRadius: "10px", overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
           <thead>
@@ -224,26 +240,25 @@ const ReceiptModal = ({ receipt, onClose }) => {
             </tr>
           </thead>
           <tbody>
-            {paginatedReceipts.map((receipt, index) => {
-              return (
-                <tr key={index}>
-                  <td style={tdStyle}>{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                  <td style={tdStyle}>{formatTime(receipt.date)}</td>
-                  <td style={tdStyle}>{formatDate(receipt.date)}</td>
-                  <td style={tdStyle}>{receipt.invoiceNumber || `INV${index + 1}`}</td>
-                  <td style={tdStyle}>{formatCurrency(receipt.grand_total)}</td>
-                  <td style={tdStyle}>
-                    <span onClick={() => { setSelectedReceipt(receipt); setShowReceiptModal(true); }}
-                      style={{ color: "#1a1aa6", cursor: "pointer", marginRight: "1rem" }}>1.ดูใบเสร็จ</span>
-                    <span onClick={() => openModal(receipt)} style={{ color: "#1a1aa6", cursor: "pointer" }}>2.ดูใบกำกับ</span>
-                  </td>
-                </tr>
-              );
-            })}
+            {paginatedReceipts.map((receipt, index) => (
+              <tr key={index}>
+                <td style={tdStyle}>{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                <td style={tdStyle}>{formatTime(receipt.date)}</td>
+                <td style={tdStyle}>{formatDate(receipt.date)}</td>
+                <td style={tdStyle}>{receipt.invoiceNumber || `INV${index + 1}`}</td>
+                <td style={tdStyle}>{formatCurrency(receipt.grand_total)}</td>
+                <td style={tdStyle}>
+                  <span onClick={() => { setSelectedReceipt(receipt); setShowReceiptModal(true); }}
+                    style={{ color: "#1a1aa6", cursor: "pointer", marginRight: "1rem" }}>1.ดูใบเสร็จ</span>
+                  <span onClick={() => openModal(receipt)} style={{ color: "#1a1aa6", cursor: "pointer" }}>2.ดูใบกำกับ</span>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
 
+      {/* Pagination */}
       <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem", gap: "0.5rem" }}>
         <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} style={paginationBtnStyle}>หน้าก่อน</button>
         {Array.from({ length: totalPages }, (_, i) => (
@@ -256,12 +271,13 @@ const ReceiptModal = ({ receipt, onClose }) => {
         <button onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} style={paginationBtnStyle}>หน้าถัดไป</button>
       </div>
 
+      {/* Receipt Modal */}
       {showReceiptModal && selectedReceipt && (
         <ReceiptModal receipt={selectedReceipt} onClose={() => setShowReceiptModal(false)} />
       )}
 
-      {/* Modal ใบกำกับ */}
-      {selectedReceipt && (
+      {/* Invoice Modal */}
+      {selectedReceipt && !showReceiptModal && (
         <div onClick={closeModal} style={{
           position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
           backgroundColor: "rgba(0,0,0,0.4)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 999

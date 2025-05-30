@@ -86,7 +86,7 @@ const MainUser = () => {
   );
 
   return (
-    <div style={{ height: "100vh", backgroundColor: "#e6f0ff" }}>
+    <div style={{ display: "flex", height: "100vh", flexDirection: "column" }}>
       {/* Header */}
       <div
         style={{
@@ -96,6 +96,7 @@ const MainUser = () => {
           justifyContent: "space-between",
           alignItems: "center",
           padding: "0 1rem",
+          flexShrink: 0,
         }}
       >
         <div onClick={toggleMenu} style={{ cursor: "pointer", color: "white" }}>
@@ -118,118 +119,115 @@ const MainUser = () => {
         />
       </div>
 
-      {/* Sidebar แบบ fixed ไม่ดัน content */}
-      {menuOpen && (
-        <div
-          style={{
-            position: "fixed",
-            top: `${headerHeight}px`,
-            left: 0,
-            bottom: 0,
-            width: "200px",
-            backgroundColor: "#9999ff",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            padding: "1rem 0",
-            zIndex: 100,
-            overflow: "hidden",
-          }}
-        >
-          <div>
+      {/* Content Area */}
+      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+        {/* Sidebar */}
+        {menuOpen && (
+          <div
+            style={{
+              width: "200px",
+              backgroundColor: "#9999ff",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              padding: "1rem 0",
+              flexShrink: 0,
+            }}
+          >
+            <div>
+              <MenuItem
+                icon={<FaHome />}
+                text="หน้าแรก"
+                onClick={() => navigate("/MainUser")}
+                active={location.pathname === "/MainUser"}
+              />
+              <MenuItem
+                icon={<FiFileText />}
+                text="ประวัติการออกใบกำกับภาษี"
+                onClick={() => navigate("/IihUser")}
+                active={location.pathname === "/IihUser"}
+              />
+              <MenuItem
+                icon={<FaUserCircle />}
+                text="ข้อมูลผู้ใช้งาน"
+                onClick={() => navigate("/UiUser")}
+                active={location.pathname === "/UiUser"}
+              />
+            </div>
             <MenuItem
-              icon={<FaHome />}
-              text="หน้าแรก"
-              onClick={() => navigate("/MainUser")}
-              active={location.pathname === "/MainUser"}
-            />
-            <MenuItem
-              icon={<FiFileText />}
-              text="ประวัติการออกใบกำกับภาษี"
-              onClick={() => navigate("/IihUser")}
-              active={location.pathname === "/IihUser"}
-            />
-            <MenuItem
-              icon={<FaUserCircle />}
-              text="ข้อมูลผู้ใช้งาน"
-              onClick={() => navigate("/UiUser")}
-              active={location.pathname === "/UiUser"}
+              icon={<FaSignOutAlt />}
+              text="ออกจากระบบ"
+              onClick={() => {
+                localStorage.clear();
+                navigate("/Enter");
+              }}
             />
           </div>
-          <MenuItem
-            icon={<FaSignOutAlt />}
-            text="ออกจากระบบ"
-            onClick={() => {
-              localStorage.clear();
-              navigate("/Enter");
-            }}
-          />
-        </div>
-      )}
+        )}
 
-      {/* Main Content */}
-      <div
-        style={{
-          marginLeft: "200px", // ช่องว่างคงที่เท่ากับ sidebar width ตลอดเวลา
-          transition: "none",  // ปิด transition ไม่ให้เลื่อน
-          padding: "2rem",
-          height: `calc(100vh - ${headerHeight}px)`,
-          overflowY: "auto",
-        }}
-      >
+        {/* Main */}
         <div
           style={{
-            backgroundColor: "#9999ff",
-            borderRadius: "25px",
-            width: "360px",
-            margin: "60px auto",
+            flex: 1,
+            backgroundColor: "#e6f0ff",
             padding: "2rem",
-            textAlign: "center",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+            overflowY: "auto",
           }}
         >
           <div
             style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "20px",
-              padding: "0 10px",
+              backgroundColor: "#9999ff",
+              borderRadius: "25px",
+              width: "360px",
+              margin: "60px auto",
+              padding: "2rem",
+              textAlign: "center",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
             }}
           >
-            <span style={{ fontWeight: "bold", fontSize: "20px" }}>นามบัตร</span>
             <div
-              onClick={downloadQRCode}
               style={{
-                backgroundColor: "#f5d0e0",
-                padding: "8px",
-                borderRadius: "50%",
-                cursor: "pointer",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "20px",
+                padding: "0 10px",
               }}
             >
-              <FiPrinter size={18} />
+              <span style={{ fontWeight: "bold", fontSize: "20px" }}>นามบัตร</span>
+              <div
+                onClick={downloadQRCode}
+                style={{
+                  backgroundColor: "#f5d0e0",
+                  padding: "8px",
+                  borderRadius: "50%",
+                  cursor: "pointer",
+                }}
+              >
+                <FiPrinter size={18} />
+              </div>
             </div>
-          </div>
 
-          <div
-            ref={qrRef}
-            style={{
-              backgroundColor: "white",
-              padding: "15px",
-              borderRadius: "14px",
-              height: "260px",
-              width: "260px",
-              margin: "0 auto",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            {qrContent ? (
-              <QRCodeSVG value={qrContent} size={230} level="H" includeMargin={true} />
-            ) : (
-              <p style={{ fontSize: "14px" }}>ไม่มีข้อมูล</p>
-            )}
+            <div
+              ref={qrRef}
+              style={{
+                backgroundColor: "white",
+                padding: "15px",
+                borderRadius: "14px",
+                height: "260px",
+                width: "260px",
+                margin: "0 auto",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {qrContent ? (
+                <QRCodeSVG value={qrContent} size={230} level="H" includeMargin={true} />
+              ) : (
+                <p style={{ fontSize: "14px" }}>ไม่มีข้อมูล</p>
+              )}
+            </div>
           </div>
         </div>
       </div>
