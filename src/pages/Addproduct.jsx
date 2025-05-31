@@ -70,7 +70,7 @@ const Addproduct = () => {
     };
 
     try {
-      const response = await fetch("http://localhost:3000/item", {
+      const response = await fetch("http://localhost:3000/crete_item", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(product),
@@ -162,12 +162,7 @@ const Addproduct = () => {
           />
           <input placeholder="หน่วย/unit" value={productUnit} onChange={(e) => setProductUnit(e.target.value)} style={inputStyle} />
 
-          <select value={productCategory} onChange={(e) => setProductCategory(e.target.value)} style={inputStyle}>
-            <option value="">เลือกหมวดหมู่</option>
-            {categories.map((cat, idx) => (
-              <option key={idx} value={cat}>{cat}</option>
-            ))}
-          </select>
+          <input placeholder="ชื่อประเภทสินค้า" value={productCategory} onChange={(e) => setProductCategory(e.target.value)} style={inputStyle} />
 
           <button onClick={handleSave} style={saveButtonStyle}>บันทึกข้อมูล</button>
         </div>

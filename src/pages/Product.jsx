@@ -171,10 +171,7 @@ const Product = () => {
         </div>
 
         <h3 style={{ textAlign: "center", marginTop: "2rem" }}>สินค้าของคุณ</h3>
-        <h4 style={{ textAlign: "center", color: "#1a1aa6", marginTop: "0.5rem" }}>
-          หมวดหมู่ที่เลือก: {selectedCategory}
-        </h4>
-
+        
         <div style={{ padding: "0 1rem" }}>
           {Object.keys(groupedProducts).map((category) => (
             <div key={category} style={{ marginBottom: "2rem" }}>

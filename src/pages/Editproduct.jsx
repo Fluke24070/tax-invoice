@@ -27,38 +27,42 @@ const Editproduct = () => {
 
   const textareaRef = useRef(null);
 
-  // โหลดสินค้าเป้าหมาย
   useEffect(() => {
-    if (!productId) {
+  if (!productId) {
+    alert("ไม่พบสินค้าที่ต้องการแก้ไข");
+    navigate("/Product");
+    return;
+  }
+
+  fetch(`http://localhost:3000/product_get_id/${productId}`)
+  .then((res) => res.json())
+  .then((data) => {
+    const productData = data?.data?.product?.[0];
+    // console.log("product:", productData);
+
+    if (productData) {
+      setProduct({
+        id: productData.id,
+        name: productData.name,
+        detail: productData.detail,
+        price: productData.price?.toString() || "",
+        unit: productData.unit,
+        item_type: productData.item_type
+      });
+      setProductCategory(productData.item_type || "ยังไม่ได้จัดหมวดหมู่");
+    } else {
       alert("ไม่พบสินค้าที่ต้องการแก้ไข");
       navigate("/Product");
-      return;
     }
+  })
+  .catch((err) => {
+    console.error("Error loading product:", err);
+    alert("เกิดข้อผิดพลาดในการโหลดข้อมูล");
+    navigate("/Product");
+  });
 
-    fetch(`http://localhost:3000/product_get_id/${productId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data) {
-          setProduct({
-            id: data.id,
-            name: data.name,
-            detail: data.detail,
-            price: data.price,
-            unit: data.unit,
-            item_type: data.item_type || "ยังไม่ได้จัดหมวดหมู่",
-          });
-          setProductCategory(data.item_type || "ยังไม่ได้จัดหมวดหมู่");
-        } else {
-          alert("ไม่พบสินค้าที่ต้องการแก้ไข");
-          navigate("/Product");
-        }
-      })
-      .catch((err) => {
-        console.error("Error loading product:", err);
-        alert("เกิดข้อผิดพลาดในการโหลดข้อมูล");
-        navigate("/Product");
-      });
-  }, [productId, navigate]);
+}, [productId, navigate]);
+
 
   // โหลดหมวดหมู่ของบริษัท
   useEffect(() => {
@@ -236,12 +240,13 @@ const Editproduct = () => {
             style={inputStyle}
           />
 
-          <select value={productCategory} onChange={(e) => setProductCategory(e.target.value)} style={inputStyle}>
-            <option value="">เลือกหมวดหมู่</option>
-            {categories.map((cat, idx) => (
-              <option key={idx} value={cat}>{cat}</option>
-            ))}
-          </select>
+          <input
+           placeholder="หมวดหมู่สินค้า"
+           value={productCategory}
+           onChange={(e) => setProductCategory(e.target.value)}
+           style={inputStyle}
+/>
+
 
           <button onClick={handleSave} style={saveButtonStyle}>บันทึกข้อมูล</button>
           <button onClick={handleDelete} style={{ ...saveButtonStyle, backgroundColor: "#dc3545" }}>ลบสินค้า</button>
