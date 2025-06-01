@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   FaShoppingCart, FaBars, FaUserCircle, FaSignOutAlt, FaClipboardList,
-  FaHome, FaPrint
+  FaHome
 } from "react-icons/fa";
 import { FiFileText } from "react-icons/fi";
 
@@ -82,27 +82,6 @@ const CreatetaxInvoice = () => {
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#e6f0ff", fontFamily: "sans-serif" }}>
-      <style>{`
-        @media print {
-          .no-print {
-            display: none !important;
-          }
-          body * {
-            visibility: hidden;
-          }
-          #invoice-area, #invoice-area * {
-            visibility: visible;
-          }
-          #invoice-area {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-          }
-        }
-      `}</style>
-
-      {/* Header */}
       <div style={{
         backgroundColor: "#1a1aa6", height: `${headerHeight}px`,
         display: "flex", justifyContent: "space-between", alignItems: "center",
@@ -113,7 +92,6 @@ const CreatetaxInvoice = () => {
         <FaUserCircle size={24} onClick={() => navigate("/UiCompany")} style={{ cursor: "pointer" }} />
       </div>
 
-      {/* Sidebar */}
       {sidebarVisible && (
         <div style={{
           position: "fixed", top: `${headerHeight}px`, left: 0,
@@ -134,31 +112,17 @@ const CreatetaxInvoice = () => {
         </div>
       )}
 
-      {/* Invoice Display */}
       <div id="invoice-area" style={{
         width: "21cm", minHeight: "29.7cm", margin: "2rem auto",
         backgroundColor: "white", padding: "2rem", borderRadius: "15px",
         boxShadow: "0 0 12px rgba(0,0,0,0.1)"
       }}>
-        <div style={{
-          display: "flex", justifyContent: "space-between", alignItems: "center",
-          marginBottom: "1rem"
-        }}>
-          <h2 style={{ color: "#1a1aa6" }}>ใบเสร็จรับเงิน/ใบกำกับภาษี</h2>
-          <button className="no-print" onClick={() => window.print()} style={{
-            backgroundColor: "#4da6ff", border: "none", color: "white",
-            padding: "0.5rem 1rem", borderRadius: "5px", fontWeight: "bold",
-            display: "flex", alignItems: "center", gap: "0.5rem"
-          }}>
-            พิมพ์หน้านี้ <FaPrint />
-          </button>
-        </div>
+        <h2 style={{ color: "#1a1aa6", marginBottom: "1rem" }}>ใบเสร็จรับเงิน/ใบกำกับภาษี</h2>
 
         <div style={{ fontSize: "14px", marginBottom: "1rem" }}>
-          วันที่ {new Date().toLocaleDateString("th-TH")} เล่มที่ 001 เลขที่ {String(invoiceNumber).padStart(3, "0")}
+          วันที่ {new Date().toLocaleDateString("th-TH")}
         </div>
 
-        {/* Seller & Buyer Info */}
         <div style={{ fontSize: "14px", marginBottom: "1.5rem" }}>
           <div style={{ marginBottom: "0.5rem" }}>
             <strong>ชื่อผู้ขาย</strong>
@@ -176,7 +140,6 @@ const CreatetaxInvoice = () => {
           </div>
         </div>
 
-        {/* Product Table */}
         {receipt && receipt.items && (
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
             <thead>
@@ -202,7 +165,6 @@ const CreatetaxInvoice = () => {
           </table>
         )}
 
-        {/* Totals */}
         <div style={{ marginTop: "1rem", fontSize: "14px", textAlign: "right" }}>
           <div>มูลค่าก่อนเสียภาษี {formatCurrency(calculateTotal())}</div>
           <div>ภาษีมูลค่าเพิ่ม (VAT) {formatCurrency(calculateVAT())}</div>

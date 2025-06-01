@@ -73,8 +73,10 @@ const Addreceipt = () => {
 
     const total = selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
+    const now = new Date();
     const receiptData = {
-      date: new Date().toISOString(),
+      date: now.toISOString().split("T")[0],
+      time: now.toTimeString().split(" ")[0],
       item: JSON.stringify(selectedItems),
       companyName,
       total,
@@ -88,11 +90,11 @@ const Addreceipt = () => {
       });
 
       const data = await res.json();
-    if (data.status === 200) {
-      alert("สร้างใบเสร็จเรียบร้อยแล้ว");
-      setCart({});
-      navigate("/CreateInvoice"); // ← ไปหน้าทำใบกำกับภาษี
-    } else {
+      if (data.status === 200) {
+        alert("สร้างใบเสร็จเรียบร้อยแล้ว");
+        setCart({});
+        navigate("/CreateInvoice");
+      } else {
         alert("เกิดข้อผิดพลาดในการสร้างใบเสร็จ");
       }
     } catch (error) {
@@ -172,7 +174,11 @@ const Addreceipt = () => {
 };
 
 const MenuItem = ({ icon, text, onClick, active }) => (
-  <div onClick={onClick} style={{ padding: "0.8rem 1rem", display: "flex", alignItems: "center", gap: "0.8rem", color: active ? "white" : "#000", backgroundColor: active ? "#6666cc" : "transparent", cursor: "pointer", fontSize: "14px", fontWeight: active ? "bold" : "normal" }}>
+  <div onClick={onClick} style={{
+    padding: "0.8rem 1rem", display: "flex", alignItems: "center", gap: "0.8rem",
+    color: active ? "white" : "#000", backgroundColor: active ? "#6666cc" : "transparent",
+    cursor: "pointer", fontSize: "14px", fontWeight: active ? "bold" : "normal"
+  }}>
     <div style={{ fontSize: "18px" }}>{icon}</div>
     <div>{text}</div>
   </div>

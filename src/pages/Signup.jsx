@@ -65,11 +65,9 @@ const Signup = () => {
       return false;
     }
 
-    if (accountType === "บริษัท") {
-      if (!companyName || !taxId || !address || !branch) {
-        alert("กรุณากรอกข้อมูลบริษัทให้ครบถ้วน");
-        return false;
-      }
+    if (!companyName || !taxId || !address || !branch) {
+      alert("กรุณากรอกข้อมูลบริษัทให้ครบถ้วน");
+      return false;
     }
 
     if (!agreeTerms) {
@@ -83,7 +81,7 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-  
+
     try {
       const response = await fetch("http://localhost:3000/create_user", {
         method: "POST",
@@ -92,31 +90,30 @@ const Signup = () => {
         },
         body: JSON.stringify(formData),
       });
-  
+
       const data = await response.json();
-  
+
       if (response.ok) {
-        console.log("Signup successful:", data);
         navigate("/success");
       } else {
         alert(data.message || "เกิดข้อผิดพลาด");
       }
     } catch (error) {
-      console.error("Error:", error);
       alert("ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้");
     }
   };
-  
 
   return (
     <div style={{ backgroundColor: "#e6f0ff", minHeight: "100vh" }}>
       <div style={{ backgroundColor: "#1a1aa6", padding: "1rem" }}>
-        <h1 style={{
-          color: "white",
-          margin: 0,
-          fontFamily: "monospace",
-          letterSpacing: "2px",
-        }}>
+        <h1
+          style={{
+            color: "white",
+            margin: 0,
+            fontFamily: "monospace",
+            letterSpacing: "2px",
+          }}
+        >
           TAX INVOICE
         </h1>
       </div>
@@ -173,37 +170,33 @@ const Signup = () => {
             style={inputStyle}
           />
 
-          <input
-            type="text"
+          <textarea
             name="companyName"
             placeholder="ชื่อบริษัท"
             value={formData.companyName}
             onChange={handleChange}
-            style={inputStyle}
+            style={textareaStyle}
           />
-          <input
-            type="text"
+          <textarea
             name="taxId"
             placeholder="เลขประจำตัวผู้เสียภาษี"
             value={formData.taxId}
             onChange={handleChange}
-            style={inputStyle}
+            style={textareaStyle}
           />
-          <input
-            type="text"
+          <textarea
             name="address"
             placeholder="รายละเอียดที่อยู่บริษัท"
             value={formData.address}
             onChange={handleChange}
-            style={inputStyle}
+            style={textareaStyle}
           />
-          <input
-            type="text"
+          <textarea
             name="branch"
             placeholder="สาขาสำนักงาน/ใหญ่/สาขาที่2"
             value={formData.branch}
             onChange={handleChange}
-            style={inputStyle}
+            style={textareaStyle}
           />
 
           <input
@@ -237,9 +230,7 @@ const Signup = () => {
                 ข้อตกลงการใช้งาน
               </a>{" "}
               และ{" "}
-              <a href="#">
-                นโยบายความเป็นส่วนตัว
-              </a>
+              <a href="#">นโยบายความเป็นส่วนตัว</a>
             </label>
           </div>
 
@@ -254,11 +245,20 @@ const Signup = () => {
 
 const inputStyle = {
   width: "100%",
+  height: "48px",
   padding: "10px",
   margin: "8px 0",
   borderRadius: "5px",
   border: "1px solid #ccc",
   fontSize: "1em",
+  boxSizing: "border-box",
+};
+
+const textareaStyle = {
+  ...inputStyle,
+  resize: "vertical",
+  minHeight: "48px",
+  maxHeight: "200px",
 };
 
 const buttonStyle = {
