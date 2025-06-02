@@ -1,13 +1,30 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FaBars, FaUser, FaHome, FaUserCircle, FaSignOutAlt } from "react-icons/fa";
-import { FiFileText, FiPrinter } from "react-icons/fi";
+import { FaBars, FaHome, FaUserCircle, FaSignOutAlt } from "react-icons/fa";
+import { FiFileText, FiDownload } from "react-icons/fi";
 import { QRCodeSVG } from "qrcode.react";
+
+const MenuItem = ({ icon, text, onClick, active }) => (
+  <div onClick={onClick} style={{
+    padding: "0.8rem 1rem",
+    display: "flex",
+    alignItems: "center",
+    gap: "0.8rem",
+    color: active ? "white" : "#000",
+    backgroundColor: active ? "#6666cc" : "transparent",
+    cursor: "pointer",
+    fontSize: "14px",
+    fontWeight: active ? "bold" : "normal"
+  }}>
+    <div style={{ fontSize: "18px" }}>{icon}</div>
+    <div>{text}</div>
+  </div>
+);
 
 const MainUser = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [menuOpen, setMenuOpen] = useState(true);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
   const [userData, setUserData] = useState(null);
   const qrRef = useRef();
   const headerHeight = 64;
@@ -24,16 +41,12 @@ const MainUser = () => {
             const foundUser = data.data.users.find((u) => u.email === email);
             if (foundUser) {
               setUserData(foundUser);
-            } else {
-              console.warn("ไม่พบผู้ใช้ที่ตรงกับ email:", email);
             }
           }
         })
         .catch((err) => console.error("API Error:", err));
     }
   }, []);
-
-  const toggleMenu = () => setMenuOpen(!menuOpen);
 
   const downloadQRCode = () => {
     const svg = qrRef.current.querySelector("svg");
@@ -67,167 +80,103 @@ const MainUser = () => {
     ? JSON.stringify({ phone: userData.phone, taxId: userData.taxId })
     : "";
 
-  const MenuItem = ({ icon, text, onClick, active }) => (
-    <div
-      onClick={onClick}
-      style={{
-        padding: "0.8rem 1rem",
-        display: "flex",
-        alignItems: "center",
-        gap: "0.5rem",
-        cursor: "pointer",
-        backgroundColor: active ? "#6666cc" : "transparent",
-        color: active ? "white" : "#000",
-        fontWeight: active ? "bold" : "normal",
-      }}
-    >
-      {icon} {text}
-    </div>
-  );
-
   return (
-    <div style={{ display: "flex", height: "100vh", flexDirection: "column" }}>
+    <div style={{ minHeight: "100vh", backgroundColor: "#d6e8ff" }}>
       {/* Header */}
-      <div
-        style={{
-          backgroundColor: "#1a1aa6",
-          height: `${headerHeight}px`,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "0 1rem",
-          flexShrink: 0,
-        }}
-      >
-        <div onClick={toggleMenu} style={{ cursor: "pointer", color: "white" }}>
+      <div style={{
+        backgroundColor: "#1a1aa6", height: `${headerHeight}px`, display: "flex",
+        justifyContent: "space-between", alignItems: "center", padding: "0 1rem",
+        color: "white", position: "sticky", top: 0, zIndex: 10,
+      }}>
+        <div onClick={() => setSidebarVisible(!sidebarVisible)} style={{ cursor: "pointer" }}>
           <FaBars size={20} />
         </div>
-        <h1
-          style={{
-            color: "white",
-            fontFamily: "monospace",
-            letterSpacing: "2px",
-            fontSize: "20px",
-          }}
-        >
-          TAX INVOICE
-        </h1>
-        <FaUserCircle
-          size={24}
-          style={{ cursor: "pointer", color: "white" }}
-          onClick={() => navigate("/UiUser")}
-        />
+        <span style={{ fontWeight: "bold", letterSpacing: "1px" }}>TAX INVOICE</span>
+        <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiUser")} />
       </div>
 
-      {/* Content Area */}
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-        {/* Sidebar */}
-        {menuOpen && (
-          <div
-            style={{
-              width: "200px",
-              backgroundColor: "#9999ff",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              padding: "1rem 0",
-              flexShrink: 0,
-            }}
-          >
+      {/* Sidebar */}
+      {sidebarVisible && (
+        <div style={{
+          position: "fixed",
+          top: `${headerHeight}px`,
+          left: 0,
+          width: "200px",
+          height: `calc(100vh - ${headerHeight}px)`,
+          backgroundColor: "#9999ff",
+          zIndex: 20,
+          overflow: "hidden",
+        }}>
+          <div style={{
+            display: "flex", flexDirection: "column", justifyContent: "space-between",
+            height: "100%", padding: "1rem 0"
+          }}>
             <div>
-              <MenuItem
-                icon={<FaHome />}
-                text="หน้าแรก"
-                onClick={() => navigate("/MainUser")}
-                active={location.pathname === "/MainUser"}
-              />
-              <MenuItem
-                icon={<FiFileText />}
-                text="ประวัติการออกใบกำกับภาษี"
-                onClick={() => navigate("/IihUser")}
-                active={location.pathname === "/IihUser"}
-              />
-              <MenuItem
-                icon={<FaUserCircle />}
-                text="ข้อมูลผู้ใช้งาน"
-                onClick={() => navigate("/UiUser")}
-                active={location.pathname === "/UiUser"}
-              />
+              <MenuItem icon={<FaHome />} text="หน้าแรก" onClick={() => navigate("/MainUser")} active={location.pathname === "/MainUser"} />
+              <MenuItem icon={<FiFileText />} text="ประวัติการออกใบกำกับภาษี" onClick={() => navigate("/IihUser")} active={location.pathname === "/IihUser"} />
+              <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiUser")} active={location.pathname === "/UiUser"} />
             </div>
-            <MenuItem
-              icon={<FaSignOutAlt />}
-              text="ออกจากระบบ"
-              onClick={() => {
-                localStorage.clear();
-                navigate("/Enter");
-              }}
-            />
+            <div style={{ marginBottom: "20px" }}>
+              <MenuItem icon={<FaSignOutAlt />} text="ออกจากระบบ" onClick={() => { localStorage.clear(); navigate("/Enter"); }} />
+            </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Main */}
-        <div
-          style={{
-            flex: 1,
-            backgroundColor: "#e6f0ff",
-            padding: "2rem",
-            overflowY: "auto",
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: "#9999ff",
-              borderRadius: "25px",
-              width: "360px",
-              margin: "60px auto",
-              padding: "2rem",
-              textAlign: "center",
-              boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "20px",
-                padding: "0 10px",
-              }}
-            >
-              <span style={{ fontWeight: "bold", fontSize: "20px" }}>นามบัตร</span>
-              <div
-                onClick={downloadQRCode}
-                style={{
-                  backgroundColor: "#f5d0e0",
-                  padding: "8px",
-                  borderRadius: "50%",
-                  cursor: "pointer",
-                }}
-              >
-                <FiPrinter size={18} />
-              </div>
+      {/* Main Content */}
+      <div style={{
+        width: "100%",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "flex-start",
+        paddingTop: "40px",
+        paddingBottom: "60px",
+        position: "relative",
+        zIndex: 1,
+      }}>
+        <div style={{
+          backgroundColor: "#9999ff",
+          padding: "30px",
+          borderRadius: "20px",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
+          width: "100%",
+          maxWidth: "420px",
+          textAlign: "center"
+        }}>
+          <div style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "20px",
+            padding: "0 10px",
+          }}>
+            <span style={{ fontWeight: "bold", fontSize: "20px" }}>นามบัตร</span>
+            <div onClick={downloadQRCode} style={{
+              backgroundColor: "#f5d0e0",
+              padding: "8px",
+              borderRadius: "50%",
+              cursor: "pointer",
+            }}>
+              <FiDownload size={18} />
             </div>
+          </div>
 
-            <div
-              ref={qrRef}
-              style={{
-                backgroundColor: "white",
-                padding: "15px",
-                borderRadius: "14px",
-                height: "260px",
-                width: "260px",
-                margin: "0 auto",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {qrContent ? (
-                <QRCodeSVG value={qrContent} size={230} level="H" includeMargin={true} />
-              ) : (
-                <p style={{ fontSize: "14px" }}>ไม่มีข้อมูล</p>
-              )}
-            </div>
+          <div ref={qrRef} style={{
+            backgroundColor: "white",
+            padding: "15px",
+            borderRadius: "14px",
+            height: "260px",
+            width: "260px",
+            margin: "0 auto",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}>
+            {qrContent ? (
+              <QRCodeSVG value={qrContent} size={230} level="H" includeMargin={true} />
+            ) : (
+              <p style={{ fontSize: "14px" }}>ไม่มีข้อมูล</p>
+            )}
           </div>
         </div>
       </div>

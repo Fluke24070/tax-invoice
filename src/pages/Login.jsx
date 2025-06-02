@@ -11,7 +11,7 @@ const Login = () => {
       alert("กรุณากรอกชื่อผู้ใช้และรหัสผ่าน");
       return;
     }
-  
+
     try {
       const response = await fetch("http://localhost:3000/login", {
         method: "POST",
@@ -23,12 +23,9 @@ const Login = () => {
           password: password,
         }),
       });
-  
+
       const data = await response.json();
-      console.log("User data:", data.user);
-  
       if (response.ok) {
-        // บันทึกข้อมูลผู้ใช้ที่ล็อกอินไว้
         localStorage.setItem("currentUser", JSON.stringify(data.user));
         localStorage.setItem("currentEmail", data.user.email);
         localStorage.setItem("companyName", data.user.companyName);
@@ -36,19 +33,16 @@ const Login = () => {
         localStorage.setItem("phone", data.user.phone);
         localStorage.setItem("taxId", data.user.taxId);
         localStorage.setItem("branch", data.user.branch);
+
         alert("เข้าสู่ระบบสำเร็จ!");
 
-          
         if (data.user.accountType === "บุคคล") {
-          navigate("/MainUser", {
-            state: { email: data.user.email },
-          });
+          navigate("/MainUser", { state: { email: data.user.email } });
         } else if (data.user.accountType === "บริษัท") {
           navigate("/IihCompany");
         } else {
           navigate("/");
         }
-        
       } else {
         alert(data.message || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
       }
@@ -57,44 +51,18 @@ const Login = () => {
       alert("ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้");
     }
   };
-  
 
   return (
     <div style={{ backgroundColor: "#e6f0ff", height: "100vh" }}>
       {/* Header */}
-      <div style={{ backgroundColor: "#1a1aa6", padding: "1rem" }}>
-        <h1
-          style={{
-            color: "white",
-            margin: 0,
-            fontFamily: "monospace",
-            letterSpacing: "2px",
-          }}
-        >
-          TAX INVOICE
-        </h1>
+      <div style={{ backgroundColor: "#1a1aa6", padding: "1rem", textAlign: "center" }}>
+        <h1 style={headerText}>TAX INVOICE</h1>
       </div>
 
       {/* Login form */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "90vh",
-        }}
-      >
-        <div
-          style={{
-            backgroundColor: "white",
-            padding: "2rem",
-            borderRadius: "10px",
-            width: "300px",
-            textAlign: "center",
-            boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-          }}
-        >
-          <h3>ลงชื่อเข้าใช้งาน</h3>
+      <div style={formWrapper}>
+        <div style={formContainer}>
+          <h3 style={{ marginBottom: "1rem" }}>ลงชื่อเข้าใช้งาน</h3>
           <input
             type="text"
             placeholder="อีเมล"
@@ -113,11 +81,19 @@ const Login = () => {
             ล็อกอิน
           </button>
 
-          <div style={{ marginTop: "10px", fontSize: "0.9em" }}>
-            <a href="#" onClick={() => navigate("/signup")} style={{ marginRight: "20px" }}>
+          <div style={linkContainer}>
+            <a
+              href="#"
+              onClick={() => navigate("/signup")}
+              style={linkStyle}
+            >
               ยังไม่มีบัญชี
             </a>
-            <a href="#" onClick={() => alert("ฟีเจอร์นี้อยู่ระหว่างพัฒนา")}>
+            <a
+              href="#"
+              onClick={() => alert("ฟีเจอร์นี้อยู่ระหว่างพัฒนา")}
+              style={linkStyle}
+            >
               ลืมรหัสผ่าน?
             </a>
           </div>
@@ -127,24 +103,64 @@ const Login = () => {
   );
 };
 
+// ✅ สไตล์
+const headerText = {
+  color: "white",
+  margin: 0,
+  fontFamily: "monospace",
+  letterSpacing: "2px",
+  fontSize: "1.5rem",
+};
+
+const formWrapper = {
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  height: "90vh",
+};
+
+const formContainer = {
+  backgroundColor: "white",
+  padding: "2rem",
+  borderRadius: "12px",
+  width: "320px",
+  textAlign: "center",
+  boxShadow: "0 0 8px rgba(0,0,0,0.1)",
+  border: "1px solid #d9e0ea",
+};
+
 const inputStyle = {
   width: "100%",
-  padding: "10px",
-  marginBottom: "10px",
+  padding: "12px 14px",
+  marginBottom: "12px",
   border: "1px solid #ccc",
-  borderRadius: "5px",
+  borderRadius: "8px",
   fontSize: "1em",
+  boxSizing: "border-box",
 };
 
 const buttonStyle = {
   width: "100%",
-  padding: "10px",
+  padding: "12px",
   backgroundColor: "#4267b2",
   color: "white",
   border: "none",
-  borderRadius: "5px",
+  borderRadius: "6px",
   fontSize: "1em",
   cursor: "pointer",
+  marginTop: "5px",
+};
+
+const linkContainer = {
+  marginTop: "10px",
+  fontSize: "0.9em",
+  display: "flex",
+  justifyContent: "space-between",
+};
+
+const linkStyle = {
+  color: "#0000ee",
+  textDecoration: "underline",
 };
 
 export default Login;

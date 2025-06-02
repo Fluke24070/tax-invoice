@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   FaShoppingCart, FaSearch, FaBars, FaUserCircle,
-  FaSignOutAlt, FaClipboardList, FaHome
+  FaSignOutAlt, FaClipboardList
 } from "react-icons/fa";
 import { FiFileText } from "react-icons/fi";
 
@@ -18,14 +18,10 @@ const Product = () => {
   const [selectedCategory, setSelectedCategory] = useState("ทั้งหมด");
   const [categories, setCategories] = useState(["ทั้งหมด"]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState("");
 
   useEffect(() => {
     const storedCompanyName = localStorage.getItem("companyName");
-    if (storedCompanyName) {
-      setCompanyName(storedCompanyName);
-    }
+    if (storedCompanyName) setCompanyName(storedCompanyName);
   }, []);
 
   useEffect(() => {
@@ -33,17 +29,12 @@ const Product = () => {
       try {
         const res = await fetch(`http://localhost:3000/product_get_com/${companyName}`);
         const data = await res.json();
-        if (data.status === 200) {
-          setProducts(data.data.product);
-        }
+        if (data.status === 200) setProducts(data.data.product);
       } catch (error) {
         console.error("Error fetching products:", error);
       }
     };
-
-    if (companyName) {
-      fetchProducts();
-    }
+    if (companyName) fetchProducts();
   }, [companyName]);
 
   useEffect(() => {
@@ -75,13 +66,25 @@ const Product = () => {
     return acc;
   }, {});
 
+  const unifiedBoxStyle = {
+    width: "100%",
+    height: "45px",
+    borderRadius: "20px",
+    border: "1.5px solid #1a1aa6",
+    backgroundColor: "#dfe9ff",
+    padding: "0.4rem 1rem",
+    display: "flex",
+    alignItems: "center",
+    fontSize: "15px"
+  };
+
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#e6f0ff" }}>
+    <div style={{ minHeight: "100vh", backgroundColor: "#e6f0ff", position: "relative" }}>
       {/* Header */}
       <div style={{
         backgroundColor: "#1a1aa6", height: `${headerHeight}px`, display: "flex",
         justifyContent: "space-between", alignItems: "center", padding: "0 1rem",
-        color: "white", position: "sticky", top: 0, zIndex: 10,
+        color: "white", position: "sticky", top: 0, zIndex: 10
       }}>
         <div onClick={() => setSidebarVisible(!sidebarVisible)} style={{ cursor: "pointer" }}>
           <FaBars size={20} />
@@ -90,12 +93,17 @@ const Product = () => {
         <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiCompany")} />
       </div>
 
-      {/* Sidebar */}
+      {/* Sidebar (เหมือน UiCompany) */}
       {sidebarVisible && (
         <div style={{
-          position: "fixed", top: `${headerHeight}px`, left: 0,
-          width: "200px", height: `calc(100vh - ${headerHeight}px)`,
-          backgroundColor: "#9999ff", zIndex: 20, overflow: "hidden"
+          position: "fixed",
+          top: `${headerHeight}px`,
+          left: 0,
+          width: "200px",
+          height: `calc(100vh - ${headerHeight}px)`,
+          backgroundColor: "#9999ff",
+          zIndex: 20,
+          overflow: "hidden",
         }}>
           <div style={{
             display: "flex", flexDirection: "column", justifyContent: "space-between",
@@ -120,64 +128,63 @@ const Product = () => {
           <FaShoppingCart style={iconStyle} /> เพิ่มรายการใบเสร็จ
         </button>
 
-        {/* Search */}
-        <div style={{ position: "relative", width: "280px" }}>
-          <div style={{
-            display: "flex", alignItems: "center",
-            backgroundColor: "#dfe9ff", border: "1.5px solid #1a1aa6",
-            borderRadius: "20px", padding: "0.4rem 1rem", width: "100%"
-          }}>
-            <FaSearch style={{ marginRight: "10px", fontSize: "16px" }} />
+          <div style={{ ...unifiedBoxStyle, justifyContent: "flex-start", gap: "10px" }}>
+            <FaSearch />
             <input
               type="text"
               placeholder="ค้นหาสิ่งของที่ต้องการ"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ border: "none", outline: "none", backgroundColor: "transparent", width: "100%", fontSize: "15px" }}
+              style={{
+                border: "none", outline: "none", backgroundColor: "transparent",
+                width: "100%", fontSize: "15px"
+              }}
             />
           </div>
-        </div>
 
-        {/* Category Dropdown */}
-        <div style={{ position: "relative", width: "280px" }}>
-          <div onClick={() => setDropdownOpen(!dropdownOpen)} style={{
-            backgroundColor: "#dfe9ff", border: "1.5px solid #1a1aa6",
-            borderRadius: "20px", padding: "0.6rem 1rem",
-            display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer"
-          }}>
+          <div style={{ ...unifiedBoxStyle, justifyContent: "space-between", cursor: "pointer" }}
+            onClick={() => setDropdownOpen(!dropdownOpen)}>
             <span>หมวดหมู่ : {selectedCategory}</span>
             <span style={{ transform: dropdownOpen ? "rotate(180deg)" : "rotate(0)", transition: "0.2s" }}>▲</span>
           </div>
+
           {dropdownOpen && (
             <div style={{
-              position: "absolute", top: "100%", left: 0, width: "100%",
-              backgroundColor: "#fff", border: "1px solid #1a1aa6", borderRadius: "10px",
-              marginTop: "0.3rem", zIndex: 3, boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
+              backgroundColor: "white",
+              border: "1px solid #ccc",
+              borderRadius: "10px",
+              marginTop: "5px",
+              width: "100%",
+              zIndex: 10
             }}>
-              {categories.map((category, idx) => (
-                <div key={idx} style={{
-                  padding: "0.6rem 1rem", cursor: "pointer",
-                  borderBottom: idx < categories.length - 1 ? "1px solid #eee" : "none"
+              {categories.map((cat) => (
+                <div key={cat} style={{
+                  padding: "0.5rem 1rem",
+                  cursor: "pointer",
+                  backgroundColor: selectedCategory === cat ? "#e0e0ff" : "white"
                 }}
                   onClick={() => {
-                    setSelectedCategory(category);
+                    setSelectedCategory(cat);
                     setDropdownOpen(false);
                   }}>
-                  {category}
+                  {cat}
                 </div>
               ))}
             </div>
           )}
+
+          <h3 style={{ marginTop: "2rem" }}>สินค้าของคุณ</h3>
         </div>
 
-        <h3 style={{ textAlign: "center", marginTop: "2rem" }}>สินค้าของคุณ</h3>
-        
-        <div style={{ padding: "0 1rem" }}>
+        {/* Product Grid */}
+        <div style={{ padding: "0 1rem", width: "100%", maxWidth: "1200px", margin: "0 auto" }}>
           {Object.keys(groupedProducts).map((category) => (
             <div key={category} style={{ marginBottom: "2rem" }}>
               <h4 style={{ marginBottom: "1rem", textAlign: "left" }}>{category}</h4>
               <div style={{
-                display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: "1rem"
+                display: "grid",
+                gridTemplateColumns: "repeat(5, 1fr)",
+                gap: "1rem"
               }}>
                 {groupedProducts[category].map((product) => (
                   <div key={product.id} onClick={() => navigate(`/Editproduct/${product.id}`)} style={{
@@ -186,8 +193,7 @@ const Product = () => {
                     transition: "transform 0.2s"
                   }}
                     onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.02)")}
-                    onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                  >
+                    onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}>
                     {product.image && (
                       <img src={product.image} alt={product.name}
                         style={{ width: "100%", height: "100px", objectFit: "cover", borderRadius: "4px" }} />
@@ -201,70 +207,25 @@ const Product = () => {
           ))}
         </div>
       </div>
-
-      {showModal && (
-        <div style={{
-          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: "rgba(0, 0, 0, 0.5)", display: "flex",
-          justifyContent: "center", alignItems: "center", zIndex: 1000
-        }}>
-          <div style={{
-            backgroundColor: "white", padding: "2rem", borderRadius: "12px",
-            width: "300px", boxShadow: "0 4px 12px rgba(0,0,0,0.2)", textAlign: "center"
-          }}>
-            <h3>เพิ่มหมวดหมู่ใหม่</h3>
-            <input type="text" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} placeholder="ใส่ชื่อหมวดหมู่"
-              style={{ width: "100%", padding: "0.5rem", borderRadius: "6px", border: "1px solid #ccc", marginBottom: "1rem" }} />
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <button onClick={() => {
-                const name = newCategoryName.trim();
-                if (name === "") return alert("กรุณากรอกชื่อหมวดหมู่");
-                if (categories.includes(name)) return alert("หมวดหมู่ซ้ำ");
-                const newList = [...categories, name];
-                setCategories(newList);
-                localStorage.setItem("categories", JSON.stringify(newList));
-                alert(`เพิ่มหมวดหมู่ "${name}" แล้ว`);
-                setNewCategoryName("");
-                setShowModal(false);
-              }} style={{ backgroundColor: "#1a1aa6", color: "white", border: "none", borderRadius: "6px", padding: "0.5rem 1rem", cursor: "pointer" }}>ยืนยัน</button>
-              <button onClick={() => { setShowModal(false); setNewCategoryName(""); }} style={{ backgroundColor: "#ccc", color: "#333", border: "none", borderRadius: "6px", padding: "0.5rem 1rem", cursor: "pointer" }}>ยกเลิก</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
 
 const MenuItem = ({ icon, text, onClick, active }) => (
   <div onClick={onClick} style={{
-    padding: "0.8rem 1rem", display: "flex", alignItems: "center", gap: "0.8rem",
-    color: active ? "white" : "#000", backgroundColor: active ? "#6666cc" : "transparent",
-    cursor: "pointer", fontSize: "14px", fontWeight: active ? "bold" : "normal"
+    padding: "0.8rem 1rem",
+    display: "flex",
+    alignItems: "center",
+    gap: "0.8rem",
+    color: active ? "white" : "#000",
+    backgroundColor: active ? "#6666cc" : "transparent",
+    cursor: "pointer",
+    fontSize: "14px",
+    fontWeight: active ? "bold" : "normal"
   }}>
     <div style={{ fontSize: "18px" }}>{icon}</div>
     <div>{text}</div>
   </div>
 );
-
-const buttonStyle = {
-  backgroundColor: "#dfe9ff",
-  border: "1.5px solid #1a1aa6",
-  borderRadius: "20px",
-  padding: "0.6rem 1rem",
-  width: "280px",
-  textAlign: "left",
-  display: "flex",
-  alignItems: "center",
-  fontSize: "15px",
-  color: "#000",
-  cursor: "pointer",
-  boxShadow: "inset 0 0 0.5px #fff",
-};
-
-const iconStyle = {
-  marginRight: "10px",
-  fontSize: "16px",
-};
 
 export default Product;

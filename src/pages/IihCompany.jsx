@@ -13,56 +13,65 @@ const IihCompany = () => {
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [receipts, setReceipts] = useState([]);
   const [selectedReceipt, setSelectedReceipt] = useState(null);
+  const [selectedReceiptForView, setSelectedReceiptForView] = useState(null);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const itemsPerPage = 10;
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-  const fetchReceipts = async () => {
-    const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
-    if (!currentUser.companyName) return;
+    const fetchReceipts = async () => {
+      const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
+      if (!currentUser.companyName) return;
 
-    try {
-      const url = `http://localhost:3000/invoice_get_com/${encodeURIComponent(currentUser.companyName)}`;
-      const res = await fetch(url);
-      const json = await res.json();
-      const data = json.data?.product || [];
+      try {
+        const url = `http://localhost:3000/invoice_get_com/${encodeURIComponent(currentUser.companyName)}`;
+        const res = await fetch(url);
+        const json = await res.json();
+        const data = json.data?.product || [];
 
-      const parsed = data.map((row) => ({
-        ...row,
-        seller: typeof row.seller === "string" ? JSON.parse(row.seller) : row.seller,
-        buyer: typeof row.buyer === "string" ? JSON.parse(row.buyer) : row.buyer,
-        item: typeof row.item === "string" ? JSON.parse(row.item) : row.item,
-      }));
+        const parsed = data.map((row) => ({
+          ...row,
+          seller: typeof row.seller === "string" ? JSON.parse(row.seller) : row.seller,
+          buyer: typeof row.buyer === "string" ? JSON.parse(row.buyer) : row.buyer,
+          item: typeof row.item === "string" ? JSON.parse(row.item) : row.item,
+        }));
 
-      setReceipts(parsed);
-    } catch (err) {
-      console.error("Fetch error:", err);
-    }
-  };
+        setReceipts(parsed);
+      } catch (err) {
+        console.error("Fetch error:", err);
+      }
+    };
 
-  fetchReceipts();
-}, []);
-
+    fetchReceipts();
+  }, []);
 
   const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
-  const openModal = (receipt) => setSelectedReceipt(receipt);
-  const closeModal = () => setSelectedReceipt(null);
+  const openInvoiceModal = (receipt) => setSelectedReceipt(receipt);
+  const closeInvoiceModal = () => setSelectedReceipt(null);
+  const openReceiptModal = (receipt) => {
+    setSelectedReceiptForView(receipt);
+    setShowReceiptModal(true);
+  };
+  const closeReceiptModal = () => {
+    setSelectedReceiptForView(null);
+    setShowReceiptModal(false);
+  };
 
   const formatCurrency = (amount) =>
     Number(amount).toLocaleString("th-TH", { minimumFractionDigits: 2 });
-
   const formatDate = (iso) => new Date(iso).toLocaleDateString("th-TH");
-  const formatTime = (iso) =>
-    new Date(iso).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
 
-  const filteredReceipts = receipts.filter((receipt) => {
-    const keyword = searchTerm.toLowerCase();
-    const dateMatch = formatDate(receipt.date).includes(keyword);
-    const buyerMatch = `${receipt.buyer.firstName} ${receipt.buyer.lastName}`.toLowerCase().includes(keyword);
-    return dateMatch || buyerMatch;
-  });
+const filteredReceipts = receipts.filter((receipt) => {
+  const keyword = searchTerm.toLowerCase();
+  const dateMatch = formatDate(receipt.date).includes(keyword);
+  const buyerMatch = `${receipt.buyer.firstName} ${receipt.buyer.lastName}`.toLowerCase().includes(keyword);
+  const invoiceMatch = String(receipt.invoice_num || receipt.id || "").toLowerCase().includes(keyword);
+
+  return dateMatch || buyerMatch || invoiceMatch;
+});
+
+
 
   const totalPages = Math.ceil(filteredReceipts.length / itemsPerPage);
   const paginatedReceipts = filteredReceipts.slice(
@@ -99,78 +108,56 @@ const IihCompany = () => {
     </div>
   );
 
-  const ReceiptModal = ({ receipt, onClose }) => {
-    const vatRate = 0.07;
-    const total = Number(receipt.total);
-    const vatAmount = Number((total * vatRate).toFixed(2));
-    const totalWithVAT = Number((total + vatAmount).toFixed(2));
-
-    return (
-      <div style={{
-        position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
-        backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center",
-        alignItems: "center", zIndex: 1000
-      }}>
-        <div style={{
-          backgroundColor: "white", padding: "2rem", borderRadius: "10px",
-          width: "600px", maxHeight: "90vh", overflowY: "auto"
-        }}>
-          <h2 style={{ textAlign: "center", fontWeight: "bold" }}>ใบเสร็จรับเงิน</h2>
-          <p><strong>วันที่:</strong> {formatDate(receipt.date)} {formatTime(receipt.date)}</p>
-          <hr />
-          {receipt.item.map((item, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>{Number(item.quantity).toFixed(2)} × {item.name}</span>
-              <span>{formatCurrency(item.price)}</span>
-            </div>
-          ))}
-          <hr />
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span><strong>มูลค่าก่อนภาษี:</strong></span>
-            <span>{formatCurrency(total)}</span>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span><strong>VAT 7%:</strong></span>
-            <span>{formatCurrency(vatAmount)}</span>
-          </div>
-          <div style={{
-            display: "flex", justifyContent: "space-between", fontWeight: "bold",
-            fontSize: "18px", marginTop: "1rem"
-          }}>
-            <span>ยอดรวม:</span>
-            <span>{formatCurrency(totalWithVAT)}</span>
-          </div>
-          <div style={{ marginTop: "1.5rem", textAlign: "center" }}>
-            <button onClick={onClose} style={{
-              padding: "0.5rem 2rem", backgroundColor: "#1a1aa6", color: "white",
-              border: "none", borderRadius: "8px"
-            }}>
-              ปิด
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const printInvoice = () => {
-    const printContent = document.getElementById("invoice-print").innerHTML;
-    const win = window.open("", "", "width=800,height=600");
-    win.document.write(`
-      <html>
-        <head>
-          <title>พิมพ์ใบกำกับภาษี</title>
-          <style>
-            body { font-family: sans-serif; padding: 20px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
-            th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-          </style>
-        </head>
-        <body>${printContent}</body>
-      </html>`);
-    win.document.close();
-    win.print();
-  };
+const printInvoice = () => {
+  const printContent = document.getElementById("invoice-print").innerHTML;
+  const win = window.open("", "", "width=800,height=600");
+  win.document.write(`
+    <html>
+      <head>
+        <title>พิมพ์ใบกำกับภาษี</title>
+        <style>
+          @media print {
+            .no-print { display: none !important; }
+          }
+          body {
+            font-family: "Tahoma", sans-serif;
+            padding: 40px;
+            margin: 0;
+            font-size: 14px;
+          }
+          h3 { margin-top: 0; color: #1a1aa6; }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 14px;
+          }
+          th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+          }
+          hr {
+            margin: 1rem 0;
+          }
+          .totals {
+            text-align: right;
+            margin-top: 1rem;
+            font-size: 14px;
+          }
+          .totals b {
+            font-size: 16px;
+          }
+        </style>
+      </head>
+      <body>
+        ${printContent}
+      </body>
+    </html>
+  `);
+  win.document.close();
+  win.print();
+};
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#d6e8ff" }}>
@@ -215,7 +202,7 @@ const IihCompany = () => {
         }}>
           <input
             type="text"
-            placeholder="ค้นหาผ่านวันที่ทำรายการ ชื่อลูกค้า"
+            placeholder="ค้นหาผ่านวันที่ทำรายการ ชื่อลูกค้า หรือเลขที่ใบกำกับ"
             value={searchTerm}
             onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
             style={{
@@ -233,25 +220,35 @@ const IihCompany = () => {
           <thead>
             <tr style={{ backgroundColor: "#b3ccff" }}>
               <th style={thStyle}>ลำดับ</th>
-              <th style={thStyle}>เวลา</th>
               <th style={thStyle}>วันที่</th>
-              <th style={thStyle}>เลขที่ใบกำกับ</th>
+              <th style={thStyle}>เลขที่ใบกำกับภาษี</th>
               <th style={thStyle}>ราคา</th>
-              <th style={thStyle}>รายละเอียด</th>
+              <th style={thStyle}>ดูใบเสร็จ</th>
+              <th style={thStyle}>ดูใบกำกับภาษี</th>
             </tr>
           </thead>
           <tbody>
             {paginatedReceipts.map((receipt, index) => (
               <tr key={index}>
                 <td style={tdStyle}>{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                <td style={tdStyle}>{formatTime(receipt.date)}</td>
                 <td style={tdStyle}>{formatDate(receipt.date)}</td>
-                <td style={tdStyle}>{receipt.invoiceNumber || `INV${index + 1}`}</td>
+                <td style={tdStyle}>{receipt.invoice_num || receipt.id}</td>
                 <td style={tdStyle}>{formatCurrency(receipt.grand_total)}</td>
                 <td style={tdStyle}>
-                  <span onClick={() => { setSelectedReceipt(receipt); setShowReceiptModal(true); }}
-                    style={{ color: "#1a1aa6", cursor: "pointer", marginRight: "1rem" }}>1.ดูใบเสร็จ</span>
-                  <span onClick={() => openModal(receipt)} style={{ color: "#1a1aa6", cursor: "pointer" }}>2.ดูใบกำกับ</span>
+                  <button onClick={() => openReceiptModal(receipt)} style={{
+                    backgroundColor: "#28a745", color: "white", padding: "0.3rem 1rem",
+                    borderRadius: "5px", border: "none", cursor: "pointer"
+                  }}>
+                    ใบเสร็จ
+                  </button>
+                </td>
+                <td style={tdStyle}>
+                  <button onClick={() => openInvoiceModal(receipt)} style={{
+                    backgroundColor: "#1a75ff", color: "white", padding: "0.3rem 1rem",
+                    borderRadius: "5px", border: "none", cursor: "pointer"
+                  }}>
+                    ใบกำกับภาษี
+                  </button>
                 </td>
               </tr>
             ))}
@@ -272,14 +269,9 @@ const IihCompany = () => {
         <button onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} style={paginationBtnStyle}>หน้าถัดไป</button>
       </div>
 
-      {/* Receipt Modal */}
-      {showReceiptModal && selectedReceipt && (
-        <ReceiptModal receipt={selectedReceipt} onClose={() => setShowReceiptModal(false)} />
-      )}
-
-      {/* Invoice Modal */}
-      {selectedReceipt && !showReceiptModal && (
-        <div onClick={closeModal} style={{
+      {/* Modal: Tax Invoice */}
+      {selectedReceipt && (
+        <div onClick={closeInvoiceModal} style={{
           position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
           backgroundColor: "rgba(0,0,0,0.4)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 999
         }}>
@@ -288,58 +280,140 @@ const IihCompany = () => {
             width: "80%", maxWidth: "800px", maxHeight: "90vh", overflowY: "auto"
           }}>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <h3 style={{ color: "#1a1aa6" }}>ใบกำกับภาษี</h3>
-              <button onClick={closeModal} style={{ fontSize: "20px", background: "none", border: "none", cursor: "pointer" }}>✖</button>
+              
+              <button onClick={closeInvoiceModal} style={{ fontSize: "20px", background: "none", border: "none", cursor: "pointer" }}>✖</button>
             </div>
 
-            <div id="invoice-print">
-              <div><b>ชื่อผู้ขาย:</b> {selectedReceipt.seller.firstName} {selectedReceipt.seller.lastName}</div>
-              <div><b>บริษัท:</b> {selectedReceipt.seller.companyName}</div>
-              <div><b>ที่อยู่:</b> {selectedReceipt.seller.address}</div>
-              <div><b>เลขประจำตัวผู้เสียภาษี:</b> {selectedReceipt.seller.taxId}</div>
-              <hr />
-              <div><b>ชื่อผู้ซื้อ:</b> {selectedReceipt.buyer.firstName} {selectedReceipt.buyer.lastName}</div>
-              <div><b>บริษัท:</b> {selectedReceipt.buyer.companyName}</div>
-              <div><b>ที่อยู่:</b> {selectedReceipt.buyer.address}</div>
-              <div><b>เลขประจำตัวผู้เสียภาษี:</b> {selectedReceipt.buyer.taxId}</div>
-              <hr />
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
-                <thead style={{ backgroundColor: "#eee" }}>
-                  <tr>
-                    <th style={thStyle}>ลำดับ</th>
-                    <th style={thStyle}>สินค้า</th>
-                    <th style={thStyle}>จำนวน</th>
-                    <th style={thStyle}>หน่วยละ</th>
-                    <th style={thStyle}>รวม</th>
+<div id="invoice-print">
+  {/* หัวข้อใบกำกับภาษี ที่ย้ายไปขวาบน สีดำ */}
+  <div style={{ display: "flex", justifyContent: "flex-end" }}>
+    <h2 style={{ fontSize: "20px", color: "#000", marginBottom: "1rem", marginTop: 0 }}>
+      ใบกำกับภาษี
+    </h2>
+  </div>
+
+  {/* รายละเอียดอื่น ๆ ต่อเหมือนเดิม */}
+  <div style={{ fontSize: "14px", marginBottom: "1rem" }}>
+    <div>วันที่ออกใบกำกับ: {formatDate(selectedReceipt.date)}</div>
+    <div>เลขที่ใบกำกับภาษี: {selectedReceipt.invoice_num || selectedReceipt.id}</div>
+    <div>เลขที่อ้างอิง: {selectedReceipt.id}</div>
+    <div>เลขที่ใบเสร็จ: {selectedReceipt.receipt_id}</div>
+  </div>
+
+  <div><b>ชื่อผู้ขาย:</b> {selectedReceipt.seller.firstName} {selectedReceipt.seller.lastName}</div>
+  <div><b>บริษัท:</b> {selectedReceipt.seller.companyName}</div>
+  <div><b>ที่อยู่:</b> {selectedReceipt.seller.address}</div>
+  <div><b>เลขประจำตัวผู้เสียภาษี:</b> {selectedReceipt.seller.taxId}</div>
+
+  <hr />
+
+  <div><b>ชื่อผู้ซื้อ:</b> {selectedReceipt.buyer.firstName} {selectedReceipt.buyer.lastName}</div>
+  <div><b>บริษัท:</b> {selectedReceipt.buyer.companyName}</div>
+  <div><b>ที่อยู่:</b> {selectedReceipt.buyer.address}</div>
+  <div><b>เลขประจำตัวผู้เสียภาษี:</b> {selectedReceipt.buyer.taxId}</div>
+
+  <hr />
+  {/* ตาราง และยอดรวม ตามเดิม */}
+
+
+  {/* ตารางรายการสินค้า */}
+  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
+    <thead style={{ backgroundColor: "#eee" }}>
+      <tr>
+        <th style={thStyle}>ลำดับ</th>
+        <th style={thStyle}>สินค้า</th>
+        <th style={thStyle}>จำนวน</th>
+        <th style={thStyle}>หน่วยละ</th>
+        <th style={thStyle}>รวม</th>
+      </tr>
+    </thead>
+    <tbody>
+      {selectedReceipt.item.map((item, i) => (
+        <tr key={i}>
+          <td style={tdStyle}>{i + 1}</td>
+          <td style={tdStyle}>{item.name}</td>
+          <td style={tdStyle}>{item.quantity}</td>
+          <td style={tdStyle}>{formatCurrency(item.price)}</td>
+          <td style={tdStyle}>{formatCurrency(item.price * item.quantity)}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  {/* ยอดรวม */}
+  <div style={{ marginTop: "1rem", textAlign: "right" }}>
+    <div>มูลค่าก่อนภาษี: {formatCurrency(selectedReceipt.total)}</div>
+    <div>VAT 7%: {formatCurrency(selectedReceipt.vat)}</div>
+    <div><b>ยอดรวม: {formatCurrency(selectedReceipt.grand_total)}</b></div>
+  </div>
+</div>
+
+
+<div style={{ textAlign: "right", marginTop: "1rem" }} className="no-print">
+  <button onClick={printInvoice} style={{
+    backgroundColor: "#4da6ff",
+    color: "white",
+    padding: "0.5rem 1rem",
+    borderRadius: "8px",
+    border: "none",
+    cursor: "pointer",
+    fontWeight: "bold"
+  }}>
+    <FaPrint style={{ marginRight: "8px" }} />
+    พิมพ์ใบกำกับภาษี
+  </button>
+</div>
+
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Receipt */}
+      {showReceiptModal && selectedReceiptForView && (
+        <div onClick={closeReceiptModal} style={{
+          position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+          backgroundColor: "rgba(0,0,0,0.4)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 999
+        }}>
+          <div onClick={(e) => e.stopPropagation()} style={{
+            backgroundColor: "white", padding: "2rem", borderRadius: "12px",
+            width: "80%", maxWidth: "800px", maxHeight: "90vh", overflowY: "auto"
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <h3 style={{ color: "#28a745" }}>ใบเสร็จ</h3>
+              <button onClick={closeReceiptModal} style={{ fontSize: "20px", background: "none", border: "none", cursor: "pointer" }}>✖</button>
+            </div>
+            <div style={{ fontSize: "14px", marginBottom: "1rem" }}>
+              <div>วันที่ทำรายการ: {formatDate(selectedReceiptForView.date)}</div>
+              <div>เลขที่ใบเสร็จ: {selectedReceiptForView.receipt_id}</div>
+            </div>
+            <div><b>ลูกค้า:</b> {selectedReceiptForView.buyer.firstName} {selectedReceiptForView.buyer.lastName}</div>
+            <hr />
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px", marginTop: "10px" }}>
+              <thead style={{ backgroundColor: "#eee" }}>
+                <tr>
+                  <th style={thStyle}>ลำดับ</th>
+                  <th style={thStyle}>สินค้า</th>
+                  <th style={thStyle}>จำนวน</th>
+                  <th style={thStyle}>หน่วยละ</th>
+                  <th style={thStyle}>รวม</th>
+                </tr>
+              </thead>
+              <tbody>
+                {selectedReceiptForView.item.map((item, i) => (
+                  <tr key={i}>
+                    <td style={tdStyle}>{i + 1}</td>
+                    <td style={tdStyle}>{item.name}</td>
+                    <td style={tdStyle}>{item.quantity}</td>
+                    <td style={tdStyle}>{formatCurrency(item.price)}</td>
+                    <td style={tdStyle}>{formatCurrency(item.price * item.quantity)}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {selectedReceipt.item.map((item, i) => (
-                    <tr key={i}>
-                      <td style={tdStyle}>{i + 1}</td>
-                      <td style={tdStyle}>{item.name}</td>
-                      <td style={tdStyle}>{item.quantity}</td>
-                      <td style={tdStyle}>{formatCurrency(item.price)}</td>
-                      <td style={tdStyle}>{formatCurrency(item.price * item.quantity)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <div style={{ marginTop: "1rem", textAlign: "right" }}>
-                <div>มูลค่าก่อนภาษี: {formatCurrency(selectedReceipt.total)}</div>
-                <div>VAT 7%: {formatCurrency(selectedReceipt.vat)}</div>
-                <div><b>ยอดรวม: {formatCurrency(selectedReceipt.grand_total)}</b></div>
-              </div>
-            </div>
-
-            <div style={{ textAlign: "right", marginTop: "1rem" }}>
-              <button onClick={printInvoice} style={{
-                backgroundColor: "#4da6ff", color: "white", padding: "0.5rem 1rem",
-                borderRadius: "8px", border: "none", cursor: "pointer", fontWeight: "bold"
-              }}>
-                <FaPrint style={{ marginRight: "8px" }} />
-                พิมพ์ใบกำกับภาษี
-              </button>
+                ))}
+              </tbody>
+            </table>
+            <div style={{ marginTop: "1rem", textAlign: "right" }}>
+              <div><b>ยอดรวม:</b> {formatCurrency(selectedReceiptForView.total)}</div>
+              <div><b>VAT:</b> {formatCurrency(selectedReceiptForView.vat)}</div>
+              <div><b>ยอดสุทธิ:</b> {formatCurrency(selectedReceiptForView.grand_total)}</div>
             </div>
           </div>
         </div>
