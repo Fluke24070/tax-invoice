@@ -117,7 +117,7 @@ const CreateInvoice = () => {
           borderRadius: "30px", padding: "0.7rem 2rem", border: "none",
           backgroundColor: "#a6d4ff", fontWeight: "bold", fontSize: "16px", cursor: "pointer"
         }}>
-          เพิ่มรายการสินค้า
+          ทำใบเสร็จ
         </button>
         <div style={{ display: "flex", alignItems: "center", backgroundColor: "white", padding: "0.4rem 1rem", borderRadius: "30px" }}>
           <input
