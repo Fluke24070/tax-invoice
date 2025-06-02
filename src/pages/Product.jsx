@@ -117,7 +117,7 @@ const Product = () => {
       {/* Content */}
       <div style={{ paddingTop: "40px", paddingBottom: "60px", display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
         <button onClick={handleAddProduct} style={buttonStyle}>
-          <FaShoppingCart style={iconStyle} /> เพิ่มรายการสินค้า
+          <FaShoppingCart style={iconStyle} /> เพิ่มรายการใบเสร็จ
         </button>
 
         {/* Search */}
