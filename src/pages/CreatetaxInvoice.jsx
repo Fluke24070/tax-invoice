@@ -92,6 +92,8 @@ const CreatetaxInvoice = () => {
         <FaUserCircle size={24} onClick={() => navigate("/UiCompany")} style={{ cursor: "pointer" }} />
       </div>
 
+      <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>ใบกำกับภาษี</h1>
+
       {sidebarVisible && (
         <div style={{
           position: "fixed", top: `${headerHeight}px`, left: 0,

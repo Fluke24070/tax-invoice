@@ -1,4 +1,3 @@
-// ✅ CreateInvoice.jsx (with Receipt ID in Table and Modal)
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -92,6 +91,8 @@ const CreateInvoice = () => {
         <span style={{ fontWeight: "bold" }}>TAX INVOICE</span>
         <FaUserCircle size={24} onClick={() => navigate("/UiCompany")} style={{ cursor: "pointer" }} />
       </div>
+
+      <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>รายการใบเสร็จ</h1>
 
       {sidebarVisible && (
         <div style={{

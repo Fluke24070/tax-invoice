@@ -54,12 +54,13 @@ const Login = () => {
 
   return (
     <div style={{ backgroundColor: "#e6f0ff", height: "100vh" }}>
-      {/* Header */}
+
+    <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>Login</h1>
+
       <div style={{ backgroundColor: "#1a1aa6", padding: "1rem", textAlign: "center" }}>
         <h1 style={headerText}>TAX INVOICE</h1>
       </div>
 
-      {/* Login form */}
       <div style={formWrapper}>
         <div style={formContainer}>
           <h3 style={{ marginBottom: "1rem" }}>ลงชื่อเข้าใช้งาน</h3>
@@ -103,7 +104,6 @@ const Login = () => {
   );
 };
 
-// ✅ สไตล์
 const headerText = {
   color: "white",
   margin: 0,

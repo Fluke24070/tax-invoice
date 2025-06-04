@@ -96,7 +96,7 @@ const IihUser = () => {
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#d6e8ff" }}>
-      {/* Header */}
+
       <div style={{
         backgroundColor: "#1a1aa6", color: "white", height: "64px",
         display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 1rem"
@@ -106,7 +106,8 @@ const IihUser = () => {
         <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiUser")} />
       </div>
 
-      {/* Sidebar */}
+      <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>ประวัติการออกใบกำกับภาษี</h1>
+
       {sidebarVisible && (
         <div style={{
           position: "fixed", top: "64px", left: 0, width: "200px",
@@ -125,7 +126,6 @@ const IihUser = () => {
         </div>
       )}
 
-      {/* Search */}
       <div style={{ margin: "1.5rem auto", display: "flex", justifyContent: "center" }}>
         <div style={{
           display: "flex", alignItems: "center", backgroundColor: "#cce0ff",
@@ -142,7 +142,6 @@ const IihUser = () => {
         </div>
       </div>
 
-      {/* Table */}
       <div style={{ width: "90%", margin: "0 auto", background: "white", borderRadius: "10px", overflowX: "auto" }}>
 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
   <thead>
@@ -176,7 +175,6 @@ const IihUser = () => {
 
       </div>
 
-      {/* Pagination */}
       <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem", gap: "0.5rem" }}>
         <button onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}>หน้าก่อน</button>
         {Array.from({ length: totalPages }, (_, i) => (
@@ -189,7 +187,6 @@ const IihUser = () => {
         <button onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}>หน้าถัดไป</button>
       </div>
 
-      {/* Modal: Receipt */}
       {showReceiptModal && selectedReceipt && (
         <div onClick={closeModal} style={{
           position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
@@ -224,7 +221,6 @@ const IihUser = () => {
         </div>
       )}
 
-      {/* Modal: Tax Invoice */}
       {showTaxInvoiceModal && selectedReceipt && (
         <div onClick={closeModal} style={{
           position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",

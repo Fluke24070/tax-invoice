@@ -120,6 +120,8 @@ const Addreceipt = () => {
         <FaUserCircle style={{ cursor: "pointer", fontSize: "20px" }} onClick={() => navigate("/UiCompany")} />
       </div>
 
+      <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>ออกใบเสร็จ</h1>
+
       {sidebarVisible && (
         <div style={{
           position: "fixed", top: `${headerHeight}px`, left: 0,

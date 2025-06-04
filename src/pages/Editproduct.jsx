@@ -38,8 +38,6 @@ const Editproduct = () => {
   .then((res) => res.json())
   .then((data) => {
     const productData = data?.data?.product?.[0];
-    // console.log("product:", productData);
-
     if (productData) {
       setProduct({
         id: productData.id,
@@ -62,9 +60,6 @@ const Editproduct = () => {
   });
 
 }, [productId, navigate]);
-
-
-  // โหลดหมวดหมู่ของบริษัท
   useEffect(() => {
     const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
     const companyName = currentUser.companyName;
@@ -160,7 +155,6 @@ const Editproduct = () => {
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#e6f0ff" }}>
-      {/* Header */}
       <div style={{
         backgroundColor: "#1a1aa6", height: `${headerHeight}px`, display: "flex",
         justifyContent: "space-between", alignItems: "center", padding: "0 1rem",
@@ -173,7 +167,8 @@ const Editproduct = () => {
         <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiCompany")} />
       </div>
 
-      {/* Sidebar */}
+      <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>แก้ไขสินค้า</h1>
+
       {sidebarVisible && (
         <div style={{
           position: "fixed", top: `${headerHeight}px`, left: 0,
@@ -196,8 +191,6 @@ const Editproduct = () => {
           </div>
         </div>
       )}
-
-      {/* Form */}
       <div style={{ display: "flex", justifyContent: "center", paddingTop: "2rem", paddingBottom: "4rem" }}>
         <div style={{
           backgroundColor: "white", padding: "1.5rem", borderRadius: "10px",

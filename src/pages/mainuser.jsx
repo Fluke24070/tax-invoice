@@ -82,7 +82,7 @@ const MainUser = () => {
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#d6e8ff" }}>
-      {/* Header */}
+
       <div style={{
         backgroundColor: "#1a1aa6", height: `${headerHeight}px`, display: "flex",
         justifyContent: "space-between", alignItems: "center", padding: "0 1rem",
@@ -95,7 +95,8 @@ const MainUser = () => {
         <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiUser")} />
       </div>
 
-      {/* Sidebar */}
+      <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>หน้าหลัก</h1>
+
       {sidebarVisible && (
         <div style={{
           position: "fixed",
@@ -123,7 +124,6 @@ const MainUser = () => {
         </div>
       )}
 
-      {/* Main Content */}
       <div style={{
         width: "100%",
         display: "flex",

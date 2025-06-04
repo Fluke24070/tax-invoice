@@ -65,9 +65,16 @@ const Signup = () => {
       return false;
     }
 
-    if (!companyName || !taxId || !address || !branch) {
-      alert("กรุณากรอกข้อมูลบริษัทให้ครบถ้วน");
-      return false;
+    if (accountType === "บริษัท") {
+      if (!companyName || !taxId || !address || !branch) {
+        alert("กรุณากรอกข้อมูลบริษัทให้ครบถ้วน");
+        return false;
+      }
+    } else if (accountType === "บุคคล") {
+      if (!address) {
+        alert("กรุณากรอกที่อยู่");
+        return false;
+      }
     }
 
     if (!agreeTerms) {
@@ -119,8 +126,7 @@ const Signup = () => {
       </div>
 
       <div style={{ display: "flex", justifyContent: "center", padding: "2rem" }}>
-        <form
-          onSubmit={handleSubmit}
+        <div
           style={{
             backgroundColor: "white",
             padding: "2rem",
@@ -130,114 +136,101 @@ const Signup = () => {
             boxShadow: "0 0 10px rgba(0,0,0,0.1)",
           }}
         >
-          <h3 style={{ marginBottom: "1rem" }}>บัญชี</h3>
-          <select
-            name="accountType"
-            value={formData.accountType}
-            onChange={handleChange}
-            style={inputStyle}
-          >
-            <option value="">-- เลือกประเภทบัญชี --</option>
-            <option value="บุคคล">บุคคล</option>
-            <option value="บริษัท">บริษัท</option>
-          </select>
-
-          <div style={{ display: "flex", gap: "10px" }}>
-            <input
-              type="text"
-              name="firstName"
-              placeholder="ชื่อจริง"
-              value={formData.firstName}
+          <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>Register</h1>
+          <form onSubmit={handleSubmit}>
+            <label>ประเภทบัญชี</label>
+            <select
+              name="accountType"
+              value={formData.accountType}
               onChange={handleChange}
               style={inputStyle}
-            />
-            <input
-              type="text"
-              name="lastName"
-              placeholder="นามสกุล"
-              value={formData.lastName}
-              onChange={handleChange}
-              style={inputStyle}
-            />
-          </div>
+            >
+              <option value="">-- เลือกประเภทบัญชี --</option>
+              <option value="บุคคล">บุคคล</option>
+              <option value="บริษัท">บริษัท</option>
+            </select>
 
-          <input
-            type="text"
-            name="phone"
-            placeholder="เบอร์มือถือ"
-            value={formData.phone}
-            onChange={handleChange}
-            style={inputStyle}
-          />
+            {/* บุคคล */}
+            {formData.accountType === "บุคคล" && (
+              <>
+                <label>ชื่อจริง</label>
+                <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} style={inputStyle} />
 
-          <textarea
-            name="companyName"
-            placeholder="ชื่อบริษัท"
-            value={formData.companyName}
-            onChange={handleChange}
-            style={textareaStyle}
-          />
-          <textarea
-            name="taxId"
-            placeholder="เลขประจำตัวผู้เสียภาษี"
-            value={formData.taxId}
-            onChange={handleChange}
-            style={textareaStyle}
-          />
-          <textarea
-            name="address"
-            placeholder="รายละเอียดที่อยู่บริษัท"
-            value={formData.address}
-            onChange={handleChange}
-            style={textareaStyle}
-          />
-          <textarea
-            name="branch"
-            placeholder="สาขาสำนักงาน/ใหญ่/สาขาที่2"
-            value={formData.branch}
-            onChange={handleChange}
-            style={textareaStyle}
-          />
+                <label>นามสกุล</label>
+                <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} style={inputStyle} />
 
-          <input
-            type="email"
-            name="email"
-            placeholder="อีเมล"
-            value={formData.email}
-            onChange={handleChange}
-            style={inputStyle}
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="รหัสผ่าน"
-            value={formData.password}
-            onChange={handleChange}
-            style={inputStyle}
-          />
+                <label>เบอร์มือถือ</label>
+                <input type="text" name="phone" value={formData.phone} onChange={handleChange} style={inputStyle} />
 
-          <div style={{ marginTop: "10px", fontSize: "0.9em" }}>
-            <label style={{ display: "flex", alignItems: "center" }}>
-              <input
-                type="checkbox"
-                name="agreeTerms"
-                checked={formData.agreeTerms}
-                onChange={handleChange}
-                style={{ marginRight: "8px" }}
-              />
-              ฉันยอมรับ{" "}
-              <a href="#" style={{ margin: "0 4px" }}>
-                ข้อตกลงการใช้งาน
-              </a>{" "}
-              และ{" "}
-              <a href="#">นโยบายความเป็นส่วนตัว</a>
-            </label>
-          </div>
+                <label>อีเมล</label>
+                <input type="email" name="email" value={formData.email} onChange={handleChange} style={inputStyle} />
 
-          <button type="submit" style={buttonStyle}>
-            สร้างบัญชี
-          </button>
-        </form>
+                <label>เลขประจำตัวผู้เสียภาษี (ถ้ามี)</label>
+                <textarea name="taxId" value={formData.taxId} onChange={handleChange} style={textareaStyle} />
+
+                <label>ที่อยู่</label>
+                <textarea name="address" value={formData.address} onChange={handleChange} style={textareaStyle} />
+
+                <label>รหัสผ่าน</label>
+                <input type="password" name="password" value={formData.password} onChange={handleChange} style={inputStyle} />
+              </>
+            )}
+
+            {/* บริษัท */}
+            {formData.accountType === "บริษัท" && (
+              <>
+                <label>ชื่อผู้ติดต่อ</label>
+                <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} style={inputStyle} />
+
+                <label>นามสกุลผู้ติดต่อ</label>
+                <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} style={inputStyle} />
+
+                <label>เบอร์มือถือ</label>
+                <input type="text" name="phone" value={formData.phone} onChange={handleChange} style={inputStyle} />
+
+                <label>ชื่อบริษัท</label>
+                <textarea name="companyName" value={formData.companyName} onChange={handleChange} style={textareaStyle} />
+
+                <label>เลขประจำตัวผู้เสียภาษี</label>
+                <textarea name="taxId" value={formData.taxId} onChange={handleChange} style={textareaStyle} />
+
+                <label>รายละเอียดที่อยู่บริษัท</label>
+                <textarea name="address" value={formData.address} onChange={handleChange} style={textareaStyle} />
+
+                <label>สาขาสำนักงาน/ใหญ่/สาขาที่2</label>
+                <textarea name="branch" value={formData.branch} onChange={handleChange} style={textareaStyle} />
+
+                <label>อีเมล</label>
+                <input type="email" name="email" value={formData.email} onChange={handleChange} style={inputStyle} />
+
+                <label>รหัสผ่าน</label>
+                <input type="password" name="password" value={formData.password} onChange={handleChange} style={inputStyle} />
+              </>
+            )}
+
+            <div style={{ marginTop: "10px", fontSize: "0.9em" }}>
+              <label style={{ display: "flex", alignItems: "center" }}>
+                <input
+                  type="checkbox"
+                  name="agreeTerms"
+                  checked={formData.agreeTerms}
+                  onChange={handleChange}
+                  style={{ marginRight: "8px" }}
+                />
+                ฉันยอมรับ{" "}
+                <a href="#" style={{ margin: "0 4px", color: "#1a1aa6" }}>
+                  ข้อตกลงการใช้งาน
+                </a>{" "}
+                และ{" "}
+                <a href="#" style={{ color: "#1a1aa6" }}>
+                  นโยบายความเป็นส่วนตัว
+                </a>
+              </label>
+            </div>
+
+            <button type="submit" style={buttonStyle}>สร้างบัญชี</button>
+          </form>
+        </div>
       </div>
     </div>
   );

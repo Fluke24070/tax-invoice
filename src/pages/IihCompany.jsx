@@ -1,4 +1,3 @@
-// วางแทนไฟล์ IihCompany.jsx ทั้งหมดได้เลย
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -161,7 +160,6 @@ const printInvoice = () => {
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#d6e8ff" }}>
-      {/* Header */}
       <div style={{
         backgroundColor: "#1a1aa6", color: "white", height: "64px",
         display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 1rem"
@@ -171,7 +169,8 @@ const printInvoice = () => {
         <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiCompany")} />
       </div>
 
-      {/* Sidebar */}
+        <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>ประวัติการออกใบกำกับภาษี</h1>
+
       {sidebarVisible && (
         <div style={{
           position: "fixed", top: "64px", left: 0, width: "200px",
@@ -193,8 +192,6 @@ const printInvoice = () => {
           </div>
         </div>
       )}
-
-      {/* Search */}
       <div style={{ margin: "1.5rem auto", display: "flex", justifyContent: "center" }}>
         <div style={{
           display: "flex", alignItems: "center", backgroundColor: "#cce0ff",
@@ -213,8 +210,6 @@ const printInvoice = () => {
           <FaSearch />
         </div>
       </div>
-
-      {/* Table */}
       <div style={{ width: "90%", margin: "0 auto", background: "white", borderRadius: "10px", overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
           <thead>
@@ -255,8 +250,6 @@ const printInvoice = () => {
           </tbody>
         </table>
       </div>
-
-      {/* Pagination */}
       <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem", gap: "0.5rem" }}>
         <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} style={paginationBtnStyle}>หน้าก่อน</button>
         {Array.from({ length: totalPages }, (_, i) => (
@@ -268,8 +261,6 @@ const printInvoice = () => {
         ))}
         <button onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} style={paginationBtnStyle}>หน้าถัดไป</button>
       </div>
-
-      {/* Modal: Tax Invoice */}
       {selectedReceipt && (
         <div onClick={closeInvoiceModal} style={{
           position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
@@ -285,14 +276,13 @@ const printInvoice = () => {
             </div>
 
 <div id="invoice-print">
-  {/* หัวข้อใบกำกับภาษี ที่ย้ายไปขวาบน สีดำ */}
+
   <div style={{ display: "flex", justifyContent: "flex-end" }}>
     <h2 style={{ fontSize: "20px", color: "#000", marginBottom: "1rem", marginTop: 0 }}>
       ใบกำกับภาษี
     </h2>
   </div>
 
-  {/* รายละเอียดอื่น ๆ ต่อเหมือนเดิม */}
   <div style={{ fontSize: "14px", marginBottom: "1rem" }}>
     <div>วันที่ออกใบกำกับ: {formatDate(selectedReceipt.date)}</div>
     <div>เลขที่ใบกำกับภาษี: {selectedReceipt.invoice_num || selectedReceipt.id}</div>
@@ -313,10 +303,7 @@ const printInvoice = () => {
   <div><b>เลขประจำตัวผู้เสียภาษี:</b> {selectedReceipt.buyer.taxId}</div>
 
   <hr />
-  {/* ตาราง และยอดรวม ตามเดิม */}
 
-
-  {/* ตารางรายการสินค้า */}
   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
     <thead style={{ backgroundColor: "#eee" }}>
       <tr>
@@ -340,7 +327,6 @@ const printInvoice = () => {
     </tbody>
   </table>
 
-  {/* ยอดรวม */}
   <div style={{ marginTop: "1rem", textAlign: "right" }}>
     <div>มูลค่าก่อนภาษี: {formatCurrency(selectedReceipt.total)}</div>
     <div>VAT 7%: {formatCurrency(selectedReceipt.vat)}</div>
@@ -368,7 +354,6 @@ const printInvoice = () => {
         </div>
       )}
 
-      {/* Modal: Receipt */}
       {showReceiptModal && selectedReceiptForView && (
         <div onClick={closeReceiptModal} style={{
           position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",

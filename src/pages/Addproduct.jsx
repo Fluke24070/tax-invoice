@@ -108,7 +108,8 @@ const Addproduct = () => {
         <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiCompany")} />
       </div>
 
-      {/* Sidebar */}
+      <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>เพิ่มรายการสินค้า</h1>
+
       {sidebarVisible && (
         <div style={{
           position: "fixed", top: `${headerHeight}px`, left: 0,
@@ -131,8 +132,6 @@ const Addproduct = () => {
           </div>
         </div>
       )}
-
-      {/* Content */}
       <div style={{ display: "flex", justifyContent: "center", paddingTop: "2rem", paddingBottom: "4rem" }}>
         <div style={{
           backgroundColor: "white", padding: "1.5rem", borderRadius: "10px",

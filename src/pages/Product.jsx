@@ -93,7 +93,8 @@ const Product = () => {
         <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiCompany")} />
       </div>
 
-      {/* Sidebar (เหมือน UiCompany) */}
+      <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>สินค้า</h1>
+
       {sidebarVisible && (
         <div style={{
           position: "fixed",
@@ -122,7 +123,6 @@ const Product = () => {
         </div>
       )}
 
-      {/* Main Content */}
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: "40px", paddingBottom: "60px" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", maxWidth: "500px", width: "100%", gap: "1rem" }}>
           <button onClick={handleAddProduct} style={{ ...unifiedBoxStyle, justifyContent: "center", cursor: "pointer", gap: "10px" }}>
@@ -177,7 +177,6 @@ const Product = () => {
           <h3 style={{ marginTop: "2rem" }}>สินค้าของคุณ</h3>
         </div>
 
-        {/* Product Grid */}
         <div style={{ padding: "0 1rem", width: "100%", maxWidth: "1200px", margin: "0 auto" }}>
           {Object.keys(groupedProducts).map((category) => (
             <div key={category} style={{ marginBottom: "2rem" }}>

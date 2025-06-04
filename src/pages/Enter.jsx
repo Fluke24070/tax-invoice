@@ -6,7 +6,6 @@ const Enter = () => {
 
   return (
     <div style={{ backgroundColor: "#e6f0ff", height: "100vh" }}>
-      {/* Header */}
       <div style={{ backgroundColor: "#1a1aa6", padding: "1rem" }}>
         <h1
           style={{
@@ -19,8 +18,6 @@ const Enter = () => {
           TAX INVOICE
         </h1>
       </div>
-
-      {/* Main Box */}
       <div
         style={{
           display: "flex",

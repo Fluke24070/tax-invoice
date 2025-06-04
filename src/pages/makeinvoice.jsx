@@ -1,3 +1,4 @@
+// วางแทนไฟล์ makeinvoice.jsx ได้เลย
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -137,7 +138,7 @@ const Makeinvoice = () => {
   );
 
   return (
-    <div style={{ height: "100vh", overflow: "hidden", backgroundColor: "#e6f0ff" }}>
+    <div style={{ minHeight: "100vh", backgroundColor: "#e6f0ff" }}>
       <div style={{
         backgroundColor: "#1a1aa6", height: "64px", display: "flex",
         justifyContent: "space-between", alignItems: "center",
@@ -167,14 +168,15 @@ const Makeinvoice = () => {
       <div style={{
         marginTop: "64px",
         width: "100%",
-        height: "calc(100vh - 64px)",
+        padding: "2rem 1rem",
         display: "flex",
         justifyContent: "center",
-        alignItems: "start",
-        overflowY: "auto",
-        paddingTop: "2rem"
+        flexDirection: "column",
+        alignItems: "center",
       }}>
-        <div style={{ width: "400px", position: "relative" }}>
+        <div style={{ width: "400px" }}>
+          <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>ออกใบกำกับภาษี</h1>
+
           <div style={{ position: "relative", marginBottom: "0.5rem" }}>
             <input
               ref={inputRef}
@@ -251,6 +253,32 @@ const Makeinvoice = () => {
                 >
                   ทำใบกำกับ
                 </button>
+              </div>
+            </div>
+          )}
+
+          {receipt && (
+            <div style={{
+              backgroundColor: "#fff", padding: "2rem", borderRadius: "20px",
+              width: "100%", marginTop: "2rem", boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)"
+            }}>
+              <h3 style={{ textAlign: "center", marginBottom: "1rem" }}>ใบเสร็จที่เลือก</h3>
+              <p><strong>เลขที่ใบเสร็จ:</strong> {receipt.re_id}</p>
+              <p><strong>วันที่:</strong> {new Date(receipt.date).toLocaleDateString("th-TH")}</p>
+              <div style={{ marginTop: "1rem" }}>
+                {receipt.items.map((item, index) => (
+                  <div key={index} style={{
+                    display: "flex", justifyContent: "space-between", marginBottom: "4px"
+                  }}>
+                    <span>{item.quantity} × {item.name}</span>
+                    <span>{Number(item.price).toLocaleString()} ฿</span>
+                  </div>
+                ))}
+              </div>
+              <hr />
+              <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold" }}>
+                <span>รวม:</span>
+                <span>{Number(receipt.total).toLocaleString()} ฿</span>
               </div>
             </div>
           )}

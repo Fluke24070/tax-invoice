@@ -97,7 +97,8 @@ const UiCompany = () => {
         <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiCompany")} />
       </div>
 
-      {/* Sidebar */}
+      <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>ข้อมูลผู้ใช้งาน</h1>
+
       {sidebarVisible && (
         <div style={{
           position: "fixed",
@@ -126,7 +127,6 @@ const UiCompany = () => {
         </div>
       )}
 
-      {/* Main Content */}
       <div style={{
         width: "100%",
         display: "flex",

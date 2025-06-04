@@ -5,7 +5,6 @@ import {
 } from "react-icons/fa";
 import { FiFileText } from "react-icons/fi";
 
-// เมนูซ้ายแบบ component แยก
 const MenuItem = ({ icon, text, onClick, active }) => (
   <div onClick={onClick} style={{
     padding: "0.8rem 1rem",
@@ -118,7 +117,6 @@ const UiUser = () => {
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#d6e8ff" }}>
-      {/* Header */}
       <div style={{
         backgroundColor: "#1a1aa6", height: `${headerHeight}px`, display: "flex",
         justifyContent: "space-between", alignItems: "center", padding: "0 1rem",
@@ -131,7 +129,8 @@ const UiUser = () => {
         <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiUser")} />
       </div>
 
-      {/* Sidebar แบบไม่เลื่อน */}
+      <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>ข้อมูลผู้ใช้งาน</h1>
+
       {sidebarVisible && (
         <div style={{
           position: "fixed",
@@ -159,7 +158,6 @@ const UiUser = () => {
         </div>
       )}
 
-      {/* Main Content */}
       <div style={{
         width: "100%",
         display: "flex",

@@ -5,7 +5,7 @@ const Success = () => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate("/"); // กลับหน้าหลักหรือหน้า login
+    navigate("/");
   };
 
   return (
