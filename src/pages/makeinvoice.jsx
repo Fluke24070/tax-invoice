@@ -1,8 +1,7 @@
-// วางแทนไฟล์ makeinvoice.jsx ได้เลย
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
-  FaBars, FaUser, FaHome, FaUserCircle, FaSignOutAlt, FaShoppingCart, FaClipboardList
+  FaBars, FaUser, FaUserCircle, FaSignOutAlt, FaShoppingCart, FaClipboardList
 } from "react-icons/fa";
 import { FiFileText } from "react-icons/fi";
 import { Html5Qrcode } from "html5-qrcode";
@@ -18,6 +17,7 @@ const Makeinvoice = () => {
   const [registeredUsers, setRegisteredUsers] = useState([]);
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showReceipt, setShowReceipt] = useState(true);
   const inputRef = useRef(null);
 
   const receipt = location.state?.receipt || null;
@@ -166,13 +166,8 @@ const Makeinvoice = () => {
       )}
 
       <div style={{
-        marginTop: "64px",
-        width: "100%",
-        padding: "2rem 1rem",
-        display: "flex",
-        justifyContent: "center",
-        flexDirection: "column",
-        alignItems: "center",
+        marginTop: "64px", width: "100%", padding: "2rem 1rem",
+        display: "flex", justifyContent: "center", flexDirection: "column", alignItems: "center"
       }}>
         <div style={{ width: "400px" }}>
           <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>ออกใบกำกับภาษี</h1>
@@ -259,27 +254,40 @@ const Makeinvoice = () => {
 
           {receipt && (
             <div style={{
-              backgroundColor: "#fff", padding: "2rem", borderRadius: "20px",
+              backgroundColor: "#fff", padding: "1rem 2rem", borderRadius: "20px",
               width: "100%", marginTop: "2rem", boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)"
             }}>
-              <h3 style={{ textAlign: "center", marginBottom: "1rem" }}>ใบเสร็จที่เลือก</h3>
-              <p><strong>เลขที่ใบเสร็จ:</strong> {receipt.re_id}</p>
-              <p><strong>วันที่:</strong> {new Date(receipt.date).toLocaleDateString("th-TH")}</p>
-              <div style={{ marginTop: "1rem" }}>
-                {receipt.items.map((item, index) => (
-                  <div key={index} style={{
-                    display: "flex", justifyContent: "space-between", marginBottom: "4px"
-                  }}>
-                    <span>{item.quantity} × {item.name}</span>
-                    <span>{Number(item.price).toLocaleString()} ฿</span>
+              <div
+                onClick={() => setShowReceipt(prev => !prev)}
+                style={{
+                  display: "flex", justifyContent: "space-between", alignItems: "center",
+                  cursor: "pointer", fontWeight: "bold", fontSize: "16px", marginBottom: "1rem"
+                }}
+              >
+                <span>{showReceipt ? "▼ ซ่อนใบเสร็จ" : "▶ ดูใบเสร็จ"}</span>
+                <span>เลขที่ใบเสร็จ: {receipt.re_id}</span>
+              </div>
+
+              {showReceipt && (
+                <>
+                  <p><strong>วันที่:</strong> {new Date(receipt.date).toLocaleDateString("th-TH")}</p>
+                  <div style={{ marginTop: "1rem" }}>
+                    {receipt.items.map((item, index) => (
+                      <div key={index} style={{
+                        display: "flex", justifyContent: "space-between", marginBottom: "4px"
+                      }}>
+                        <span>{item.quantity} × {item.name}</span>
+                        <span>{Number(item.price).toLocaleString()} ฿</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-              <hr />
-              <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold" }}>
-                <span>รวม:</span>
-                <span>{Number(receipt.total).toLocaleString()} ฿</span>
-              </div>
+                  <hr />
+                  <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold" }}>
+                    <span>รวม:</span>
+                    <span>{Number(receipt.total).toLocaleString()} ฿</span>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>

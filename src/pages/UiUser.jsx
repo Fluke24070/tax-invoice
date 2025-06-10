@@ -30,6 +30,7 @@ const UiUser = () => {
   const email = location.state?.email || localStorage.getItem("currentEmail");
 
   const [userData, setUserData] = useState({
+    accountType: "",
     firstName: "",
     lastName: "",
     phone: "",
@@ -50,6 +51,7 @@ const UiUser = () => {
         if (response.ok) {
           const data = result.data.card[0];
           setUserData({
+            accountType: data.accountType || "",
             firstName: data.firstName || "",
             lastName: data.lastName || "",
             phone: data.phone || "",
@@ -192,14 +194,44 @@ const UiUser = () => {
             </div>
           </div>
 
-          {["phone", "companyName", "taxId", "address", "branch"].map((field, i) => (
-            <div key={field} style={{ marginBottom: "16px" }}>
-              <label style={labelStyle}>
-                {["เบอร์มือถือ", "ชื่อบริษัท", "เลขประจำตัวผู้เสียภาษี", "รายละเอียดที่อยู่บริษัท", "สาขาสำนักงาน"][i]}
-              </label>
-              <input name={field} value={userData[field]} onChange={handleChange} style={{ ...inputStyle, maxWidth: "475px" }} />
-            </div>
-          ))}
+          <div style={{ marginBottom: "16px" }}>
+            <label style={labelStyle}>เบอร์มือถือ</label>
+            <input name="phone" value={userData.phone} onChange={handleChange} style={inputStyle} />
+          </div>
+
+          {userData.accountType === "บุคคล" && (
+            <>
+              <div style={{ marginBottom: "16px" }}>
+                <label style={labelStyle}>เลขประจำตัวผู้เสียภาษี (ถ้ามี)</label>
+                <input name="taxId" value={userData.taxId} onChange={handleChange} style={inputStyle} />
+              </div>
+              <div style={{ marginBottom: "16px" }}>
+                <label style={labelStyle}>ที่อยู่</label>
+                <input name="address" value={userData.address} onChange={handleChange} style={inputStyle} />
+              </div>
+            </>
+          )}
+
+          {userData.accountType === "บริษัท" && (
+            <>
+              <div style={{ marginBottom: "16px" }}>
+                <label style={labelStyle}>ชื่อบริษัท</label>
+                <input name="companyName" value={userData.companyName} onChange={handleChange} style={inputStyle} />
+              </div>
+              <div style={{ marginBottom: "16px" }}>
+                <label style={labelStyle}>เลขประจำตัวผู้เสียภาษี</label>
+                <input name="taxId" value={userData.taxId} onChange={handleChange} style={inputStyle} />
+              </div>
+              <div style={{ marginBottom: "16px" }}>
+                <label style={labelStyle}>รายละเอียดที่อยู่บริษัท</label>
+                <input name="address" value={userData.address} onChange={handleChange} style={inputStyle} />
+              </div>
+              <div style={{ marginBottom: "16px" }}>
+                <label style={labelStyle}>สาขา</label>
+                <input name="branch" value={userData.branch} onChange={handleChange} style={inputStyle} />
+              </div>
+            </>
+          )}
 
           <div style={{ textAlign: "center", marginTop: "30px" }}>
             <button onClick={handleSave} style={{

@@ -52,56 +52,47 @@ const Login = () => {
     }
   };
 
-  return (
-    <div style={{ backgroundColor: "#e6f0ff", height: "100vh" }}>
+return (
+  <div style={{ backgroundColor: "#e6f0ff", height: "100vh" }}>
+    <div style={{ backgroundColor: "#1a1aa6", padding: "1rem", textAlign: "center" }}>
+      <h1 style={headerText}>TAX INVOICE</h1>
+    </div>
 
-    <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>Login</h1>
+    <div style={formWrapper}>
+      <div style={formContainer}>
+        <h1 style={{ marginBottom: "0.5rem" }}>Login</h1>
+        <h3 style={{ marginBottom: "1rem" }}>ลงชื่อเข้าใช้งาน</h3>
 
-      <div style={{ backgroundColor: "#1a1aa6", padding: "1rem", textAlign: "center" }}>
-        <h1 style={headerText}>TAX INVOICE</h1>
-      </div>
+        <input
+          type="text"
+          placeholder="อีเมล"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          style={inputStyle}
+        />
+        <input
+          type="password"
+          placeholder="รหัสผ่าน"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={inputStyle}
+        />
+        <button onClick={handleLogin} style={buttonStyle}>
+          ล็อกอิน
+        </button>
 
-      <div style={formWrapper}>
-        <div style={formContainer}>
-          <h3 style={{ marginBottom: "1rem" }}>ลงชื่อเข้าใช้งาน</h3>
-          <input
-            type="text"
-            placeholder="อีเมล"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            style={inputStyle}
-          />
-          <input
-            type="password"
-            placeholder="รหัสผ่าน"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={inputStyle}
-          />
-          <button onClick={handleLogin} style={buttonStyle}>
-            ล็อกอิน
-          </button>
-
-          <div style={linkContainer}>
-            <a
-              href="#"
-              onClick={() => navigate("/signup")}
-              style={linkStyle}
-            >
-              ยังไม่มีบัญชี
-            </a>
-            <a
-              href="#"
-              onClick={() => alert("ฟีเจอร์นี้อยู่ระหว่างพัฒนา")}
-              style={linkStyle}
-            >
-              ลืมรหัสผ่าน?
-            </a>
-          </div>
+        <div style={linkContainer}>
+          <a href="#" onClick={() => navigate("/signup")} style={linkStyle}>
+            ยังไม่มีบัญชี
+          </a>
+          <a href="#" onClick={() => alert("ฟีเจอร์นี้อยู่ระหว่างพัฒนา")} style={linkStyle}>
+            ลืมรหัสผ่าน?
+          </a>
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 };
 
 const headerText = {

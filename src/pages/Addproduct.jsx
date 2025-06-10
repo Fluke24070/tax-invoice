@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   FaShoppingCart, FaBars, FaUserCircle, FaSignOutAlt,
-  FaClipboardList, FaHome
+  FaClipboardList
 } from "react-icons/fa";
 import { FiFileText } from "react-icons/fi";
 
@@ -16,7 +16,9 @@ const Addproduct = () => {
   const [productDetail, setProductDetail] = useState("");
   const [productPrice, setProductPrice] = useState("");
   const [productUnit, setProductUnit] = useState("");
+  const [customUnit, setCustomUnit] = useState("");
   const [productCategory, setProductCategory] = useState("");
+  const [customCategory, setCustomCategory] = useState("");
   const [categories, setCategories] = useState(["ยังไม่ได้จัดหมวดหมู่"]);
 
   const textareaRef = useRef(null);
@@ -56,17 +58,54 @@ const Addproduct = () => {
     fetchCategories();
   }, []);
 
+  const validateFields = () => {
+    if (!productName.trim()) {
+      alert("กรุณากรอกชื่อรายการสินค้า");
+      return false;
+    }
+    if (!productDetail.trim()) {
+      alert("กรุณากรอกรายละเอียดสินค้า");
+      return false;
+    }
+    if (!productPrice.trim() || isNaN(unformatNumber(productPrice))) {
+      alert("กรุณากรอกราคาสินค้าให้ถูกต้อง");
+      return false;
+    }
+    if (!productUnit) {
+      alert("กรุณาเลือกหน่วยสินค้า");
+      return false;
+    }
+    if (productUnit === "custom" && !customUnit.trim()) {
+      alert("กรุณากรอกชื่อหน่วยใหม่");
+      return false;
+    }
+    if (!productCategory) {
+      alert("กรุณาเลือกประเภทสินค้า");
+      return false;
+    }
+    if (productCategory === "custom" && !customCategory.trim()) {
+      alert("กรุณากรอกชื่อประเภทสินค้าใหม่");
+      return false;
+    }
+    return true;
+  };
+
   const handleSave = async () => {
+    if (!validateFields()) return;
+
     const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
 
     const product = {
       name: productName.trim(),
       detail: productDetail.trim(),
       price: parseFloat(unformatNumber(productPrice)),
-      unit: productUnit.trim(),
+      unit: productUnit === "custom" ? customUnit.trim() : productUnit.trim(),
       email: currentUser.email,
       companyName: currentUser.companyName || "",
-      item_type: productCategory.trim() || "ยังไม่ได้จัดหมวดหมู่",
+      item_type:
+        productCategory === "custom"
+          ? customCategory.trim()
+          : productCategory.trim() || "ยังไม่ได้จัดหมวดหมู่",
     };
 
     try {
@@ -132,36 +171,101 @@ const Addproduct = () => {
           </div>
         </div>
       )}
+
       <div style={{ display: "flex", justifyContent: "center", paddingTop: "2rem", paddingBottom: "4rem" }}>
         <div style={{
           backgroundColor: "white", padding: "1.5rem", borderRadius: "10px",
           width: "90%", maxWidth: "400px", display: "flex", flexDirection: "column",
           alignItems: "center", gap: "1rem"
         }}>
-          <input placeholder="ชื่อรายการสินค้า" value={productName} onChange={(e) => setProductName(e.target.value)} style={inputStyle} />
-          <textarea
-            placeholder="รายละเอียดสินค้า"
-            value={productDetail}
-            onChange={(e) => setProductDetail(e.target.value)}
-            ref={textareaRef}
-            style={{ ...inputStyle, resize: "none", overflow: "hidden", lineHeight: "1.6", minHeight: "50px" }}
-          />
-          <input
-            placeholder="ราคาสินค้า"
-            value={productPrice}
-            onChange={(e) => {
-              const raw = unformatNumber(e.target.value);
-              setProductPrice(formatNumberWithCommas(raw));
-            }}
-            onBlur={(e) => {
-              const raw = unformatNumber(e.target.value);
-              setProductPrice(formatNumberWithCommas(raw));
-            }}
-            style={inputStyle}
-          />
-          <input placeholder="หน่วย/unit" value={productUnit} onChange={(e) => setProductUnit(e.target.value)} style={inputStyle} />
+          <div style={{ width: "100%" }}>
+            <label style={labelStyle}>ชื่อรายการสินค้า</label>
+            <input value={productName} onChange={(e) => setProductName(e.target.value)} style={inputStyle} />
+          </div>
 
-          <input placeholder="ชื่อประเภทสินค้า" value={productCategory} onChange={(e) => setProductCategory(e.target.value)} style={inputStyle} />
+          <div style={{ width: "100%" }}>
+            <label style={labelStyle}>รายละเอียดสินค้า</label>
+            <textarea
+              value={productDetail}
+              onChange={(e) => setProductDetail(e.target.value)}
+              ref={textareaRef}
+              style={{ ...inputStyle, resize: "none", overflow: "hidden", lineHeight: "1.6", minHeight: "50px" }}
+            />
+          </div>
+
+          <div style={{ width: "100%" }}>
+            <label style={labelStyle}>ราคาสินค้า</label>
+            <input
+              value={productPrice}
+              onChange={(e) => {
+                const raw = unformatNumber(e.target.value);
+                setProductPrice(formatNumberWithCommas(raw));
+              }}
+              onBlur={(e) => {
+                const raw = unformatNumber(e.target.value);
+                setProductPrice(formatNumberWithCommas(raw));
+              }}
+              style={inputStyle}
+            />
+          </div>
+
+          {/* หน่วย */}
+          <div style={{ width: "100%" }}>
+            <label style={labelStyle}>หน่วย/unit</label>
+            <select
+              value={productUnit}
+              onChange={(e) => {
+                const value = e.target.value;
+                setProductUnit(value);
+                if (value !== "custom") setCustomUnit("");
+              }}
+              style={inputStyle}
+            >
+              <option value="">-- เลือกหน่วย --</option>
+              <option value="custom">+ เพิ่มหน่วย</option>
+              <option value="ชิ้น">ชิ้น</option>
+              <option value="กล่อง">กล่อง</option>
+              <option value="แพ็ค">แพ็ค</option>
+              <option value="กิโลกรัม">กิโลกรัม</option>
+              <option value="ลิตร">ลิตร</option>
+            </select>
+            {productUnit === "custom" && (
+              <input
+                value={customUnit}
+                onChange={(e) => setCustomUnit(e.target.value)}
+                placeholder="พิมพ์ชื่อหน่วยใหม่"
+                style={{ ...inputStyle, marginTop: "0.5rem" }}
+              />
+            )}
+          </div>
+
+          {/* ประเภทสินค้า */}
+          <div style={{ width: "100%" }}>
+            <label style={labelStyle}>ชื่อประเภทสินค้า</label>
+            <select
+              value={productCategory}
+              onChange={(e) => {
+                const value = e.target.value;
+                setProductCategory(value);
+                if (value !== "custom") setCustomCategory("");
+              }}
+              style={inputStyle}
+            >
+              <option value="">-- เลือกประเภทสินค้า --</option>
+              <option value="custom">+ เพิ่มประเภทสินค้า</option>
+              {categories.map((cat, idx) => (
+                <option key={idx} value={cat}>{cat}</option>
+              ))}
+            </select>
+            {productCategory === "custom" && (
+              <input
+                value={customCategory}
+                onChange={(e) => setCustomCategory(e.target.value)}
+                placeholder="พิมพ์ประเภทใหม่"
+                style={{ ...inputStyle, marginTop: "0.5rem" }}
+              />
+            )}
+          </div>
 
           <button onClick={handleSave} style={saveButtonStyle}>บันทึกข้อมูล</button>
         </div>
@@ -191,15 +295,21 @@ const MenuItem = ({ icon, text, onClick, active }) => (
 );
 
 const inputStyle = {
-  width: "100%",
+  width: "360px",
   padding: "0.6rem 1rem",
   borderRadius: "10px",
   border: "1px solid #ccc",
   fontSize: "15px",
 };
 
+const labelStyle = {
+  fontWeight: "bold",
+  marginBottom: "5px",
+  display: "block",
+};
+
 const saveButtonStyle = {
-  width: "100%",
+  width: "360px",
   backgroundColor: "#28a745",
   color: "#fff",
   padding: "0.8rem 0",
