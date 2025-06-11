@@ -1,3 +1,4 @@
+// Import
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -5,6 +6,7 @@ import {
 } from "react-icons/fa";
 import { FiFileText } from "react-icons/fi";
 
+// Sidebar menu
 const MenuItem = ({ icon, text, onClick, active }) => (
   <div onClick={onClick} style={{
     padding: "0.8rem 1rem", display: "flex", alignItems: "center", gap: "0.8rem",
@@ -16,6 +18,7 @@ const MenuItem = ({ icon, text, onClick, active }) => (
   </div>
 );
 
+// Main Component
 const CreateInvoice = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -23,11 +26,10 @@ const CreateInvoice = () => {
 
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [receipts, setReceipts] = useState([]);
-  const [selectedReceipt, setSelectedReceipt] = useState(null);
+  const [expandedReceiptId, setExpandedReceiptId] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortOrder, setSortOrder] = useState("desc");
   const itemsPerPage = 10;
 
   useEffect(() => {
@@ -53,9 +55,12 @@ const CreateInvoice = () => {
 
   const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
   const formatDate = (iso) => new Date(iso).toLocaleDateString("th-TH");
+  const toggleExpand = (receiptId) => {
+    setExpandedReceiptId(expandedReceiptId === receiptId ? null : receiptId);
+  };
 
   const filteredReceipts = receipts.filter((receipt) => {
-  const idMatch = receipt.re_id.toString().includes(searchTerm);
+    const idMatch = receipt.re_id.toString().includes(searchTerm);
     const itemMatch = receipt.items.some((item) =>
       item.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -64,11 +69,8 @@ const CreateInvoice = () => {
     return itemMatch || dateMatch || priceMatch || idMatch;
   });
 
-  const sortedReceipts = [...filteredReceipts].sort((a, b) => {
-    const dateA = new Date(a.date);
-    const dateB = new Date(b.date);
-    return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
-  });
+  // เรียงจาก re_id ล่าสุดลงมาก่อน
+  const sortedReceipts = [...filteredReceipts].sort((a, b) => b.re_id - a.re_id);
 
   const paginatedReceipts = sortedReceipts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   const totalPages = Math.ceil(filteredReceipts.length / itemsPerPage);
@@ -82,6 +84,7 @@ const CreateInvoice = () => {
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#e6f0ff", paddingBottom: "3rem" }}>
+      {/* Header */}
       <div style={{
         backgroundColor: "#1a1aa6", height: `${headerHeight}px`, display: "flex",
         justifyContent: "space-between", alignItems: "center", padding: "0 1rem",
@@ -92,8 +95,7 @@ const CreateInvoice = () => {
         <FaUserCircle size={24} onClick={() => navigate("/UiCompany")} style={{ cursor: "pointer" }} />
       </div>
 
-      <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>รายการใบเสร็จ</h1>
-
+      {/* Sidebar */}
       {sidebarVisible && (
         <div style={{
           position: "fixed", top: `${headerHeight}px`, left: 0, width: "200px",
@@ -113,6 +115,8 @@ const CreateInvoice = () => {
         </div>
       )}
 
+      {/* Title + Search */}
+      <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>รายการใบเสร็จ</h1>
       <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem", gap: "1rem", flexWrap: "wrap" }}>
         <button onClick={() => navigate("/Addreceipt")} style={{
           borderRadius: "30px", padding: "0.7rem 2rem", border: "none",
@@ -135,6 +139,7 @@ const CreateInvoice = () => {
         </div>
       </div>
 
+      {/* Table */}
       <div style={{ margin: "1rem auto", width: "95%", maxWidth: "850px", overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", backgroundColor: "white", marginTop: "1rem", borderRadius: "12px", overflow: "hidden" }}>
           <thead style={{ backgroundColor: "#d0e8ff", color: "#000", fontWeight: "bold" }}>
@@ -152,28 +157,61 @@ const CreateInvoice = () => {
               <tr><td colSpan="6" style={{ textAlign: "center", padding: "1rem" }}>ไม่พบรายการ</td></tr>
             ) : (
               paginatedReceipts.map((receipt, i) => (
-                <tr key={i} style={{ textAlign: "center", borderBottom: "1px solid #ccc" }}>
-                  <td style={tdStyle}>{(currentPage - 1) * itemsPerPage + i + 1}</td>
-                  <td style={tdStyle}>{receipt.re_id}</td>
-                  <td style={tdStyle}>{formatDate(receipt.date)}</td>
-                  <td style={tdStyle}>{receipt.items[0]?.name || "-"}</td>
-                  <td style={tdStyle}>{Number(receipt.total).toLocaleString()} ฿</td>
-                  <td style={tdStyle}>
-                    <button onClick={() => setSelectedReceipt(receipt)} style={{ color: "#1a1aa6", textDecoration: "underline", cursor: "pointer", background: "none", border: "none" }}>
-                      ดูใบเสร็จ
-                    </button>
-                    <span style={{ margin: "0 6px" }}>/</span>
-                    <button onClick={() => navigate("/makeinvoice", { state: { receipt } })} style={{ color: "#1a1aa6", textDecoration: "underline", cursor: "pointer", background: "none", border: "none" }}>
-                      ออกใบกำกับ
-                    </button>
-                  </td>
-                </tr>
+                <React.Fragment key={i}>
+                  <tr style={{ textAlign: "center", borderBottom: "1px solid #ccc" }}>
+                    <td style={tdStyle}>{(currentPage - 1) * itemsPerPage + i + 1}</td>
+                    <td style={tdStyle}>{receipt.re_id}</td>
+                    <td style={tdStyle}>{formatDate(receipt.date)}</td>
+                    <td style={tdStyle}>{receipt.items[0]?.name || "-"}</td>
+                    <td style={tdStyle}>{Number(receipt.total).toLocaleString()} ฿</td>
+                    <td style={tdStyle}>
+                      <button onClick={() => toggleExpand(receipt.re_id)} style={{ color: "#1a1aa6", textDecoration: "underline", cursor: "pointer", background: "none", border: "none" }}>
+                        {expandedReceiptId === receipt.re_id ? "ซ่อนใบเสร็จ" : "ดูใบเสร็จ"}
+                      </button>
+                      <span style={{ margin: "0 6px" }}>/</span>
+                      <button onClick={() => navigate("/makeinvoice", { state: { receipt } })} style={{ color: "#1a1aa6", textDecoration: "underline", cursor: "pointer", background: "none", border: "none" }}>
+                        ออกใบกำกับ
+                      </button>
+                    </td>
+                  </tr>
+                  {expandedReceiptId === receipt.re_id && (
+                    <tr>
+                      <td colSpan="6" style={{ padding: "1rem", backgroundColor: "#f2f6ff" }}>
+                        <div style={{ textAlign: "left" }}>
+                          <p><strong>วันที่:</strong> {formatDate(receipt.date)}</p>
+                          <p><strong>เลขที่ใบเสร็จ:</strong> {receipt.re_id}</p>
+                          <hr />
+                          {receipt.items.map((item, idx) => (
+                            <div key={idx} style={{ display: "flex", justifyContent: "space-between" }}>
+                              <span>{item.quantity.toFixed(2)} × {item.name}</span>
+                              <span>{Number(item.price).toLocaleString()} ฿</span>
+                            </div>
+                          ))}
+                          <hr />
+                          <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <span><strong>มูลค่าก่อนภาษี:</strong></span>
+                            <span>{receipt.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                          </div>
+                          <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <span><strong>VAT 7%:</strong></span>
+                            <span>{(receipt.total * 0.07).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                          </div>
+                          <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold", fontSize: "16px", marginTop: "0.5rem" }}>
+                            <span>ยอดรวม:</span>
+                            <span>{(receipt.total * 1.07).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
               ))
             )}
           </tbody>
         </table>
       </div>
 
+      {/* Pagination */}
       <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem", gap: "0.5rem", flexWrap: "wrap" }}>
         <button onClick={() => setCurrentPage(p => Math.max(p - 1, 1))} style={pageButtonStyle}>หน้าก่อน</button>
         {Array.from({ length: totalPages }, (_, i) => (
@@ -187,60 +225,6 @@ const CreateInvoice = () => {
         ))}
         <button onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))} style={pageButtonStyle}>หน้าถัดไป</button>
       </div>
-
-      {selectedReceipt && (
-        <div style={{
-          position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
-          backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center",
-          alignItems: "center", zIndex: 1000
-        }}>
-          <div style={{
-            backgroundColor: "white", padding: "2rem", borderRadius: "10px",
-            width: "600px", maxHeight: "90vh", overflowY: "auto"
-          }}>
-            <h2 style={{ textAlign: "center", fontWeight: "bold" }}>ใบเสร็จรับเงิน</h2>
-            {currentUser && (
-              <div>
-                <p><strong>ชื่อบริษัท:</strong> {currentUser.companyName}</p>
-                <p><strong>ที่อยู่:</strong> {currentUser.address}</p>
-                <p><strong>เบอร์โทร:</strong> {currentUser.phone}</p>
-                <p><strong>เลขประจำตัวผู้เสียภาษี:</strong> {currentUser.taxId}</p>
-                <p><strong>สาขา:</strong> {currentUser.branch}</p>
-                <p><strong>เลขที่ใบเสร็จ:</strong> {selectedReceipt.re_id}</p>
-              </div>
-            )}
-            <p><strong>วันที่:</strong> {formatDate(selectedReceipt.date)}</p>
-            <hr />
-            {selectedReceipt.items.map((item, i) => (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between" }}>
-                <span>{item.quantity.toFixed(2)} × {item.name}</span>
-                <span>{Number(item.price).toLocaleString()}</span>
-              </div>
-            ))}
-            <hr />
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span><strong>มูลค่าก่อนภาษี:</strong></span>
-              <span>{selectedReceipt.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span><strong>VAT 7%:</strong></span>
-              <span>{(selectedReceipt.total * 0.07).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold", fontSize: "18px", marginTop: "1rem" }}>
-              <span>ยอดรวม:</span>
-              <span>{(selectedReceipt.total * 1.07).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            </div>
-            <div style={{ marginTop: "1.5rem", display: "flex", justifyContent: "center" }}>
-              <button onClick={() => setSelectedReceipt(null)} style={{
-                padding: "0.5rem 2rem", backgroundColor: "#1a1aa6", color: "white",
-                border: "none", borderRadius: "8px"
-              }}>
-                ปิด
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -52,47 +52,52 @@ const Login = () => {
     }
   };
 
-return (
-  <div style={{ backgroundColor: "#e6f0ff", height: "100vh" }}>
-    <div style={{ backgroundColor: "#1a1aa6", padding: "1rem", textAlign: "center" }}>
-      <h1 style={headerText}>TAX INVOICE</h1>
-    </div>
+  return (
+    <div style={{ backgroundColor: "#e6f0ff", height: "100vh" }}>
+      <div style={{ backgroundColor: "#1a1aa6", padding: "1rem", textAlign: "center" }}>
+        <h1 style={headerText}>TAX INVOICE</h1>
+      </div>
 
-    <div style={formWrapper}>
-      <div style={formContainer}>
-        <h1 style={{ marginBottom: "0.5rem" }}>Login</h1>
-        <h3 style={{ marginBottom: "1rem" }}>ลงชื่อเข้าใช้งาน</h3>
+      <div style={formWrapper}>
+        <div style={formContainer}>
+          <h1 style={{ marginBottom: "0.5rem" }}>Login</h1>
+          <h3 style={{ marginBottom: "1rem" }}>ลงชื่อเข้าใช้งาน</h3>
 
-        <input
-          type="text"
-          placeholder="อีเมล"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          style={inputStyle}
-        />
-        <input
-          type="password"
-          placeholder="รหัสผ่าน"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={inputStyle}
-        />
-        <button onClick={handleLogin} style={buttonStyle}>
-          ล็อกอิน
-        </button>
+          <div style={labelStyle}>อีเมล</div>
+          <input
+            type="email"
+            placeholder="example@email.com"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            style={inputStyle}
+          />
 
-        <div style={linkContainer}>
-          <a href="#" onClick={() => navigate("/signup")} style={linkStyle}>
-            ยังไม่มีบัญชี
-          </a>
-          <a href="#" onClick={() => alert("ฟีเจอร์นี้อยู่ระหว่างพัฒนา")} style={linkStyle}>
-            ลืมรหัสผ่าน?
-          </a>
+          <div style={labelStyle}>รหัสผ่าน</div>
+          <input
+            type="password"
+            placeholder="กรอกรหัสผ่าน"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={inputStyle}
+            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+          />
+
+          <button onClick={handleLogin} style={buttonStyle}>
+            ล็อกอิน
+          </button>
+
+          <div style={linkContainer}>
+            <a href="#" onClick={() => navigate("/signup")} style={linkStyle}>
+              ยังไม่มีบัญชี
+            </a>
+            <a href="#" onClick={() => alert("ฟีเจอร์นี้อยู่ระหว่างพัฒนา")} style={linkStyle}>
+              ลืมรหัสผ่าน?
+            </a>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
 };
 
 const headerText = {
@@ -123,7 +128,7 @@ const formContainer = {
 const inputStyle = {
   width: "100%",
   padding: "12px 14px",
-  marginBottom: "12px",
+  marginBottom: "16px",
   border: "1px solid #ccc",
   borderRadius: "8px",
   fontSize: "1em",
@@ -152,6 +157,13 @@ const linkContainer = {
 const linkStyle = {
   color: "#0000ee",
   textDecoration: "underline",
+};
+
+const labelStyle = {
+  textAlign: "left",
+  marginBottom: "4px",
+  fontWeight: "bold",
+  fontSize: "0.95em",
 };
 
 export default Login;
