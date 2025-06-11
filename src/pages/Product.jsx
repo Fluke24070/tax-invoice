@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   FaShoppingCart, FaSearch, FaBars, FaUserCircle,
@@ -18,6 +18,11 @@ const Product = () => {
   const [selectedCategory, setSelectedCategory] = useState("ทั้งหมด");
   const [categories, setCategories] = useState(["ทั้งหมด"]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [editCategory, setEditCategory] = useState(null);
+  const [editedName, setEditedName] = useState("");
+  const [showEditPopup, setShowEditPopup] = useState(false);
+
+  const categoryRefs = useRef({});
 
   useEffect(() => {
     const storedCompanyName = localStorage.getItem("companyName");
@@ -49,15 +54,17 @@ const Product = () => {
 
   const handleAddProduct = () => navigate("/Addproduct");
 
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    (
-      selectedCategory === "ทั้งหมด" ||
-      (selectedCategory === "ยังไม่ได้จัดหมวดหมู่" &&
-        (!product.item_type || product.item_type.trim() === "")) ||
-      product.item_type?.trim() === selectedCategory.trim()
-    )
-  );
+  const filteredProducts = products
+    .sort((a, b) => b.id - a.id)
+    .filter((product) =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      (
+        selectedCategory === "ทั้งหมด" ||
+        (selectedCategory === "ยังไม่ได้จัดหมวดหมู่" &&
+          (!product.item_type || product.item_type.trim() === "")) ||
+        product.item_type?.trim() === selectedCategory.trim()
+      )
+    );
 
   const groupedProducts = filteredProducts.reduce((acc, product) => {
     const type = product.item_type?.trim() || "ยังไม่ได้จัดหมวดหมู่";
@@ -65,6 +72,35 @@ const Product = () => {
     acc[type].push(product);
     return acc;
   }, {});
+
+  const handleEditCategory = (cat) => {
+    setEditCategory(cat);
+    setEditedName(cat);
+    setShowEditPopup(true);
+  };
+
+  const handleSaveCategory = () => {
+    const updatedCategories = categories.map(c => c === editCategory ? editedName : c);
+    const updatedProducts = products.map(p =>
+      (p.item_type?.trim() === editCategory ? { ...p, item_type: editedName } : p)
+    );
+    setProducts(updatedProducts);
+    setCategories(updatedCategories);
+    setSelectedCategory(editedName);
+    setShowEditPopup(false);
+  };
+
+  const handleDeleteCategory = () => {
+    const hasProduct = products.some(p => (p.item_type?.trim() || "ยังไม่ได้จัดหมวดหมู่") === editCategory);
+    if (hasProduct) {
+      alert("ไม่สามารถลบหมวดหมู่นี้ได้ เนื่องจากยังมีสินค้าอยู่ในหมวดหมู่นั้น");
+      return;
+    }
+    const updatedCategories = categories.filter(c => c !== editCategory);
+    setCategories(updatedCategories);
+    if (selectedCategory === editCategory) setSelectedCategory("ทั้งหมด");
+    setShowEditPopup(false);
+  };
 
   const unifiedBoxStyle = {
     width: "100%",
@@ -80,7 +116,6 @@ const Product = () => {
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#e6f0ff", position: "relative" }}>
-      {/* Header */}
       <div style={{
         backgroundColor: "#1a1aa6", height: `${headerHeight}px`, display: "flex",
         justifyContent: "space-between", alignItems: "center", padding: "0 1rem",
@@ -97,14 +132,9 @@ const Product = () => {
 
       {sidebarVisible && (
         <div style={{
-          position: "fixed",
-          top: `${headerHeight}px`,
-          left: 0,
-          width: "200px",
-          height: `calc(100vh - ${headerHeight}px)`,
-          backgroundColor: "#9999ff",
-          zIndex: 20,
-          overflow: "hidden",
+          position: "fixed", top: `${headerHeight}px`, left: 0,
+          width: "200px", height: `calc(100vh - ${headerHeight}px)`,
+          backgroundColor: "#9999ff", zIndex: 20, overflow: "hidden"
         }}>
           <div style={{
             display: "flex", flexDirection: "column", justifyContent: "space-between",
@@ -143,48 +173,74 @@ const Product = () => {
             />
           </div>
 
-          <div style={{ ...unifiedBoxStyle, justifyContent: "space-between", cursor: "pointer" }}
-            onClick={() => setDropdownOpen(!dropdownOpen)}>
-            <span>หมวดหมู่ : {selectedCategory}</span>
-            <span style={{ transform: dropdownOpen ? "rotate(180deg)" : "rotate(0)", transition: "0.2s" }}>▲</span>
-          </div>
-
-          {dropdownOpen && (
-            <div style={{
-              backgroundColor: "white",
-              border: "1px solid #ccc",
-              borderRadius: "10px",
-              marginTop: "5px",
-              width: "100%",
-              zIndex: 10
-            }}>
-              {categories.map((cat) => (
-                <div key={cat} style={{
-                  padding: "0.5rem 1rem",
-                  cursor: "pointer",
-                  backgroundColor: selectedCategory === cat ? "#e0e0ff" : "white"
-                }}
-                  onClick={() => {
-                    setSelectedCategory(cat);
-                    setDropdownOpen(false);
-                  }}>
-                  {cat}
-                </div>
-              ))}
+          <div style={{ position: "relative", width: "100%" }}>
+            <div
+              style={{ ...unifiedBoxStyle, justifyContent: "space-between", cursor: "pointer" }}
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+            >
+              <span>หมวดหมู่ : {selectedCategory}</span>
+              <span style={{ transform: dropdownOpen ? "rotate(180deg)" : "rotate(0)", transition: "0.2s" }}>▲</span>
             </div>
-          )}
+
+            {dropdownOpen && (
+              <div style={{
+                position: "absolute", top: "calc(100% + 5px)", left: 0, right: 0,
+                backgroundColor: "white", border: "1px solid #ccc",
+                borderRadius: "10px", zIndex: 100, boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                maxHeight: "300px", overflowY: "auto"
+              }}>
+                {categories.map((cat) => (
+                  <div key={cat} style={{
+                    padding: "0.5rem 1rem", cursor: "pointer",
+                    backgroundColor: selectedCategory === cat ? "#e0e0ff" : "white",
+                    display: "flex", justifyContent: "space-between", alignItems: "center"
+                  }}>
+                    <span
+                      onClick={() => {
+                        setSelectedCategory(cat);
+                        setDropdownOpen(false);
+                        requestAnimationFrame(() => {
+                          if (cat !== "ทั้งหมด" && categoryRefs.current[cat]) {
+                            categoryRefs.current[cat].scrollIntoView({
+                              behavior: "smooth",
+                              block: "start"
+                            });
+                          }
+                        });
+                      }}
+                    >
+                      {cat}
+                    </span>
+                    {cat !== "ทั้งหมด" && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditCategory(cat);
+                        }}
+                        style={{
+                          background: "transparent",
+                          border: "none",
+                          color: "#333",
+                          cursor: "pointer",
+                          fontSize: "14px"
+                        }}
+                      >✏️แก้ไขหมวดหมู่</button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           <h3 style={{ marginTop: "2rem" }}>สินค้าของคุณ</h3>
         </div>
 
         <div style={{ padding: "0 1rem", width: "100%", maxWidth: "1200px", margin: "0 auto" }}>
           {Object.keys(groupedProducts).map((category) => (
-            <div key={category} style={{ marginBottom: "2rem" }}>
+            <div key={category} ref={(el) => (categoryRefs.current[category] = el)} style={{ marginBottom: "2rem" }}>
               <h4 style={{ marginBottom: "1rem", textAlign: "left" }}>{category}</h4>
               <div style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(5, 1fr)",
-                gap: "1rem"
+                display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "1rem"
               }}>
                 {groupedProducts[category].map((product) => (
                   <div key={product.id} onClick={() => navigate(`/Editproduct/${product.id}`)} style={{
@@ -207,6 +263,37 @@ const Product = () => {
           ))}
         </div>
       </div>
+
+      {showEditPopup && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(0,0,0,0.5)", display: "flex",
+          justifyContent: "center", alignItems: "center", zIndex: 999
+        }}>
+          <div style={{
+            backgroundColor: "white", padding: "2rem", borderRadius: "10px",
+            width: "300px", display: "flex", flexDirection: "column", gap: "1rem"
+          }}>
+            <h3>แก้ไขหมวดหมู่</h3>
+            <input
+              value={editedName}
+              onChange={(e) => setEditedName(e.target.value)}
+              style={{ padding: "0.5rem", borderRadius: "6px", border: "1px solid #ccc" }}
+            />
+            <div style={{ display: "flex", justifyContent: "space-between", gap: "0.5rem" }}>
+              <button onClick={handleSaveCategory} style={{ flex: 1, backgroundColor: "#4CAF50", color: "white", padding: "0.5rem", border: "none", borderRadius: "6px" }}>
+                บันทึก
+              </button>
+              <button onClick={handleDeleteCategory} style={{ flex: 1, backgroundColor: "#f44336", color: "white", padding: "0.5rem", border: "none", borderRadius: "6px" }}>
+                ลบข้อมูล
+              </button>
+              <button onClick={() => setShowEditPopup(false)} style={{ flex: 1, backgroundColor: "#ccc", padding: "0.5rem", border: "none", borderRadius: "6px" }}>
+                ยกเลิก
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

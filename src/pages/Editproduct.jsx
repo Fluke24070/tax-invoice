@@ -146,7 +146,7 @@ const Editproduct = () => {
       const result = await response.json();
       if (response.ok) {
         alert("บันทึกข้อมูลเรียบร้อยแล้ว");
-        navigate("/Product");
+         window.location.href = "/Product"; // บังคับโหลดใหม่
       } else {
         alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล: " + result.message);
       }
