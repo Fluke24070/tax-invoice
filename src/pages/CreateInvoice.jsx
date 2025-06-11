@@ -118,11 +118,8 @@ const CreateInvoice = () => {
       {/* Title + Search */}
       <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>รายการใบเสร็จ</h1>
       <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem", gap: "1rem", flexWrap: "wrap" }}>
-        <button onClick={() => navigate("/Addreceipt")} style={{
-          borderRadius: "30px", padding: "0.7rem 2rem", border: "none",
-          backgroundColor: "#a6d4ff", fontWeight: "bold", fontSize: "16px", cursor: "pointer"
-        }}>
-          ทำใบเสร็จ
+        <button onClick={() => navigate("/Addreceipt")} style={{ borderRadius: "30px", padding: "0.7rem 2rem", border: "none", backgroundColor: "#a6d4ff", fontWeight: "bold", fontSize: "16px", cursor: "pointer" }}>
+          เพิ่มรายการใบเสร็จ
         </button>
         <div style={{ display: "flex", alignItems: "center", backgroundColor: "white", padding: "0.4rem 1rem", borderRadius: "30px" }}>
           <input
