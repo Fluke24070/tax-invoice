@@ -115,8 +115,11 @@ const Addproduct = () => {
         body: JSON.stringify(product),
       });
 
-      if (!response.ok) throw new Error("Failed to save product");
-
+      const data = await response.json();
+    if (!response.ok) {
+      alert(data.message || "ไม่สามารถบันทึกสินค้าได้");
+      return;
+    }
       alert("เพิ่มสินค้าเรียบร้อยแล้ว");
       navigate("/Product");
     } catch (error) {
