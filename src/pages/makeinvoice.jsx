@@ -1,3 +1,4 @@
+// นำเข้า React และ dependencies
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -17,7 +18,8 @@ const Makeinvoice = () => {
   const [registeredUsers, setRegisteredUsers] = useState([]);
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [showReceipt, setShowReceipt] = useState(true);
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [showReceiptDetail, setShowReceiptDetail] = useState(false);
   const inputRef = useRef(null);
 
   const receipt = location.state?.receipt || null;
@@ -139,6 +141,7 @@ const Makeinvoice = () => {
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#e6f0ff" }}>
+      {/* Header */}
       <div style={{
         backgroundColor: "#1a1aa6", height: "64px", display: "flex",
         justifyContent: "space-between", alignItems: "center",
@@ -149,6 +152,7 @@ const Makeinvoice = () => {
         <FaUser style={{ color: "white", fontSize: "20px", cursor: "pointer" }} onClick={() => navigate("/UiCompany")} />
       </div>
 
+      {/* Sidebar */}
       {menuOpen && (
         <div style={{
           position: "fixed", top: "64px", left: 0, width: "200px", bottom: 0,
@@ -165,6 +169,7 @@ const Makeinvoice = () => {
         </div>
       )}
 
+      {/* Main Content */}
       <div style={{
         marginTop: "64px", width: "100%", padding: "2rem 1rem",
         display: "flex", justifyContent: "center", flexDirection: "column", alignItems: "center"
@@ -172,6 +177,48 @@ const Makeinvoice = () => {
         <div style={{ width: "400px" }}>
           <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>ออกใบกำกับภาษี</h1>
 
+          {/* Receipt Display */}
+          {receipt && (
+            <div style={{
+              backgroundColor: "#fff", padding: "1rem 2rem", borderRadius: "20px",
+              width: "100%", marginBottom: "2rem", boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)"
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span>เลขที่ใบเสร็จ: {receipt.re_id}</span>
+                <button
+                  onClick={() => setShowReceiptDetail(!showReceiptDetail)}
+                  style={{
+                    backgroundColor: "#4da6ff", color: "#fff", padding: "0.4rem 1rem",
+                    border: "none", borderRadius: "5px", cursor: "pointer"
+                  }}
+                >
+                  {showReceiptDetail ? "พับใบเสร็จ" : "ดูใบเสร็จ"}
+                </button>
+              </div>
+              {showReceiptDetail && (
+                <div style={{ marginTop: "1rem" }}>
+                  <p><strong>วันที่:</strong> {new Date(receipt.date).toLocaleDateString("th-TH")}</p>
+                  <div style={{ marginTop: "1rem" }}>
+                    {receipt.items.map((item, index) => (
+                      <div key={index} style={{
+                        display: "flex", justifyContent: "space-between", marginBottom: "4px"
+                      }}>
+                        <span>{item.quantity} × {item.name}</span>
+                        <span>{Number(item.price).toLocaleString()} ฿</span>
+                      </div>
+                    ))}
+                  </div>
+                  <hr />
+                  <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold" }}>
+                    <span>รวม:</span>
+                    <span>{Number(receipt.total).toLocaleString()} ฿</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Search Input */}
           <div style={{ position: "relative", marginBottom: "0.5rem" }}>
             <input
               ref={inputRef}
@@ -210,6 +257,7 @@ const Makeinvoice = () => {
             }}>📷</div>
           </div>
 
+          {/* QR Scanner */}
           {scanning && (
             <div style={{ marginTop: "1rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
               <div id="reader" style={{ width: "300px" }}></div>
@@ -220,6 +268,7 @@ const Makeinvoice = () => {
             </div>
           )}
 
+          {/* Customer Info */}
           {results && (
             <div style={{
               backgroundColor: "white", padding: "2rem", borderRadius: "20px",
@@ -232,9 +281,6 @@ const Makeinvoice = () => {
               <input value={results.phone || ""} readOnly placeholder="เบอร์มือถือ" style={inputStyle} />
               <input value={results.email || ""} readOnly placeholder="อีเมล" style={inputStyle} />
               <input value={results.taxId || ""} readOnly placeholder="เลขผู้เสียภาษี" style={inputStyle} />
-              <input value={results.companyName || ""} readOnly placeholder="บริษัท" style={inputStyle} />
-              <input value={results.address || ""} readOnly placeholder="ที่อยู่" style={inputStyle} />
-              <input value={results.branch || ""} readOnly placeholder="สาขา" style={inputStyle} />
               <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1rem" }}>
                 <button style={{ backgroundColor: "#ff4d4d", color: "#fff", padding: "0.5rem 1rem", border: "none", borderRadius: "5px" }}>ยกเลิก</button>
                 <button
@@ -249,45 +295,6 @@ const Makeinvoice = () => {
                   ทำใบกำกับ
                 </button>
               </div>
-            </div>
-          )}
-
-          {receipt && (
-            <div style={{
-              backgroundColor: "#fff", padding: "1rem 2rem", borderRadius: "20px",
-              width: "100%", marginTop: "2rem", boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)"
-            }}>
-              <div
-                onClick={() => setShowReceipt(prev => !prev)}
-                style={{
-                  display: "flex", justifyContent: "space-between", alignItems: "center",
-                  cursor: "pointer", fontWeight: "bold", fontSize: "16px", marginBottom: "1rem"
-                }}
-              >
-                <span>{showReceipt ? "▼ ซ่อนใบเสร็จ" : "▶ ดูใบเสร็จ"}</span>
-                <span>เลขที่ใบเสร็จ: {receipt.re_id}</span>
-              </div>
-
-              {showReceipt && (
-                <>
-                  <p><strong>วันที่:</strong> {new Date(receipt.date).toLocaleDateString("th-TH")}</p>
-                  <div style={{ marginTop: "1rem" }}>
-                    {receipt.items.map((item, index) => (
-                      <div key={index} style={{
-                        display: "flex", justifyContent: "space-between", marginBottom: "4px"
-                      }}>
-                        <span>{item.quantity} × {item.name}</span>
-                        <span>{Number(item.price).toLocaleString()} ฿</span>
-                      </div>
-                    ))}
-                  </div>
-                  <hr />
-                  <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold" }}>
-                    <span>รวม:</span>
-                    <span>{Number(receipt.total).toLocaleString()} ฿</span>
-                  </div>
-                </>
-              )}
             </div>
           )}
         </div>

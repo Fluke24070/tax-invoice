@@ -1,4 +1,3 @@
-// Import
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -6,7 +5,6 @@ import {
 } from "react-icons/fa";
 import { FiFileText } from "react-icons/fi";
 
-// Sidebar menu
 const MenuItem = ({ icon, text, onClick, active }) => (
   <div onClick={onClick} style={{
     padding: "0.8rem 1rem", display: "flex", alignItems: "center", gap: "0.8rem",
@@ -18,7 +16,6 @@ const MenuItem = ({ icon, text, onClick, active }) => (
   </div>
 );
 
-// Main Component
 const CreateInvoice = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -26,10 +23,11 @@ const CreateInvoice = () => {
 
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [receipts, setReceipts] = useState([]);
-  const [expandedReceiptId, setExpandedReceiptId] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [modalReceipt, setModalReceipt] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [specificDate, setSpecificDate] = useState("");
+  const [filterMode, setFilterMode] = useState("all");
   const itemsPerPage = 10;
 
   useEffect(() => {
@@ -45,7 +43,6 @@ const CreateInvoice = () => {
           isInvoiced: receipt.status,
         }));
         setReceipts(formatted);
-        setCurrentUser(user);
       } catch (error) {
         console.error("โหลดใบเสร็จล้มเหลว:", error);
       }
@@ -54,32 +51,52 @@ const CreateInvoice = () => {
   }, []);
 
   const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
-  const formatDate = (iso) => new Date(iso).toLocaleDateString("th-TH");
-  const toggleExpand = (receiptId) => {
-    setExpandedReceiptId(expandedReceiptId === receiptId ? null : receiptId);
+
+  const formatDate = (iso) => {
+    const date = new Date(iso);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
   };
 
+  const toLocalDateStr = (d) => new Date(d).toLocaleDateString('en-CA');
+
   const filteredReceipts = receipts.filter((receipt) => {
+    const receiptDate = toLocalDateStr(receipt.date);
+    const todayStr = toLocalDateStr(new Date());
+
     const idMatch = receipt.re_id.toString().includes(searchTerm);
     const itemMatch = receipt.items.some((item) =>
       item.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    const dateMatch = new Date(receipt.date).toLocaleDateString("th-TH").includes(searchTerm);
+    const dateMatch = formatDate(receipt.date).includes(searchTerm);
     const priceMatch = receipt.total.toString().includes(searchTerm);
-    return itemMatch || dateMatch || priceMatch || idMatch;
+    const searchMatch = itemMatch || dateMatch || priceMatch || idMatch;
+
+    const matchFilter =
+      (filterMode === "today" && receiptDate === todayStr) ||
+      filterMode === "all";
+
+    const matchSpecificDate = specificDate ? receiptDate === specificDate : true;
+
+    return searchMatch && matchFilter && matchSpecificDate;
   });
 
-  // เรียงจาก re_id ล่าสุดลงมาก่อน
   const sortedReceipts = [...filteredReceipts].sort((a, b) => b.re_id - a.re_id);
-
   const paginatedReceipts = sortedReceipts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   const totalPages = Math.ceil(filteredReceipts.length / itemsPerPage);
 
   const thStyle = { padding: "12px", borderBottom: "1px solid #aaa" };
   const tdStyle = { padding: "10px" };
   const pageButtonStyle = {
-    padding: "6px 12px", borderRadius: "6px", border: "none",
-    backgroundColor: "#cce0ff", fontWeight: "bold", cursor: "pointer"
+    padding: "6px 12px",
+    borderRadius: "6px",
+    border: "none",
+    backgroundColor: "#cce0ff",
+    fontWeight: "bold",
+    cursor: "pointer"
   };
 
   return (
@@ -115,7 +132,7 @@ const CreateInvoice = () => {
         </div>
       )}
 
-      {/* Title + Search */}
+      {/* ปุ่มค้นหา + เพิ่มรายการ */}
       <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>รายการใบเสร็จ</h1>
       <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem", gap: "1rem", flexWrap: "wrap" }}>
         <button onClick={() => navigate("/Addreceipt")} style={{ borderRadius: "30px", padding: "0.7rem 2rem", border: "none", backgroundColor: "#a6d4ff", fontWeight: "bold", fontSize: "16px", cursor: "pointer" }}>
@@ -136,7 +153,46 @@ const CreateInvoice = () => {
         </div>
       </div>
 
-      {/* Table */}
+{/* Dropdown + Date Picker */}
+<div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "1rem", marginTop: "1rem", flexWrap: "wrap" }}>
+  <select
+    value={filterMode}
+    onChange={(e) => {
+      setFilterMode(e.target.value);
+      setCurrentPage(1);
+    }}
+    style={{ padding: "0.5rem 1rem", borderRadius: "6px", fontSize: "16px" }}
+  >
+    <option value="all">ดูทั้งหมด</option>
+    <option value="today">ดูวันนี้</option>
+  </select>
+
+  <label style={{ fontSize: "16px" }}>เลือกวันที่ต้องการจะดู :</label>
+  <input
+    type="date"
+    value={specificDate}
+    onChange={(e) => {
+      setSpecificDate(e.target.value);
+      setCurrentPage(1);
+    }}
+    style={{ padding: "0.5rem", fontSize: "16px", borderRadius: "6px" }}
+  />
+  {specificDate && (
+    <button onClick={() => setSpecificDate("")} style={{
+      padding: "0.4rem 1rem",
+      fontSize: "14px",
+      borderRadius: "6px",
+      border: "none",
+      backgroundColor: "#ffcccc",
+      cursor: "pointer"
+    }}>
+      ล้างวันที่
+    </button>
+  )}
+</div>
+
+
+      {/* ตารางใบเสร็จ */}
       <div style={{ margin: "1rem auto", width: "95%", maxWidth: "850px", overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", backgroundColor: "white", marginTop: "1rem", borderRadius: "12px", overflow: "hidden" }}>
           <thead style={{ backgroundColor: "#d0e8ff", color: "#000", fontWeight: "bold" }}>
@@ -154,54 +210,22 @@ const CreateInvoice = () => {
               <tr><td colSpan="6" style={{ textAlign: "center", padding: "1rem" }}>ไม่พบรายการ</td></tr>
             ) : (
               paginatedReceipts.map((receipt, i) => (
-                <React.Fragment key={i}>
-                  <tr style={{ textAlign: "center", borderBottom: "1px solid #ccc" }}>
-                    <td style={tdStyle}>{(currentPage - 1) * itemsPerPage + i + 1}</td>
-                    <td style={tdStyle}>{receipt.re_id}</td>
-                    <td style={tdStyle}>{formatDate(receipt.date)}</td>
-                    <td style={tdStyle}>{receipt.items[0]?.name || "-"}</td>
-                    <td style={tdStyle}>{Number(receipt.total).toLocaleString()} ฿</td>
-                    <td style={tdStyle}>
-                      <button onClick={() => toggleExpand(receipt.re_id)} style={{ color: "#1a1aa6", textDecoration: "underline", cursor: "pointer", background: "none", border: "none" }}>
-                        {expandedReceiptId === receipt.re_id ? "ซ่อนใบเสร็จ" : "ดูใบเสร็จ"}
-                      </button>
-                      <span style={{ margin: "0 6px" }}>/</span>
-                      <button onClick={() => navigate("/makeinvoice", { state: { receipt } })} style={{ color: "#1a1aa6", textDecoration: "underline", cursor: "pointer", background: "none", border: "none" }}>
-                        ออกใบกำกับ
-                      </button>
-                    </td>
-                  </tr>
-                  {expandedReceiptId === receipt.re_id && (
-                    <tr>
-                      <td colSpan="6" style={{ padding: "1rem", backgroundColor: "#f2f6ff" }}>
-                        <div style={{ textAlign: "left" }}>
-                          <p><strong>วันที่:</strong> {formatDate(receipt.date)}</p>
-                          <p><strong>เลขที่ใบเสร็จ:</strong> {receipt.re_id}</p>
-                          <hr />
-                          {receipt.items.map((item, idx) => (
-                            <div key={idx} style={{ display: "flex", justifyContent: "space-between" }}>
-                              <span>{item.quantity.toFixed(2)} × {item.name}</span>
-                              <span>{Number(item.price).toLocaleString()} ฿</span>
-                            </div>
-                          ))}
-                          <hr />
-                          <div style={{ display: "flex", justifyContent: "space-between" }}>
-                            <span><strong>มูลค่าก่อนภาษี:</strong></span>
-                            <span>{receipt.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                          </div>
-                          <div style={{ display: "flex", justifyContent: "space-between" }}>
-                            <span><strong>VAT 7%:</strong></span>
-                            <span>{(receipt.total * 0.07).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                          </div>
-                          <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold", fontSize: "16px", marginTop: "0.5rem" }}>
-                            <span>ยอดรวม:</span>
-                            <span>{(receipt.total * 1.07).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
+                <tr key={i} style={{ textAlign: "center", borderBottom: "1px solid #ccc" }}>
+                  <td style={tdStyle}>{(currentPage - 1) * itemsPerPage + i + 1}</td>
+                  <td style={tdStyle}>{receipt.re_id}</td>
+                  <td style={tdStyle}>{formatDate(receipt.date)}</td>
+                  <td style={tdStyle}>{receipt.items[0]?.name || "-"}</td>
+                  <td style={tdStyle}>{Number(receipt.total).toLocaleString()} ฿</td>
+                  <td style={tdStyle}>
+                    <button onClick={() => setModalReceipt(receipt)} style={{ color: "#1a1aa6", textDecoration: "underline", cursor: "pointer", background: "none", border: "none" }}>
+                      ดูใบเสร็จ
+                    </button>
+                    <span style={{ margin: "0 6px" }}>/</span>
+                    <button onClick={() => navigate("/makeinvoice", { state: { receipt } })} style={{ color: "#1a1aa6", textDecoration: "underline", cursor: "pointer", background: "none", border: "none" }}>
+                      ออกใบกำกับ
+                    </button>
+                  </td>
+                </tr>
               ))
             )}
           </tbody>
@@ -222,6 +246,52 @@ const CreateInvoice = () => {
         ))}
         <button onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))} style={pageButtonStyle}>หน้าถัดไป</button>
       </div>
+
+      {/* Modal รายละเอียดใบเสร็จ */}
+      {modalReceipt && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
+          backgroundColor: "rgba(0, 0, 0, 0.5)", display: "flex",
+          justifyContent: "center", alignItems: "center", zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: "white", padding: "2rem", borderRadius: "12px",
+            maxWidth: "600px", width: "90%", maxHeight: "80%", overflowY: "auto"
+          }}>
+            <h2 style={{ textAlign: "center", marginBottom: "1rem" }}>รายละเอียดใบเสร็จ</h2>
+            <p><strong>วันที่:</strong> {formatDate(modalReceipt.date)}</p>
+            <p><strong>เลขที่ใบเสร็จ:</strong> {modalReceipt.re_id}</p>
+            <hr />
+            {modalReceipt.items.map((item, idx) => (
+              <div key={idx} style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.3rem" }}>
+                <span>{item.quantity.toFixed(2)} × {item.name}</span>
+                <span>{Number(item.price).toLocaleString()} ฿</span>
+              </div>
+            ))}
+            <hr />
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span><strong>มูลค่าก่อนภาษี:</strong></span>
+              <span>{modalReceipt.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span><strong>VAT 7%:</strong></span>
+              <span>{(modalReceipt.total * 0.07).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold", fontSize: "16px", marginTop: "0.5rem" }}>
+              <span>ยอดรวม:</span>
+              <span>{(modalReceipt.total * 1.07).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+            </div>
+            <div style={{ marginTop: "1.5rem", textAlign: "center" }}>
+              <button onClick={() => setModalReceipt(null)} style={{
+                padding: "0.5rem 1.5rem", backgroundColor: "#1a1aa6", color: "white",
+                border: "none", borderRadius: "6px", fontSize: "16px", cursor: "pointer"
+              }}>
+                ปิด
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

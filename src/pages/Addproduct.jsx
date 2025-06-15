@@ -224,7 +224,7 @@ const Addproduct = () => {
               }}
               style={inputStyle}
             >
-              <option value="">-- เลือกหน่วย --</option>
+              <option value="" disabled hidden>-- เลือกหน่วย --</option>
               <option value="custom">+ เพิ่มหน่วย</option>
               <option value="ชิ้น">ชิ้น</option>
               <option value="กล่อง">กล่อง</option>
@@ -254,7 +254,7 @@ const Addproduct = () => {
               }}
               style={inputStyle}
             >
-              <option value="">-- เลือกประเภทสินค้า --</option>
+              <option value="" disabled hidden>-- เลือกประเภทสินค้า --</option>
               <option value="custom">+ เพิ่มประเภทสินค้า</option>
               {categories.map((cat, idx) => (
                 <option key={idx} value={cat}>{cat}</option>

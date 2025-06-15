@@ -15,6 +15,7 @@ const IihCompany = () => {
   const [selectedReceiptForView, setSelectedReceiptForView] = useState(null);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
   const itemsPerPage = 10;
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -36,7 +37,18 @@ const IihCompany = () => {
           item: typeof row.item === "string" ? JSON.parse(row.item) : row.item,
         }));
 
-        setReceipts(parsed);
+        // 🔽 จัดเรียงตามวันล่าสุด และ receipt_id มากสุดก่อน
+        const sorted = parsed.sort((a, b) => {
+          const dateA = new Date(a.date);
+          const dateB = new Date(b.date);
+
+          if (dateA > dateB) return -1;
+          if (dateA < dateB) return 1;
+
+          return (b.receipt_id || 0) - (a.receipt_id || 0);
+        });
+
+        setReceipts(sorted);
       } catch (err) {
         console.error("Fetch error:", err);
       }
@@ -44,6 +56,31 @@ const IihCompany = () => {
 
     fetchReceipts();
   }, []);
+
+  const formatCurrency = (amount) =>
+    Number(amount).toLocaleString("th-TH", { minimumFractionDigits: 2 });
+
+  const formatDate = (iso) =>
+    new Date(iso).toLocaleDateString("th-TH");
+
+  const filteredReceipts = receipts.filter((receipt) => {
+    const keyword = searchTerm.toLowerCase();
+    const buyerMatch = `${receipt.buyer.firstName} ${receipt.buyer.lastName}`.toLowerCase().includes(keyword);
+    const invoiceMatch = String(receipt.invoice_num || receipt.id || "").toLowerCase().includes(keyword);
+    const dateMatch = formatDate(receipt.date).includes(keyword);
+
+    const dateFilterMatch = selectedDate
+      ? new Date(receipt.date).toLocaleDateString('en-CA') === selectedDate
+      : true;
+
+    return (buyerMatch || invoiceMatch || dateMatch) && dateFilterMatch;
+  });
+
+  const totalPages = Math.ceil(filteredReceipts.length / itemsPerPage);
+  const paginatedReceipts = filteredReceipts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
   const openInvoiceModal = (receipt) => setSelectedReceipt(receipt);
@@ -57,26 +94,56 @@ const IihCompany = () => {
     setShowReceiptModal(false);
   };
 
-  const formatCurrency = (amount) =>
-    Number(amount).toLocaleString("th-TH", { minimumFractionDigits: 2 });
-  const formatDate = (iso) => new Date(iso).toLocaleDateString("th-TH");
-
-const filteredReceipts = receipts.filter((receipt) => {
-  const keyword = searchTerm.toLowerCase();
-  const dateMatch = formatDate(receipt.date).includes(keyword);
-  const buyerMatch = `${receipt.buyer.firstName} ${receipt.buyer.lastName}`.toLowerCase().includes(keyword);
-  const invoiceMatch = String(receipt.invoice_num || receipt.id || "").toLowerCase().includes(keyword);
-
-  return dateMatch || buyerMatch || invoiceMatch;
-});
-
-
-
-  const totalPages = Math.ceil(filteredReceipts.length / itemsPerPage);
-  const paginatedReceipts = filteredReceipts.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const printInvoice = () => {
+    const printContent = document.getElementById("invoice-print").innerHTML;
+    const win = window.open("", "", "width=800,height=600");
+    win.document.write(`
+      <html>
+        <head>
+          <title>พิมพ์ใบกำกับภาษี</title>
+          <style>
+            @media print {
+              .no-print { display: none !important; }
+            }
+            body {
+              font-family: "Tahoma", sans-serif;
+              padding: 40px;
+              margin: 0;
+              font-size: 14px;
+            }
+            h3 { margin-top: 0; color: #1a1aa6; }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 20px;
+              font-size: 14px;
+            }
+            th, td {
+              border: 1px solid #ccc;
+              padding: 8px;
+              text-align: center;
+            }
+            hr {
+              margin: 1rem 0;
+            }
+            .totals {
+              text-align: right;
+              margin-top: 1rem;
+              font-size: 14px;
+            }
+            .totals b {
+              font-size: 16px;
+            }
+          </style>
+        </head>
+        <body>
+          ${printContent}
+        </body>
+      </html>
+    `);
+    win.document.close();
+    win.print();
+  };
 
   const thStyle = { border: "1px solid #ccc", padding: "8px", textAlign: "center" };
   const tdStyle = { border: "1px solid #ccc", padding: "8px", textAlign: "center" };
@@ -92,74 +159,18 @@ const filteredReceipts = receipts.filter((receipt) => {
 
   const MenuItem = ({ icon, text, onClick, active }) => (
     <div onClick={onClick} style={{
-      padding: "0.8rem 1rem",
-      display: "flex",
-      alignItems: "center",
-      gap: "0.8rem",
-      color: active ? "white" : "#000",
-      backgroundColor: active ? "#6666cc" : "transparent",
-      cursor: "pointer",
-      fontSize: "14px",
-      fontWeight: active ? "bold" : "normal"
+      padding: "0.8rem 1rem", display: "flex", alignItems: "center", gap: "0.8rem",
+      color: active ? "white" : "#000", backgroundColor: active ? "#6666cc" : "transparent",
+      cursor: "pointer", fontSize: "14px", fontWeight: active ? "bold" : "normal"
     }}>
       <div style={{ fontSize: "18px" }}>{icon}</div>
       <div>{text}</div>
     </div>
   );
 
-const printInvoice = () => {
-  const printContent = document.getElementById("invoice-print").innerHTML;
-  const win = window.open("", "", "width=800,height=600");
-  win.document.write(`
-    <html>
-      <head>
-        <title>พิมพ์ใบกำกับภาษี</title>
-        <style>
-          @media print {
-            .no-print { display: none !important; }
-          }
-          body {
-            font-family: "Tahoma", sans-serif;
-            padding: 40px;
-            margin: 0;
-            font-size: 14px;
-          }
-          h3 { margin-top: 0; color: #1a1aa6; }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            font-size: 14px;
-          }
-          th, td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: center;
-          }
-          hr {
-            margin: 1rem 0;
-          }
-          .totals {
-            text-align: right;
-            margin-top: 1rem;
-            font-size: 14px;
-          }
-          .totals b {
-            font-size: 16px;
-          }
-        </style>
-      </head>
-      <body>
-        ${printContent}
-      </body>
-    </html>
-  `);
-  win.document.close();
-  win.print();
-};
-
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#d6e8ff" }}>
+      {/* Header */}
       <div style={{
         backgroundColor: "#1a1aa6", color: "white", height: "64px",
         display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 1rem"
@@ -169,8 +180,7 @@ const printInvoice = () => {
         <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiCompany")} />
       </div>
 
-        <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>ประวัติการออกใบกำกับภาษี</h1>
-
+      {/* Sidebar */}
       {sidebarVisible && (
         <div style={{
           position: "fixed", top: "64px", left: 0, width: "200px",
@@ -192,14 +202,19 @@ const printInvoice = () => {
           </div>
         </div>
       )}
-      <div style={{ margin: "1.5rem auto", display: "flex", justifyContent: "center" }}>
+
+      {/* Title */}
+      <h1 style={{ textAlign: "center", margin: "1.5rem 0 1rem" }}>ประวัติการออกใบกำกับภาษี</h1>
+
+      {/* Search */}
+      <div style={{ display: "flex", justifyContent: "center", gap: "1rem", flexWrap: "wrap", marginBottom: "1rem" }}>
         <div style={{
           display: "flex", alignItems: "center", backgroundColor: "#cce0ff",
           padding: "0.5rem 1rem", borderRadius: "30px", width: "80%", maxWidth: "600px"
         }}>
           <input
             type="text"
-            placeholder="ค้นหาผ่านวันที่ทำรายการ ชื่อลูกค้า หรือเลขที่ใบกำกับ"
+            placeholder="ค้นหาผ่านวันที่ ชื่อลูกค้า หรือเลขที่ใบกำกับ"
             value={searchTerm}
             onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
             style={{
@@ -209,17 +224,47 @@ const printInvoice = () => {
           />
           <FaSearch />
         </div>
+
+        <input
+          type="date"
+          value={selectedDate}
+          onChange={(e) => { setSelectedDate(e.target.value); setCurrentPage(1); }}
+          style={{
+            padding: "0.5rem 1rem", fontSize: "14px", borderRadius: "10px", border: "1px solid #ccc"
+          }}
+        />
+        <button
+          onClick={() => {
+            setSearchTerm("");
+            setSelectedDate("");
+            setCurrentPage(1);
+          }}
+          style={{
+            padding: "0.5rem 1rem",
+            fontSize: "14px",
+            borderRadius: "10px",
+            backgroundColor: "#ff9999",
+            color: "white",
+            border: "none",
+            cursor: "pointer"
+          }}
+        >
+          ล้างข้อมูล
+        </button>
       </div>
+
+
+      {/* Table */}
       <div style={{ width: "90%", margin: "0 auto", background: "white", borderRadius: "10px", overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
           <thead>
             <tr style={{ backgroundColor: "#b3ccff" }}>
               <th style={thStyle}>ลำดับ</th>
               <th style={thStyle}>วันที่</th>
-              <th style={thStyle}>เลขที่ใบกำกับภาษี</th>
-              <th style={thStyle}>ราคา</th>
-              <th style={thStyle}>ดูใบเสร็จ</th>
-              <th style={thStyle}>ดูใบกำกับภาษี</th>
+              <th style={thStyle}>เลขที่ใบกำกับ</th>
+              <th style={thStyle}>ยอดรวม</th>
+              <th style={thStyle}>ใบเสร็จ</th>
+              <th style={thStyle}>ใบกำกับภาษี</th>
             </tr>
           </thead>
           <tbody>
@@ -242,7 +287,7 @@ const printInvoice = () => {
                     backgroundColor: "#1a75ff", color: "white", padding: "0.3rem 1rem",
                     borderRadius: "5px", border: "none", cursor: "pointer"
                   }}>
-                    ใบกำกับภาษี
+                    ใบกำกับ
                   </button>
                 </td>
               </tr>
@@ -250,6 +295,9 @@ const printInvoice = () => {
           </tbody>
         </table>
       </div>
+
+
+
       <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem", gap: "0.5rem" }}>
         <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} style={paginationBtnStyle}>หน้าก่อน</button>
         {Array.from({ length: totalPages }, (_, i) => (
@@ -276,7 +324,6 @@ const printInvoice = () => {
             </div>
 
 <div id="invoice-print">
-
   <div style={{ display: "flex", justifyContent: "flex-end" }}>
     <h2 style={{ fontSize: "20px", color: "#000", marginBottom: "1rem", marginTop: 0 }}>
       ใบกำกับภาษี
@@ -290,17 +337,21 @@ const printInvoice = () => {
     <div>เลขที่ใบเสร็จ: {selectedReceipt.receipt_id}</div>
   </div>
 
+  {/* ข้อมูลผู้ขาย */}
   <div><b>ชื่อผู้ขาย:</b> {selectedReceipt.seller.firstName} {selectedReceipt.seller.lastName}</div>
   <div><b>บริษัท:</b> {selectedReceipt.seller.companyName}</div>
   <div><b>ที่อยู่:</b> {selectedReceipt.seller.address}</div>
   <div><b>เลขประจำตัวผู้เสียภาษี:</b> {selectedReceipt.seller.taxId}</div>
+  <div><b>เบอร์โทร:</b> {selectedReceipt.seller.phone || "-"}</div>
 
   <hr />
 
+  {/* ข้อมูลผู้ซื้อ */}
   <div><b>ชื่อผู้ซื้อ:</b> {selectedReceipt.buyer.firstName} {selectedReceipt.buyer.lastName}</div>
   <div><b>บริษัท:</b> {selectedReceipt.buyer.companyName}</div>
   <div><b>ที่อยู่:</b> {selectedReceipt.buyer.address}</div>
   <div><b>เลขประจำตัวผู้เสียภาษี:</b> {selectedReceipt.buyer.taxId}</div>
+  <div><b>เบอร์โทร:</b> {selectedReceipt.buyer.phone || "-"}</div>
 
   <hr />
 

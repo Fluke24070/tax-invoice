@@ -48,13 +48,6 @@ const Addreceipt = () => {
     }));
   };
 
-  const handleQuantityInput = (productId, value) => {
-    const number = parseInt(value);
-    if (!isNaN(number) && number >= 0) {
-      setCart(prev => ({ ...prev, [productId]: number }));
-    }
-  };
-
   const handleCreateReceipt = async () => {
     const selectedItems = Object.entries(cart)
       .filter(([_, qty]) => qty > 0)
@@ -131,11 +124,15 @@ const Addreceipt = () => {
       </div>
 
       {sidebarVisible && (
-        <div style={{ position: "fixed", top: `${headerHeight}px`, left: 0,
+        <div style={{
+          position: "fixed", top: `${headerHeight}px`, left: 0,
           width: "200px", height: `calc(100vh - ${headerHeight}px)`, backgroundColor: "#9999ff",
           zIndex: 20, overflow: "hidden"
         }}>
-          <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: "100%", padding: "1rem 0" }}>
+          <div style={{
+            display: "flex", flexDirection: "column", justifyContent: "space-between",
+            height: "100%", padding: "1rem 0"
+          }}>
             <div>
               <MenuItem icon={<FiFileText />} text="ประวัติการทำรายการ" onClick={() => navigate("/IihCompany")} active={location.pathname === "/IihCompany"} />
               <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiCompany")} active={location.pathname === "/UiCompany"} />
@@ -152,7 +149,6 @@ const Addreceipt = () => {
       <h1 style={{ textAlign: "center", margin: "1.5rem 0" }}>ออกใบเสร็จ</h1>
 
       <div style={{ maxWidth: "600px", margin: "0 auto", padding: "0 1rem" }}>
-        {/* Search bar */}
         <div style={{ position: "relative", marginBottom: "1rem" }}>
           <FaSearch style={{
             position: "absolute", top: "50%", left: "12px",
@@ -170,7 +166,6 @@ const Addreceipt = () => {
           />
         </div>
 
-        {/* Category dropdown */}
         <div style={{
           width: "100%", height: "45px", borderRadius: "20px",
           border: "1.5px solid #1a1aa6", backgroundColor: "#dfe9ff",
@@ -214,7 +209,6 @@ const Addreceipt = () => {
         )}
       </div>
 
-      {/* Product listing */}
       <div style={{ padding: "0 1rem", maxWidth: "1200px", margin: "2rem auto" }}>
         {Object.keys(grouped).map((category) => (
           <div key={category} style={{ marginBottom: "2rem" }}>
@@ -238,8 +232,19 @@ const Addreceipt = () => {
                   }}>
                     <button onClick={() => handleQuantityChange(product.id, -1)}>-</button>
                     <input
-                      type="number" min="0" value={cart[product.id] || 0}
-                      onChange={(e) => handleQuantityInput(product.id, e.target.value)}
+                      type="text"
+                      inputMode="numeric"
+                      value={cart[product.id]?.toString() || ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^\d*$/.test(value)) {
+                          const cleaned = value.replace(/^0+(?=\d)/, "");
+                          setCart(prev => ({
+                            ...prev,
+                            [product.id]: cleaned === "" ? 0 : parseInt(cleaned)
+                          }));
+                        }
+                      }}
                       style={{ width: "50px", textAlign: "center" }}
                     />
                     <button onClick={() => handleQuantityChange(product.id, 1)}>+</button>
@@ -251,7 +256,6 @@ const Addreceipt = () => {
         ))}
       </div>
 
-      {/* Receipt button */}
       <div style={{ textAlign: "center", margin: "2rem 0" }}>
         <button onClick={handleCreateReceipt} style={{
           backgroundColor: "#4da6ff", color: "white",
