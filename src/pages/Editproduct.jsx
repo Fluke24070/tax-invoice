@@ -32,7 +32,7 @@ const Editproduct = () => {
   const navigate = useNavigate();
   const { id: productId } = useParams();
   const location = useLocation();
-  
+  const [unitOptions, setUnitOptions] = useState([]);
   const headerHeight = 64;
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [product, setProduct] = useState({
@@ -48,6 +48,12 @@ const Editproduct = () => {
   const [customCategory, setCustomCategory] = useState("");
   const [categories, setCategories] = useState(["ยังไม่ได้จัดหมวดหมู่"]);
   const textareaRef = useRef(null);
+  const [productUnit, setProductUnit] = useState("");
+  const labelStyle = {
+  fontWeight: "bold",
+  marginBottom: "5px",
+  display: "block",
+};
 
   // Load product data
   useEffect(() => {
@@ -107,8 +113,24 @@ const Editproduct = () => {
         console.error("Error loading categories", err);
       }
     };
+    const fetchUnits = async () => {
+  try {
+    const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
+    const companyName = currentUser.companyName;
+    const res = await fetch(`http://localhost:3000/product_type/${companyName}`);
+    const data = await res.json();
 
+    if (data.status === 200) {
+      const units = data.data.product.map((item) => item.unitresult).filter(u => u);
+      setUnitOptions(units);
+    }
+  } catch (err) {
+    console.error("Error loading units", err);
+  }
+};
+    
     fetchCategories();
+    fetchUnits();
   }, []);
 
   // Format and unformat price with commas
@@ -146,7 +168,7 @@ const Editproduct = () => {
       const result = await response.json();
       if (response.ok) {
         alert("บันทึกข้อมูลเรียบร้อยแล้ว");
-         window.location.href = "/Product"; // บังคับโหลดใหม่
+         window.location.href = "/Product";
       } else {
         alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล: " + result.message);
       }
@@ -259,23 +281,37 @@ const Editproduct = () => {
 
           <input placeholder="ราคาสินค้า" value={product.price} onChange={(e) => { const raw = unformatNumber(e.target.value); setProduct(p => ({ ...p, price: formatNumberWithCommas(raw) })); }} onBlur={(e) => { const raw = unformatNumber(e.target.value); setProduct(p => ({ ...p, price: formatNumberWithCommas(raw) })); }} style={inputStyle} />
 
-          {/* Unit Dropdown */}
-          <select value={product.unit} onChange={(e) => { const value = e.target.value; setProduct(p => ({ ...p, unit: value })); if (value !== "custom") setCustomUnit(""); }} style={inputStyle}>
-            <option value="">-- เลือกหน่วย --</option>
-            <option value="custom">+ เพิ่มหน่วย</option>
-            <option value="ชิ้น">ชิ้น</option>
-            <option value="กล่อง">กล่อง</option>
-            <option value="แพ็ค">แพ็ค</option>
-            <option value="กิโลกรัม">กิโลกรัม</option>
-            <option value="ลิตร">ลิตร</option>
-          </select>
-          {product.unit === "custom" && (
-            <input placeholder="พิมพ์ชื่อหน่วยใหม่" value={customUnit} onChange={(e) => setCustomUnit(e.target.value)} style={{ ...inputStyle, marginTop: "0.5rem" }} />
-          )}
+          {/* หน่วย */}
+          <div style={{ width: "100%" }}>
+            <label style={labelStyle}>หน่วย/unit</label>
+            <select
+              value={productUnit}
+              onChange={(e) => {
+                const value = e.target.value;
+                setProductUnit(value);
+                if (value !== "custom") setCustomUnit("");
+              }}
+              style={inputStyle}
+            >
+              <option value=""disabled hidden>-- เลือกหน่วย --</option>
+              <option value="custom">+ เพิ่มหน่วย</option>
+              {unitOptions.map((unit, idx) => (
+                <option key={idx} value={unit}>{unit}</option>
+              ))}
+            </select>
+            {productUnit === "custom" && (
+              <input
+                value={customUnit}
+                onChange={(e) => setCustomUnit(e.target.value)}
+                placeholder="พิมพ์ชื่อหน่วยใหม่"
+                style={{ ...inputStyle, marginTop: "0.5rem" }}
+              />
+            )}
+          </div>
 
           {/* Category Dropdown */}
           <select value={productCategory} onChange={(e) => { const value = e.target.value; setProductCategory(value); if (value !== "custom") { setProduct(p => ({ ...p, item_type: value })); setCustomCategory(""); } }} style={inputStyle}>
-            <option value="">-- เลือกประเภทสินค้า --</option>
+            <option value=""disabled hidden>-- เลือกประเภทสินค้า --</option>
             <option value="custom">+ เพิ่มประเภทสินค้า</option>
             {categories.map((cat, idx) => (<option key={idx} value={cat}>{cat}</option>))}
           </select>
