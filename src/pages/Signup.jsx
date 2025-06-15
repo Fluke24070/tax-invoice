@@ -179,10 +179,10 @@ const Signup = () => {
             {/* บริษัท */}
             {formData.accountType === "บริษัท" && (
               <>
-                <label>ชื่อผู้ติดต่อ</label>
+                <label>ชื่อผู้จริง</label>
                 <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} style={inputStyle} />
 
-                <label>นามสกุลผู้ติดต่อ</label>
+                <label>นามสกุล</label>
                 <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} style={inputStyle} />
 
                 <label>เบอร์มือถือ</label>

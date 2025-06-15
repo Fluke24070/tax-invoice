@@ -1,16 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import {
-  FaShoppingCart,
-  FaBars,
-  FaUserCircle,
-  FaSignOutAlt,
-  FaClipboardList,
-  FaHome
+  FaShoppingCart, FaBars, FaUserCircle, FaSignOutAlt, FaClipboardList
 } from "react-icons/fa";
 import { FiFileText } from "react-icons/fi";
 
-// Sidebar menu item component
 const MenuItem = ({ icon, text, onClick, active }) => (
   <div onClick={onClick} style={{
     padding: "0.8rem 1rem",
@@ -32,8 +26,8 @@ const Editproduct = () => {
   const navigate = useNavigate();
   const { id: productId } = useParams();
   const location = useLocation();
-  const [unitOptions, setUnitOptions] = useState([]);
   const headerHeight = 64;
+
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [product, setProduct] = useState({
     id: "",
@@ -43,19 +37,20 @@ const Editproduct = () => {
     unit: "",
     item_type: "ยังไม่ได้จัดหมวดหมู่",
   });
+  const [unitOptions, setUnitOptions] = useState([]);
+  const [productUnit, setProductUnit] = useState("");
   const [customUnit, setCustomUnit] = useState("");
   const [productCategory, setProductCategory] = useState("ยังไม่ได้จัดหมวดหมู่");
   const [customCategory, setCustomCategory] = useState("");
   const [categories, setCategories] = useState(["ยังไม่ได้จัดหมวดหมู่"]);
   const textareaRef = useRef(null);
-  const [productUnit, setProductUnit] = useState("");
-  const labelStyle = {
-  fontWeight: "bold",
-  marginBottom: "5px",
-  display: "block",
-};
 
-  // Load product data
+  const labelStyle = {
+    fontWeight: "bold",
+    marginBottom: "5px",
+    display: "block",
+  };
+
   useEffect(() => {
     if (!productId) {
       alert("ไม่พบสินค้าที่ต้องการแก้ไข");
@@ -77,6 +72,7 @@ const Editproduct = () => {
             item_type: productData.item_type,
           });
           setProductCategory(productData.item_type || "ยังไม่ได้จัดหมวดหมู่");
+          setProductUnit(productData.unit || "");
         } else {
           alert("ไม่พบสินค้าที่ต้องการแก้ไข");
           navigate("/Product");
@@ -89,7 +85,6 @@ const Editproduct = () => {
       });
   }, [productId, navigate]);
 
-  // Load categories
   useEffect(() => {
     const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
     const companyName = currentUser.companyName;
@@ -113,27 +108,24 @@ const Editproduct = () => {
         console.error("Error loading categories", err);
       }
     };
-    const fetchUnits = async () => {
-  try {
-    const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
-    const companyName = currentUser.companyName;
-    const res = await fetch(`http://localhost:3000/product_type/${companyName}`);
-    const data = await res.json();
 
-    if (data.status === 200) {
-      const units = data.data.product.map((item) => item.unitresult).filter(u => u);
-      setUnitOptions(units);
-    }
-  } catch (err) {
-    console.error("Error loading units", err);
-  }
-};
-    
+    const fetchUnits = async () => {
+      try {
+        const res = await fetch(`http://localhost:3000/product_type/${companyName}`);
+        const data = await res.json();
+        if (data.status === 200) {
+          const units = data.data.product.map((item) => item.unitresult).filter(u => u);
+          setUnitOptions(units);
+        }
+      } catch (err) {
+        console.error("Error loading units", err);
+      }
+    };
+
     fetchCategories();
     fetchUnits();
   }, []);
 
-  // Format and unformat price with commas
   const formatNumberWithCommas = (value) => {
     const num = parseFloat(value.replace(/,/g, ""));
     if (isNaN(num)) return "";
@@ -141,15 +133,13 @@ const Editproduct = () => {
   };
   const unformatNumber = (value) => value.replace(/,/g, "").replace(/[^\d]/g, "");
 
-  // Save changes
   const handleSave = async () => {
-    // validation example
     if (!product.name || !product.price) {
       alert("กรุณากรอกชื่อและราคาสินค้า");
       return;
     }
 
-    const unitValue = product.unit === "custom" ? customUnit.trim() : product.unit.trim();
+    const unitValue = productUnit === "custom" ? customUnit.trim() : productUnit.trim();
     const itemTypeValue = productCategory === "custom" ? customCategory.trim() : productCategory.trim();
 
     try {
@@ -168,7 +158,7 @@ const Editproduct = () => {
       const result = await response.json();
       if (response.ok) {
         alert("บันทึกข้อมูลเรียบร้อยแล้ว");
-         window.location.href = "/Product";
+        window.location.href = "/Product";
       } else {
         alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล: " + result.message);
       }
@@ -178,7 +168,6 @@ const Editproduct = () => {
     }
   };
 
-  // Delete product
   const handleDelete = async () => {
     if (!window.confirm("คุณแน่ใจหรือไม่ว่าต้องการลบสินค้านี้?")) return;
     try {
@@ -198,7 +187,6 @@ const Editproduct = () => {
     }
   };
 
-  // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
@@ -206,13 +194,14 @@ const Editproduct = () => {
     }
   }, [product.detail]);
 
-  const inputStyle = {
-    width: "80%",
-    padding: "0.6rem 1rem",
-    borderRadius: "10px",
-    border: "1px solid #ccc",
-    fontSize: "15px",
-  };
+const inputStyle = {
+  width: "100%",
+  maxWidth: "360px",
+  padding: "0.6rem 1rem",
+  borderRadius: "10px",
+  border: "1px solid #ccc",
+  fontSize: "15px",
+};
   const saveButtonStyle = {
     width: "100%",
     backgroundColor: "#007bff",
@@ -226,7 +215,7 @@ const Editproduct = () => {
   };
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#e6f0ff", position: "relative" }}>
+    <div style={{ minHeight: "100vh", backgroundColor: "#e6f0ff" }}>
       {/* Header */}
       <div style={{
         backgroundColor: "#1a1aa6", height: `${headerHeight}px`, display: "flex",
@@ -240,21 +229,16 @@ const Editproduct = () => {
         <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiCompany")} />
       </div>
 
-      {/* Sidebar Menu */}
+      {/* Sidebar */}
       {sidebarVisible && (
         <div style={{
-          position: "fixed",
-          top: `${headerHeight}px`,
-          left: 0,
-          width: "200px",
-          height: `calc(100vh - ${headerHeight}px)`,
-          backgroundColor: "#9999ff",
-          zIndex: 20,
-          overflow: "hidden",
+          position: "fixed", top: `${headerHeight}px`, left: 0,
+          width: "200px", height: `calc(100vh - ${headerHeight}px)`,
+          backgroundColor: "#9999ff", zIndex: 20
         }}>
           <div style={{
             display: "flex", flexDirection: "column", justifyContent: "space-between",
-            height: "100%", padding: "1rem 0",
+            height: "100%", padding: "1rem 0"
           }}>
             <div>
               <MenuItem icon={<FiFileText />} text="ประวัติการออกใบกำกับภาษี" onClick={() => navigate("/IihCompany")} active={location.pathname === "/IihCompany"} />
@@ -269,55 +253,68 @@ const Editproduct = () => {
         </div>
       )}
 
-      {/* Page Title */}
+      {/* Form */}
       <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>แก้ไขสินค้า</h1>
-
-      {/* Form Container */}
       <div style={{ display: "flex", justifyContent: "center", paddingTop: "2rem", paddingBottom: "4rem" }}>
-        <div style={{ backgroundColor: "white", padding: "1.5rem", borderRadius: "10px", width: "90%", maxWidth: "400px", display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
-          <input placeholder="ชื่อรายการสินค้า" value={product.name} onChange={(e) => setProduct(p => ({ ...p, name: e.target.value }))} style={inputStyle} />
-
-          <textarea placeholder="รายละเอียดสินค้า" value={product.detail} onChange={(e) => setProduct(p => ({ ...p, detail: e.target.value }))} ref={textareaRef} style={{ ...inputStyle, resize: "none", overflow: "hidden", lineHeight: "1.6", minHeight: "50px" }} />
-
-          <input placeholder="ราคาสินค้า" value={product.price} onChange={(e) => { const raw = unformatNumber(e.target.value); setProduct(p => ({ ...p, price: formatNumberWithCommas(raw) })); }} onBlur={(e) => { const raw = unformatNumber(e.target.value); setProduct(p => ({ ...p, price: formatNumberWithCommas(raw) })); }} style={inputStyle} />
-
-          {/* หน่วย */}
+        <div style={{ backgroundColor: "white", padding: "1.5rem", borderRadius: "10px", width: "90%", maxWidth: "400px", display: "flex", flexDirection: "column", gap: "1rem" }}>
+          
           <div style={{ width: "100%" }}>
-            <label style={labelStyle}>หน่วย/unit</label>
-            <select
-              value={productUnit}
-              onChange={(e) => {
-                const value = e.target.value;
-                setProductUnit(value);
-                if (value !== "custom") setCustomUnit("");
-              }}
-              style={inputStyle}
-            >
-              <option value=""disabled hidden>-- เลือกหน่วย --</option>
+            <label style={labelStyle}>ชื่อรายการสินค้า</label>
+            <input value={product.name} onChange={(e) => setProduct(p => ({ ...p, name: e.target.value }))} style={inputStyle} />
+          </div>
+
+          <div style={{ width: "100%" }}>
+            <label style={labelStyle}>รายละเอียดสินค้า</label>
+            <textarea value={product.detail} onChange={(e) => setProduct(p => ({ ...p, detail: e.target.value }))} ref={textareaRef} style={{ ...inputStyle, resize: "none", overflow: "hidden", lineHeight: "1.6", minHeight: "50px" }} />
+          </div>
+
+          <div style={{ width: "100%" }}>
+            <label style={labelStyle}>ราคาสินค้า</label>
+            <input value={product.price} onChange={(e) => {
+              const raw = unformatNumber(e.target.value);
+              setProduct(p => ({ ...p, price: formatNumberWithCommas(raw) }));
+            }} onBlur={(e) => {
+              const raw = unformatNumber(e.target.value);
+              setProduct(p => ({ ...p, price: formatNumberWithCommas(raw) }));
+            }} style={inputStyle} />
+          </div>
+
+          <div style={{ width: "100%" }}>
+            <label style={labelStyle}>หน่วย / Unit</label>
+            <select value={productUnit} onChange={(e) => {
+              const value = e.target.value;
+              setProductUnit(value);
+              if (value !== "custom") setCustomUnit("");
+            }} style={inputStyle}>
+              <option value="" disabled hidden>-- เลือกหน่วย --</option>
               <option value="custom">+ เพิ่มหน่วย</option>
               {unitOptions.map((unit, idx) => (
                 <option key={idx} value={unit}>{unit}</option>
               ))}
             </select>
             {productUnit === "custom" && (
-              <input
-                value={customUnit}
-                onChange={(e) => setCustomUnit(e.target.value)}
-                placeholder="พิมพ์ชื่อหน่วยใหม่"
-                style={{ ...inputStyle, marginTop: "0.5rem" }}
-              />
+              <input value={customUnit} onChange={(e) => setCustomUnit(e.target.value)} placeholder="พิมพ์ชื่อหน่วยใหม่" style={{ ...inputStyle, marginTop: "0.5rem" }} />
             )}
           </div>
 
-          {/* Category Dropdown */}
-          <select value={productCategory} onChange={(e) => { const value = e.target.value; setProductCategory(value); if (value !== "custom") { setProduct(p => ({ ...p, item_type: value })); setCustomCategory(""); } }} style={inputStyle}>
-            <option value=""disabled hidden>-- เลือกประเภทสินค้า --</option>
-            <option value="custom">+ เพิ่มประเภทสินค้า</option>
-            {categories.map((cat, idx) => (<option key={idx} value={cat}>{cat}</option>))}
-          </select>
-          {productCategory === "custom" && (
-            <input placeholder="พิมพ์ประเภทใหม่" value={customCategory} onChange={(e) => setCustomCategory(e.target.value)} style={{ ...inputStyle, marginTop: "0.5rem" }} />
-          )}
+          <div style={{ width: "100%" }}>
+            <label style={labelStyle}>ชื่อประเภทสินค้า</label>
+            <select value={productCategory} onChange={(e) => {
+              const value = e.target.value;
+              setProductCategory(value);
+              if (value !== "custom") {
+                setProduct(p => ({ ...p, item_type: value }));
+                setCustomCategory("");
+              }
+            }} style={inputStyle}>
+              <option value="" disabled hidden>-- เลือกประเภทสินค้า --</option>
+              <option value="custom">+ เพิ่มประเภทสินค้า</option>
+              {categories.map((cat, idx) => (<option key={idx} value={cat}>{cat}</option>))}
+            </select>
+            {productCategory === "custom" && (
+              <input placeholder="พิมพ์ประเภทใหม่" value={customCategory} onChange={(e) => setCustomCategory(e.target.value)} style={{ ...inputStyle, marginTop: "0.5rem" }} />
+            )}
+          </div>
 
           <button onClick={handleSave} style={saveButtonStyle}>บันทึกข้อมูล</button>
           <button onClick={handleDelete} style={{ ...saveButtonStyle, backgroundColor: "#dc3545" }}>ลบสินค้า</button>

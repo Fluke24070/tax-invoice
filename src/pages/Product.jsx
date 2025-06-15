@@ -1,3 +1,4 @@
+// Product.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -111,7 +112,8 @@ const Product = () => {
     padding: "0.4rem 1rem",
     display: "flex",
     alignItems: "center",
-    fontSize: "15px"
+    fontSize: "15px",
+    boxSizing: "border-box"
   };
 
   return (
@@ -155,40 +157,40 @@ const Product = () => {
 
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: "40px", paddingBottom: "60px" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", maxWidth: "500px", width: "100%", gap: "1rem" }}>
-  <button onClick={handleAddProduct} style={{ ...unifiedBoxStyle, justifyContent: "center", cursor: "pointer", gap: "10px" }}>
-    <FaShoppingCart /> เพิ่มรายการสินค้า
-  </button>
+          <button onClick={handleAddProduct} style={{ ...unifiedBoxStyle, justifyContent: "center", cursor: "pointer", gap: "10px" }}>
+            <FaShoppingCart /> เพิ่มรายการสินค้า
+          </button>
 
-  <div style={{ ...unifiedBoxStyle, justifyContent: "flex-start", gap: "10px" }}>
-    <FaSearch />
-    <input
-      type="text"
-      placeholder="ค้นหาสิ่งของที่ต้องการ"
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-      style={{
-        border: "none", outline: "none", backgroundColor: "transparent",
-        width: "100%", fontSize: "15px"
-      }}
-    />
-  </div>
+          <div style={{ ...unifiedBoxStyle, justifyContent: "flex-start", gap: "10px" }}>
+            <FaSearch />
+            <input
+              type="text"
+              placeholder="ค้นหาสิ่งของที่ต้องการ"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                border: "none", outline: "none", backgroundColor: "transparent",
+                flex: 1, fontSize: "15px"
+              }}
+            />
+          </div>
 
-  <div style={{ position: "relative", width: "100%" }}>
-    <div
-      style={{ ...unifiedBoxStyle, justifyContent: "space-between", cursor: "pointer" }}
-      onClick={() => setDropdownOpen(!dropdownOpen)}
-    >
-      <span>หมวดหมู่ : {selectedCategory}</span>
-      <span style={{ transform: dropdownOpen ? "rotate(180deg)" : "rotate(0)", transition: "0.2s" }}>▲</span>
-    </div>
+          <div style={{ position: "relative", width: "100%" }}>
+            <div
+              style={{ ...unifiedBoxStyle, justifyContent: "space-between", cursor: "pointer" }}
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+            >
+              <span>หมวดหมู่ : {selectedCategory}</span>
+              <span style={{ transform: dropdownOpen ? "rotate(180deg)" : "rotate(0)", transition: "0.2s" }}>▲</span>
+            </div>
 
-    {dropdownOpen && (
-      <div style={{
-        position: "absolute", top: "calc(100% + 5px)", left: 0, right: 0,
-        backgroundColor: "white", border: "1px solid #ccc",
-        borderRadius: "10px", zIndex: 100, boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-        maxHeight: "300px", overflowY: "auto"
-      }}>
+            {dropdownOpen && (
+              <div style={{
+                position: "absolute", top: "calc(100% + 5px)", left: 0, right: 0,
+                backgroundColor: "white", border: "1px solid #ccc",
+                borderRadius: "10px", zIndex: 100, boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                maxHeight: "300px", overflowY: "auto"
+              }}>
                 {categories.map((cat) => (
                   <div key={cat} style={{
                     padding: "0.5rem 1rem", cursor: "pointer",
@@ -218,11 +220,8 @@ const Product = () => {
                           handleEditCategory(cat);
                         }}
                         style={{
-                          background: "transparent",
-                          border: "none",
-                          color: "#333",
-                          cursor: "pointer",
-                          fontSize: "14px"
+                          background: "transparent", border: "none",
+                          color: "#333", cursor: "pointer", fontSize: "14px"
                         }}
                       >✏️แก้ไขหมวดหมู่</button>
                     )}
@@ -239,17 +238,17 @@ const Product = () => {
           {Object.keys(groupedProducts).map((category) => (
             <div key={category} ref={(el) => (categoryRefs.current[category] = el)} style={{ marginBottom: "2rem" }}>
               <h4 style={{ marginBottom: "1rem", textAlign: "left" }}>{category}</h4>
-              <div style={{
-                display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "1rem"
-              }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "1rem" }}>
                 {groupedProducts[category].map((product) => (
-                  <div key={product.id} onClick={() => navigate(`/Editproduct/${product.id}`)} style={{
-                    backgroundColor: "#fff", border: "2px solid #1a1aa6", padding: "0.5rem",
-                    textAlign: "center", borderRadius: "6px", cursor: "pointer",
-                    transition: "transform 0.2s"
-                  }}
+                  <div key={product.id} onClick={() => navigate(`/Editproduct/${product.id}`)}
+                    style={{
+                      backgroundColor: "#fff", border: "2px solid #1a1aa6", padding: "0.5rem",
+                      textAlign: "center", borderRadius: "6px", cursor: "pointer",
+                      transition: "transform 0.2s"
+                    }}
                     onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.02)")}
-                    onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}>
+                    onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                  >
                     {product.image && (
                       <img src={product.image} alt={product.name}
                         style={{ width: "100%", height: "100px", objectFit: "cover", borderRadius: "4px" }} />
@@ -281,15 +280,9 @@ const Product = () => {
               style={{ padding: "0.5rem", borderRadius: "6px", border: "1px solid #ccc" }}
             />
             <div style={{ display: "flex", justifyContent: "space-between", gap: "0.5rem" }}>
-              <button onClick={handleSaveCategory} style={{ flex: 1, backgroundColor: "#4CAF50", color: "white", padding: "0.5rem", border: "none", borderRadius: "6px" }}>
-                บันทึก
-              </button>
-              <button onClick={handleDeleteCategory} style={{ flex: 1, backgroundColor: "#f44336", color: "white", padding: "0.5rem", border: "none", borderRadius: "6px" }}>
-                ลบข้อมูล
-              </button>
-              <button onClick={() => setShowEditPopup(false)} style={{ flex: 1, backgroundColor: "#ccc", padding: "0.5rem", border: "none", borderRadius: "6px" }}>
-                ยกเลิก
-              </button>
+              <button onClick={handleSaveCategory} style={{ flex: 1, backgroundColor: "#4CAF50", color: "white", padding: "0.5rem", border: "none", borderRadius: "6px" }}>บันทึก</button>
+              <button onClick={handleDeleteCategory} style={{ flex: 1, backgroundColor: "#f44336", color: "white", padding: "0.5rem", border: "none", borderRadius: "6px" }}>ลบข้อมูล</button>
+              <button onClick={() => setShowEditPopup(false)} style={{ flex: 1, backgroundColor: "#ccc", padding: "0.5rem", border: "none", borderRadius: "6px" }}>ยกเลิก</button>
             </div>
           </div>
         </div>
