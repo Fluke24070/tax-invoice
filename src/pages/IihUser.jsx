@@ -281,7 +281,7 @@ const IihUser = () => {
   <div>เลขที่ใบเสร็จ: {selectedReceipt.receipt_id}</div>
   <hr />
 
-  <div><b>ชื่อผู้ขาย:</b> {selectedReceipt.seller.firstName} {selectedReceipt.seller.lastName}</div>
+  <div><b>ชื่อผู้ขาย:</b></div>
   <div><b>บริษัท:</b> {selectedReceipt.seller.companyName}</div>
   <div><b>ที่อยู่:</b> {selectedReceipt.seller.address}</div>
   <div><b>เลขประจำตัวผู้เสียภาษี:</b> {selectedReceipt.seller.taxId}</div>

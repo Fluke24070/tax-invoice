@@ -124,13 +124,11 @@ const CreatetaxInvoice = () => {
         <div style={{ fontSize: "14px", marginBottom: "1.5rem" }}>
 <div style={{ marginBottom: "0.5rem" }}>
   <strong>ชื่อผู้ขาย</strong>
-<div>{seller?.firstName} {seller?.lastName}</div>
   <div>บริษัท: {seller?.companyName}</div>
   <div>สาขา: {seller?.branch || "-"}</div>
   <div>ที่อยู่: {seller?.address}</div>
   <div>เลขประจำตัวผู้เสียภาษี: {seller?.taxId} โทรศัพท์ {seller?.phone}</div>
 </div>
-
 
   <div style={{ marginTop: "1.5rem" }}>
     <strong>ชื่อผู้ซื้อ</strong>
