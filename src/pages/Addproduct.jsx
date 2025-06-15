@@ -20,6 +20,7 @@ const Addproduct = () => {
   const [productCategory, setProductCategory] = useState("");
   const [customCategory, setCustomCategory] = useState("");
   const [categories, setCategories] = useState(["ยังไม่ได้จัดหมวดหมู่"]);
+  const [unitOptions, setUnitOptions] = useState([]);
 
   const textareaRef = useRef(null);
 
@@ -55,7 +56,25 @@ const Addproduct = () => {
       }
     };
 
+    const fetchUnits = async () => {
+  try {
+    const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
+    const companyName = currentUser.companyName;
+    const res = await fetch(`http://localhost:3000/product_type/${companyName}`);
+    const data = await res.json();
+
+    if (data.status === 200) {
+      const units = data.data.product.map((item) => item.unitresult).filter(u => u);
+      setUnitOptions(units);
+    }
+  } catch (err) {
+    console.error("Error loading units", err);
+  }
+};
+
+
     fetchCategories();
+    fetchUnits();
   }, []);
 
   const validateFields = () => {
@@ -116,10 +135,10 @@ const Addproduct = () => {
       });
 
       const data = await response.json();
-    if (!response.ok) {
-      alert(data.message || "ไม่สามารถบันทึกสินค้าได้");
-      return;
-    }
+      if (!response.ok) {
+        alert(data.message || "ไม่สามารถบันทึกสินค้าได้");
+        return;
+      }
       alert("เพิ่มสินค้าเรียบร้อยแล้ว");
       navigate("/Product");
     } catch (error) {
@@ -169,7 +188,7 @@ const Addproduct = () => {
               <MenuItem icon={<FaClipboardList />} text="ทำใบเสร็จ" onClick={() => navigate("/CreateInvoice")} active={location.pathname === "/CreateInvoice"} />
             </div>
             <div style={{ marginBottom: "20px" }}>
-              <MenuItem icon={<FaSignOutAlt />} text="ออกจากระบบ" onClick={() => { localStorage.clear(); navigate("/login"); }} />
+              <MenuItem icon={<FaSignOutAlt />} text="ออกจากระบบ" onClick={() => { localStorage.clear(); navigate("/Enter"); }} />
             </div>
           </div>
         </div>
@@ -224,13 +243,11 @@ const Addproduct = () => {
               }}
               style={inputStyle}
             >
-              <option value="" disabled hidden>-- เลือกหน่วย --</option>
+              <option value=""disabled hidden>-- เลือกหน่วย --</option>
               <option value="custom">+ เพิ่มหน่วย</option>
-              <option value="ชิ้น">ชิ้น</option>
-              <option value="กล่อง">กล่อง</option>
-              <option value="แพ็ค">แพ็ค</option>
-              <option value="กิโลกรัม">กิโลกรัม</option>
-              <option value="ลิตร">ลิตร</option>
+              {unitOptions.map((unit, idx) => (
+                <option key={idx} value={unit}>{unit}</option>
+              ))}
             </select>
             {productUnit === "custom" && (
               <input
@@ -254,7 +271,7 @@ const Addproduct = () => {
               }}
               style={inputStyle}
             >
-              <option value="" disabled hidden>-- เลือกประเภทสินค้า --</option>
+              <option value=""disabled hidden>-- เลือกประเภทสินค้า --</option>
               <option value="custom">+ เพิ่มประเภทสินค้า</option>
               {categories.map((cat, idx) => (
                 <option key={idx} value={cat}>{cat}</option>
