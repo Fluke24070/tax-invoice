@@ -108,7 +108,7 @@ const CreatetaxInvoice = () => {
               <MenuItem icon={<FaClipboardList />} text="ทำใบเสร็จ" onClick={() => navigate("/CreateInvoice")} active={location.pathname === "/CreateInvoice"} />
             </div>
             <div style={{ marginBottom: "20px" }}>
-              <MenuItem icon={<FaSignOutAlt />} text="ออกจากระบบ" onClick={() => { localStorage.clear(); navigate("/Enter"); }} />
+              <MenuItem icon={<FaSignOutAlt />} text="ออกจากระบบ" onClick={() => { localStorage.clear(); navigate("/login"); }} />
             </div>
           </div>
         </div>
@@ -121,26 +121,24 @@ const CreatetaxInvoice = () => {
       }}>
         <h2 style={{ color: "#1a1aa6", marginBottom: "1rem" }}>ใบเสร็จรับเงิน/ใบกำกับภาษี</h2>
 
-        <div style={{ fontSize: "14px", marginBottom: "1rem" }}>
-          วันที่ {new Date().toLocaleDateString("th-TH")}
-        </div>
-
         <div style={{ fontSize: "14px", marginBottom: "1.5rem" }}>
-          <div style={{ marginBottom: "0.5rem" }}>
-            <strong>ชื่อผู้ขาย</strong>
-            <div>{seller?.firstName} {seller?.lastName}</div>
-            <div>{seller?.companyName}</div>
-            <div>ที่อยู่: {seller?.address}</div>
-            <div>เลขประจำตัวผู้เสียภาษี: {seller?.taxId} โทรศัพท์ {seller?.phone}</div>
-          </div>
-          <div style={{ marginTop: "1.5rem" }}>
-            <strong>ชื่อผู้ซื้อ</strong>
-            <div>{buyer?.firstName} {buyer?.lastName}</div>
-            <div>ชื่อบริษัท: {buyer?.companyName}</div>
-            <div>ที่อยู่: {buyer?.address}</div>
-            <div>เลขประจำตัวผู้เสียภาษี: {buyer?.taxId} โทรศัพท์ {buyer?.phone}</div>
-          </div>
-        </div>
+<div style={{ marginBottom: "0.5rem" }}>
+  <strong>ชื่อผู้ขาย</strong>
+<div>{seller?.firstName} {seller?.lastName}</div>
+  <div>บริษัท: {seller?.companyName}</div>
+  <div>สาขา: {seller?.branch || "-"}</div>
+  <div>ที่อยู่: {seller?.address}</div>
+  <div>เลขประจำตัวผู้เสียภาษี: {seller?.taxId} โทรศัพท์ {seller?.phone}</div>
+</div>
+
+
+  <div style={{ marginTop: "1.5rem" }}>
+    <strong>ชื่อผู้ซื้อ</strong>
+    <div>{buyer?.firstName} {buyer?.lastName}</div>
+    <div>ที่อยู่: {buyer?.address}</div>
+    <div>เลขประจำตัวผู้เสียภาษี: {buyer?.taxId} โทรศัพท์ {buyer?.phone}</div>
+  </div>
+</div>
 
         {receipt && receipt.items && (
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
