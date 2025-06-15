@@ -97,7 +97,6 @@ const UiCompany = () => {
         <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiCompany")} />
       </div>
 
-      <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>ข้อมูลผู้ใช้งาน</h1>
 
       {sidebarVisible && (
         <div style={{
@@ -115,7 +114,7 @@ const UiCompany = () => {
             height: "100%", padding: "1rem 0",
           }}>
             <div>
-              <MenuItem icon={<FiFileText />} text="ประวัติการทำรายการ" onClick={() => navigate("/IihCompany")} active={location.pathname === "/IihCompany"} />
+              <MenuItem icon={<FiFileText />} text="ประวัติการออกใบกำกับภาษี" onClick={() => navigate("/IihCompany")} active={location.pathname === "/IihCompany"} />
               <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiCompany")} active={location.pathname === "/UiCompany"} />
               <MenuItem icon={<FaShoppingCart />} text="สินค้า" onClick={() => navigate("/Product")} active={location.pathname === "/Product"} />
               <MenuItem icon={<FaClipboardList />} text="ทำใบเสร็จ" onClick={() => navigate("/CreateInvoice")} active={location.pathname === "/CreateInvoice"} />
@@ -147,9 +146,7 @@ const UiCompany = () => {
           maxWidth: "600px",
           boxSizing: "border-box"
         }}>
-          <h3 style={{ textAlign: "center", marginBottom: "24px", color: "#333" }}>
-            ข้อมูลผู้ใช้งาน
-          </h3>
+      <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>ข้อมูลผู้ใช้งาน</h1>
           <div style={{ display: "flex", gap: "24px", marginBottom: "20px" }}>
             <div style={{ flex: 1 }}>
               <label style={labelStyle}>ชื่อจริง</label>
