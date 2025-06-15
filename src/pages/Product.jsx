@@ -141,7 +141,7 @@ const Product = () => {
             height: "100%", padding: "1rem 0",
           }}>
             <div>
-              <MenuItem icon={<FiFileText />} text="ประวัติการทำรายการ" onClick={() => navigate("/IihCompany")} active={location.pathname === "/IihCompany"} />
+              <MenuItem icon={<FiFileText />} text="ประวัติการออกใบกำกับภาษี" onClick={() => navigate("/IihCompany")} active={location.pathname === "/IihCompany"} />
               <MenuItem icon={<FaUserCircle />} text="ข้อมูลผู้ใช้งาน" onClick={() => navigate("/UiCompany")} active={location.pathname === "/UiCompany"} />
               <MenuItem icon={<FaShoppingCart />} text="สินค้า" onClick={() => navigate("/Product")} active={location.pathname === "/Product"} />
               <MenuItem icon={<FaClipboardList />} text="ทำใบเสร็จ" onClick={() => navigate("/CreateInvoice")} active={location.pathname === "/CreateInvoice"} />
@@ -155,40 +155,40 @@ const Product = () => {
 
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: "40px", paddingBottom: "60px" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", maxWidth: "500px", width: "100%", gap: "1rem" }}>
-          <button onClick={handleAddProduct} style={{ ...unifiedBoxStyle, justifyContent: "center", cursor: "pointer", gap: "10px" }}>
-            <FaShoppingCart /> เพิ่มรายการสินค้า
-          </button>
+  <button onClick={handleAddProduct} style={{ ...unifiedBoxStyle, justifyContent: "center", cursor: "pointer", gap: "10px" }}>
+    <FaShoppingCart /> เพิ่มรายการสินค้า
+  </button>
 
-          <div style={{ ...unifiedBoxStyle, justifyContent: "flex-start", gap: "10px" }}>
-            <FaSearch />
-            <input
-              type="text"
-              placeholder="ค้นหาสิ่งของที่ต้องการ"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                border: "none", outline: "none", backgroundColor: "transparent",
-                width: "100%", fontSize: "15px"
-              }}
-            />
-          </div>
+  <div style={{ ...unifiedBoxStyle, justifyContent: "flex-start", gap: "10px" }}>
+    <FaSearch />
+    <input
+      type="text"
+      placeholder="ค้นหาสิ่งของที่ต้องการ"
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      style={{
+        border: "none", outline: "none", backgroundColor: "transparent",
+        width: "100%", fontSize: "15px"
+      }}
+    />
+  </div>
 
-          <div style={{ position: "relative", width: "100%" }}>
-            <div
-              style={{ ...unifiedBoxStyle, justifyContent: "space-between", cursor: "pointer" }}
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-            >
-              <span>หมวดหมู่ : {selectedCategory}</span>
-              <span style={{ transform: dropdownOpen ? "rotate(180deg)" : "rotate(0)", transition: "0.2s" }}>▲</span>
-            </div>
+  <div style={{ position: "relative", width: "100%" }}>
+    <div
+      style={{ ...unifiedBoxStyle, justifyContent: "space-between", cursor: "pointer" }}
+      onClick={() => setDropdownOpen(!dropdownOpen)}
+    >
+      <span>หมวดหมู่ : {selectedCategory}</span>
+      <span style={{ transform: dropdownOpen ? "rotate(180deg)" : "rotate(0)", transition: "0.2s" }}>▲</span>
+    </div>
 
-            {dropdownOpen && (
-              <div style={{
-                position: "absolute", top: "calc(100% + 5px)", left: 0, right: 0,
-                backgroundColor: "white", border: "1px solid #ccc",
-                borderRadius: "10px", zIndex: 100, boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                maxHeight: "300px", overflowY: "auto"
-              }}>
+    {dropdownOpen && (
+      <div style={{
+        position: "absolute", top: "calc(100% + 5px)", left: 0, right: 0,
+        backgroundColor: "white", border: "1px solid #ccc",
+        borderRadius: "10px", zIndex: 100, boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+        maxHeight: "300px", overflowY: "auto"
+      }}>
                 {categories.map((cat) => (
                   <div key={cat} style={{
                     padding: "0.5rem 1rem", cursor: "pointer",

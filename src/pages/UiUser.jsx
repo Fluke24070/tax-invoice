@@ -131,8 +131,6 @@ const UiUser = () => {
         <FaUserCircle size={24} style={{ cursor: "pointer" }} onClick={() => navigate("/UiUser")} />
       </div>
 
-      <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>ข้อมูลผู้ใช้งาน</h1>
-
       {sidebarVisible && (
         <div style={{
           position: "fixed",
@@ -179,9 +177,7 @@ const UiUser = () => {
           width: "100%",
           maxWidth: "480px",
         }}>
-          <h3 style={{ textAlign: "center", marginBottom: "24px", color: "#333" }}>
-            ข้อมูลผู้ใช้งาน
-          </h3>
+      <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>ข้อมูลผู้ใช้งาน</h1>
 
           <div style={{ display: "flex", gap: "24px", marginBottom: "20px" }}>
             <div style={{ flex: 1 }}>
